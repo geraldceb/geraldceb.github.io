@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.bcx.bootrecon",
+        "sha256_cert_fingerprints": ["95:89:6C:83:64:D2:96:FD:C2:A9:2C:65:5D:CD:78:95:5E:7F:33:6A:9D:9B:FE:88:FA:EF:ED:7F:5F:A8:56:55"]
+      }
+    }]
