@@ -1,8 +1,26 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "com.bcx.bootrecon",
-        "sha256_cert_fingerprints": ["95:89:6C:83:64:D2:96:FD:C2:A9:2C:65:5D:CD:78:95:5E:7F:33:6A:9D:9B:FE:88:FA:EF:ED:7F:5F:A8:56:55"]
-      }
-    }]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.bcx.bootrecon",
+      "sha256_cert_fingerprints": [
+        "95:89:6C:83:64:D2:96:FD:C2:A9:2C:65:5D:CD:78:95:5E:7F:33:6A:9D:9B:FE:88:FA:EF:ED:7F:5F:A8:56:55"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.bcx.storevisit",
+      "sha256_cert_fingerprints": [
+        "9B:8B:C9:71:8C:54:03:C8:F6:59:43:DD:88:B7:91:04:A2:AC:83:A7:21:B8:82:C1:F5:F9:90:A9:47:7A:E2:E6"
+      ]
+    }
+  }
+]
