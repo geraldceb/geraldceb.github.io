@@ -1,7 +1,7 @@
 {
- "name": "BCX Store Visit",
- "short_name": "Store Visit",
- "description": "Fill the BCX Store Visit template on site and save it as a PDF.",
+ "name": "BCX Boot Stock Recon",
+ "short_name": "Boot Recon",
+ "description": "Confirm boot stock against the Nav ledger and create the Boot Stock Recon PDF.",
  "id": "./",
  "start_url": "./",
  "scope": "./",
