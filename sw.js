@@ -1,5 +1,5 @@
 // Offline support for BCX Boot Stock Recon. Version changes whenever the app changes.
-const CACHE = "boot-recon-412e0d1c";
+const CACHE = "boot-recon-7fed5b27";
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
