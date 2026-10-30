@@ -22,5 +22,17 @@
         "9B:8B:C9:71:8C:54:03:C8:F6:59:43:DD:88:B7:91:04:A2:AC:83:A7:21:B8:82:C1:F5:F9:90:A9:47:7A:E2:E6"
       ]
     }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.bcx.faulttags",
+      "sha256_cert_fingerprints": [
+        "99:1C:65:32:8F:DE:B0:BB:51:0A:40:E7:12:E4:57:7E:69:2D:1E:57:26:BB:E4:46:B0:19:8E:0C:C4:03:76:D7"
+      ]
+    }
   }
 ]
