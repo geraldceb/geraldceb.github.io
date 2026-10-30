@@ -1,5 +1,5 @@
 // Offline support for BCX Boot Stock Recon. The version changes whenever the app changes.
-const CACHE = "boot-recon-00bfe1b1";
+const CACHE = "boot-recon-68e50027";
 const EXCLUDE = ["store-visit/"]; // other apps in sub-folders of this site keep their own offline copy
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 const BASE = new URL("./", self.registration.scope).pathname;
