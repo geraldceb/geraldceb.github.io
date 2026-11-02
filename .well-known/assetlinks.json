@@ -34,5 +34,17 @@
         "99:1C:65:32:8F:DE:B0:BB:51:0A:40:E7:12:E4:57:7E:69:2D:1E:57:26:BB:E4:46:B0:19:8E:0C:C4:03:76:D7"
       ]
     }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.SparesCustody.app",
+      "sha256_cert_fingerprints": [
+        "17:34:A2:E6:89:4C:3D:37:CC:32:B6:6F:39:D6:48:C2:8B:B7:CF:E1:F7:4A:03:AF:0F:72:B9:12:FC:71:76:96"
+      ]
+    }
   }
 ]
