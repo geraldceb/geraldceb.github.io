@@ -1,5 +1,5 @@
 // Offline support for BCX Store Visit. The version changes whenever the app changes.
-const CACHE = "store-visit-ea34ed9e";
+const CACHE = "store-visit-e16198b2";
 const EXCLUDE = []; // other apps in sub-folders of this site keep their own offline copy
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 const BASE = new URL("./", self.registration.scope).pathname;
@@ -9,6 +9,7 @@ self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Pr
 self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET" || !mine(req.url)) return;
+  if (new URL(req.url).pathname.endsWith("/users.json")) return; // login list: always fresh from the site
   if (req.mode === "navigate") {
     const p = new URL(req.url).pathname;
     if (p !== BASE && p !== BASE + "index.html") return;
