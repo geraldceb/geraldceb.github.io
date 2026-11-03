@@ -93,6 +93,11 @@ button { font: 600 15px/1 var(--body); cursor: pointer; }
 .seg button[aria-pressed="true"].g { background: var(--good-soft); color: var(--good); }
 .seg button[aria-pressed="true"].p { background: var(--poor-soft); color: var(--poor); }
 
+.logrows { display: grid; gap: 6px; }
+.logrow { display: flex; gap: 8px; align-items: center; justify-content: space-between; border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 14px; }
+.logrow .when { font: 500 13px/1 var(--mono, monospace); color: var(--muted); white-space: nowrap; }
+.logrow .site { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#log-hint.warn { color: var(--poor); font-weight: 600; }
 .issues { display: grid; gap: 8px; counter-reset: iss; }
 .issue { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; }
 .issue::before { counter-increment: iss; content: counter(iss) "."; font: 500 14px/1 var(--mono); color: var(--muted); width: 22px; }
@@ -134,7 +139,7 @@ footer.bar #share { min-height: 48px; flex: none; }
 </style>
 
 <header class="top"><div class="wrap">
-  <div class="mark"><img class="logo" src="data:image/jpeg;base64,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" alt="BCX" width="131" height="60"><div class="title"><span>STORE VISIT</span><small>Developed by Gerald Pakree · v1.5</small></div></div>
+  <div class="mark"><img class="logo" src="data:image/jpeg;base64,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" alt="BCX" width="131" height="60"><div class="title"><span>STORE VISIT</span><small>Developed by Gerald Pakree · v1.6</small></div></div>
   <div class="status" aria-live="polite">
     <span class="pill" id="pill-checks">Checks 0/6</span>
     <span class="pill" id="pill-photos">0 photos</span>
@@ -202,6 +207,12 @@ footer.bar #share { min-height: 48px; flex: none; }
     <div class="confirm" id="confirm" hidden>Clear this visit and its photos?
       <button class="btn small primary" id="confirm-yes" type="button">Clear visit</button>
       <button class="btn small" id="confirm-no" type="button">Keep</button></div>
+  </section>
+  <section class="step" aria-labelledby="h6">
+    <h2 id="h6"><span class="n">06</span>Visit log<span class="aside" id="log-count"></span></h2>
+    <p class="hint" id="log-hint"></p>
+    <div class="logrows" id="log-rows"></div>
+    <div class="row"><button class="btn small" id="log-dl" type="button">Download log (.xlsx)</button></div>
   </section>
   <p class="foot-note">Draft saves automatically on this device.</p>
 </main>
@@ -348,6 +359,111 @@ const SV = (() => {
   return {build, wrapLines, clean, pagesFor, CONCERNS, PHOTO_SLOTS, GENERAL: GENERAL.map((_, i) => i), GENERAL_WIDTH, GENERAL_SIZE, PER_PAGE};
 })();
 if (typeof module !== "undefined") module.exports = SV;
+
+/* Monthly visit log: every Store Visit PDF adds (or updates) one row. The log downloads as an .xlsx in the same layout
+   as Gerald's weekly sheet (Sheet1 / Table1: Site name, Store Code, BCX Manager, Manager Name, Rating, Date Visited, Comment,
+   plus the Commands sheet with the "md" folder lines). A log holds one calendar month; when a new month starts, the old log
+   is downloaded first and only then cleared. */
+const VLOG = (() => {
+  const KEY = "sv-log";
+  const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const monthKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  const monthName = k => { const [y, m] = k.split("-"); return `${MONTHS[+m - 1]} ${y}`; };
+  const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } };
+  const keep = log => { try { localStorage.setItem(KEY, JSON.stringify(log)); return true; } catch (e) { return false; } };
+  const current = () => monthKey(new Date());
+  function get() { return load() || {month: current(), rows: []}; }
+  const stale = () => { const l = load(); return !!(l && l.rows.length && l.month !== current()); };
+  function add(row) { // row: {site, code, bcx, mgr, rating, date (yyyy-mm-dd), comment}
+    const l = get();
+    const i = l.rows.findIndex(r => r.site === row.site && r.date === row.date);
+    if (i >= 0) l.rows[i] = row; else l.rows.push(row);
+    l.rows.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+    return keep(l) ? l : null;
+  }
+  function reset() { keep({month: current(), rows: []}); }
+  function remove(idx) { const l = get(); l.rows.splice(idx, 1); keep(l); return l; }
+
+  /* ---- tiny .xlsx writer (stored zip, no compression) ---- */
+  const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  const crc32 = u => { let c = 0xFFFFFFFF; for (let i = 0; i < u.length; i++) c = CRC[(c ^ u[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+  function zip(files) {
+    const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+    for (const [name, text] of files) {
+      const nb = enc.encode(name), data = enc.encode(text), crc = crc32(data);
+      const h = new DataView(new ArrayBuffer(30));
+      h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+      h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true); h.setUint16(26, nb.length, true);
+      parts.push(new Uint8Array(h.buffer), nb, data);
+      const c = new DataView(new ArrayBuffer(46));
+      c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true);
+      c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true); c.setUint16(28, nb.length, true); c.setUint32(42, off, true);
+      central.push(new Uint8Array(c.buffer), nb);
+      off += 30 + nb.length + data.length;
+    }
+    const size = central.reduce((s, u) => s + u.length, 0);
+    const e = new DataView(new ArrayBuffer(22));
+    e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, size, true); e.setUint32(16, off, true);
+    return new Blob([...parts, ...central, new Uint8Array(e.buffer)], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+  }
+  const x = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"})[c]).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
+  const serial = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ""); return m ? Math.round((Date.UTC(+m[1], +m[2] - 1, +m[3]) - Date.UTC(1899, 11, 30)) / 864e5) : null; };
+  const str = (ref, v, s = 0) => `<c r="${ref}" t="inlineStr"${s ? ` s="${s}"` : ""}><is><t xml:space="preserve">${x(v)}</t></is></c>`;
+  const num = (ref, v, s = 0) => v === "" || v == null ? "" : `<c r="${ref}"${s ? ` s="${s}"` : ""}><v>${v}</v></c>`;
+
+  function xlsx(log) {
+    const rows = log.rows, n = Math.max(rows.length, 1), last = n + 1;
+    const head = ["Site name", "Store Code", "BCX Manager", "Manager Name", "Rating", "Date Visited", "Comment"];
+    let s1 = `<row r="1">${head.map((h, i) => str("ABCDEFG"[i] + 1, h, 1)).join("")}</row>`;
+    rows.forEach((r, i) => {
+      const k = i + 2, rating = Number(r.rating) || "";
+      s1 += `<row r="${k}">${str("A" + k, r.site)}${str("B" + k, r.code)}${str("C" + k, r.bcx)}${str("D" + k, r.mgr)}${num("E" + k, rating)}${num("F" + k, serial(r.date), 2)}${str("G" + k, r.comment, 3)}</row>`;
+    });
+    const sheet1 = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>
+<cols><col min="1" max="1" width="44" customWidth="1"/><col min="2" max="2" width="12" customWidth="1"/><col min="3" max="3" width="18" customWidth="1"/><col min="4" max="4" width="22" customWidth="1"/><col min="5" max="5" width="8" customWidth="1"/><col min="6" max="6" width="13" customWidth="1"/><col min="7" max="7" width="70" customWidth="1"/></cols>
+<sheetData>${s1}</sheetData><tableParts count="1"><tablePart r:id="rId1"/></tableParts></worksheet>`;
+    let s2 = `<row r="1">${str("A1", "Folder", 1)}</row>`;
+    rows.forEach((r, i) => { const k = i + 2; s2 += `<row r="${k}"><c r="A${k}" t="str"><f>CONCATENATE("md ",CHAR(34),Sheet1!A${k},CHAR(34))</f><v>${x(`md "${r.site}"`)}</v></c></row>`; });
+    const sheet2 = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="1" width="60" customWidth="1"/></cols><sheetData>${s2}</sheetData></worksheet>`;
+    const table = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<table xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" id="1" name="Table1" displayName="Table1" ref="A1:G${last}"><autoFilter ref="A1:G${last}"/>
+<tableColumns count="7">${head.map((h, i) => `<tableColumn id="${i + 1}" name="${h}"/>`).join("")}</tableColumns>
+<tableStyleInfo name="TableStyleMedium2" showFirstColumn="0" showLastColumn="0" showRowStripes="1" showColumnStripes="0"/></table>`;
+    const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/></numFmts>
+<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>
+<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>
+<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf></cellXfs>
+<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+    return zip([
+      ["[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+<Override PartName="/xl/tables/table1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml"/>
+<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`],
+      ["_rels/.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+      ["xl/workbook.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Sheet1" sheetId="1" r:id="rId1"/><sheet name="Commands" sheetId="2" r:id="rId2"/></sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`],
+      ["xl/_rels/workbook.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
+      ["xl/worksheets/sheet1.xml", sheet1],
+      ["xl/worksheets/_rels/sheet1.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/table" Target="../tables/table1.xml"/></Relationships>`],
+      ["xl/worksheets/sheet2.xml", sheet2],
+      ["xl/tables/table1.xml", table],
+      ["xl/styles.xml", styles]
+    ]);
+  }
+  const filename = (log, who) => `Site Visits - ${monthName(log.month)}${who ? " - " + who : ""}.xlsx`.replace(/[\\/:*?"<>|]+/g, " ");
+  return {get, add, reset, remove, stale, xlsx, filename, monthName, current};
+})();
 
 </script>
 <script>
@@ -592,10 +708,65 @@ function getDownloads() {
   if (!downloadsP) downloadsP = (window.claude && typeof window.claude.use === "function") ? window.claude.use("downloads").catch(() => null) : Promise.resolve(undefined);
   return downloadsP;
 }
+/* Save any file: Claude's download prompt inside Claude, a normal download elsewhere. Returns true when saved. */
+async function saveFile(blob, filename) {
+  const dl = await getDownloads();
+  if (dl === undefined) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename; document.body.append(a); a.click(); a.remove(); return true; }
+  if (!dl) return false;
+  try { await dl.save({filename, data: blob}); return true; } catch (e) { return false; }
+}
+
+/* ---------- visit log ---------- */
+function logVisit() {
+  VLOG.add({site: S.store.trim(), code: S.branchCode.trim(), bcx: S.bcxManager.trim(), mgr: S.storeManager.trim(), rating: S.rating, date: S.date, comment: logComment()});
+  renderLog();
+}
+function logComment() {
+  const issues = S.issues.map(s => s.trim()).filter(Boolean);
+  const faults = SV.CONCERNS.filter(c => (S.concerns[c.key] || {}).state === "poor")
+    .map(c => { const cm = ((S.concerns[c.key] || {}).comment || "").trim(); return `${c.label} poor${cm ? " - " + cm : ""}`; });
+  const all = issues.concat(faults);
+  return all.length ? all.join("; ") : "All Ok";
+}
+function renderLog() {
+  const log = VLOG.get(), box = $("log-rows"), stale = VLOG.stale();
+  $("log-count").textContent = `${VLOG.monthName(log.month)} · ${log.rows.length} visit${log.rows.length === 1 ? "" : "s"}`;
+  const hint = $("log-hint");
+  hint.className = "hint" + (stale ? " warn" : "");
+  hint.textContent = stale
+    ? `This is last month's log (${VLOG.monthName(log.month)}). It downloads automatically and then starts fresh when you create your next PDF. Tap Download log to save it now.`
+    : "Every PDF you create is added here. The log keeps one month: when a new month starts, it downloads automatically before it resets.";
+  box.replaceChildren(...log.rows.map((r, i) => {
+    const row = document.createElement("div"); row.className = "logrow";
+    row.innerHTML = `<span class="when"></span><span class="site"></span><button class="btn small ghost" type="button">Remove</button>`;
+    row.querySelector(".when").textContent = ddmmyyyy(r.date).slice(0, 5);
+    row.querySelector(".site").textContent = r.site + (r.rating ? ` · ${r.rating}/10` : "");
+    const b = row.querySelector("button");
+    b.addEventListener("click", () => { if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Tap again"; return; } VLOG.remove(i); renderLog(); });
+    return row;
+  }));
+  $("log-dl").disabled = !log.rows.length;
+}
+async function downloadLog() {
+  const log = VLOG.get(); if (!log.rows.length) return false;
+  const name = VLOG.filename(log, S.bcxManager.trim());
+  const ok = await saveFile(VLOG.xlsx(log), name);
+  return ok ? name : false;
+}
+
 async function makePdf() {
   if (!window.PDFLib) { setMsg("The PDF tool didn't start. Close and reopen the page.", "err"); return; }
   if (!S.store.trim()) { setMsg("Add the store name first (step 1).", "err"); $("f-store").focus(); return; }
-  const btn = $("make"); btn.disabled = true; setMsg("Building PDF...");
+  const btn = $("make"); btn.disabled = true;
+  let rolled = "";
+  if (VLOG.stale()) { // new month: save last month's log first, then start a fresh one
+    const old = VLOG.monthName(VLOG.get().month);
+    setMsg(`Downloading your ${old} visit log before starting a new month...`);
+    const name = await downloadLog();
+    if (name) { VLOG.reset(); rolled = ` Your ${old} log was downloaded as ${name} and a new log started.`; }
+    else rolled = ` Your ${old} log couldn't be downloaded, so it was kept: tap Download log.`;
+  }
+  setMsg("Building PDF...");
   try {
     const used = photos.slice();
     const ph = [];
@@ -610,12 +781,14 @@ async function makePdf() {
     if (dl === undefined) { // opened outside Claude (e.g. own hosting): plain browser download
       const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename; document.body.append(a); a.click(); a.remove();
       try { lastPdf = new File([blob], filename, {type: "application/pdf"}); $("share").hidden = !(navigator.canShare && navigator.canShare({files: [lastPdf]})); } catch (e) { $("share").hidden = true; }
-      setMsg(`Saved ${filename}.${note}` + ($("share").hidden ? "" : " Tap Share to send it."), out.overflow ? "err" : "ok"); return;
+      logVisit();
+      setMsg(`Saved ${filename}.${note}` + ($("share").hidden ? "" : " Tap Share to send it.") + rolled, out.overflow ? "err" : "ok"); return;
     }
     if (!dl) { setMsg("Saving files isn't available in this view. Open the page in the Claude app or claude.ai.", "err"); return; }
     try {
       await dl.save({filename, data: blob});
-      setMsg(`Saved ${filename}.${note}`, out.overflow ? "err" : "ok");
+      logVisit();
+      setMsg(`Saved ${filename}.${note}` + rolled, out.overflow ? "err" : "ok");
     } catch (e) {
       const code = e && e.code;
       if (code === "declined") setMsg("Save cancelled. Tap Create PDF to try again.");
@@ -644,6 +817,14 @@ function init() {
   $("f-allok").addEventListener("change", e => { S.allOk = e.target.checked; renderGeneral(); save(); });
   $("f-general").addEventListener("input", e => { S.general = e.target.value; S.generalEdited = true; renderGeneral(); save(); });
   $("rebuild").addEventListener("click", () => { S.generalEdited = false; $("f-general").blur(); renderGeneral(); save(); });
+  renderLog();
+  $("log-dl").addEventListener("click", async () => {
+    const wasStale = VLOG.stale(), old = VLOG.monthName(VLOG.get().month);
+    const name = await downloadLog();
+    if (!name) { setMsg("The log couldn't be saved here. Try again.", "err"); return; }
+    if (wasStale) { VLOG.reset(); renderLog(); setMsg(`Saved ${name}. The ${old} log is cleared and a new month started.`, "ok"); }
+    else setMsg(`Saved ${name}.`, "ok");
+  });
   $("add-issue").addEventListener("click", () => { S.issues.push(""); renderIssues(S.issues.length - 1); save(); });
   $("all-good").addEventListener("click", () => { SV.CONCERNS.forEach(c => { const st = S.concerns[c.key] || (S.concerns[c.key] = {state: "", comment: ""}); if (!st.state) st.state = "good"; }); renderAll(); save(); });
   let t = null; $("find").addEventListener("input", e => { clearTimeout(t); const q = e.target.value; t = setTimeout(() => search(q), 120); });
