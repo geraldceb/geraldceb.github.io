@@ -1,11 +1,11 @@
-// Offline support for BCX Boot Stock Recon. The version changes whenever the app changes.
-const CACHE = "boot-recon-5a1c3b0c";
-const EXCLUDE = ["store-visit/", "fault-tags/", "custody/"]; // other apps in sub-folders of this site keep their own offline copy
+// Offline support for the BCX Field Apps landing page. The version changes whenever the app changes.
+const CACHE = "field-hub-v1-0-20261111";
+const EXCLUDE = ["boot-recon/", "store-visit/", "fault-tags/", "custody/"]; // other apps in sub-folders of this site keep their own offline copy
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 const BASE = new URL("./", self.registration.scope).pathname;
 const mine = url => { const u = new URL(url); return u.origin !== location.origin || (u.pathname.startsWith(BASE) && !EXCLUDE.some(x => u.pathname.startsWith(BASE + x))); };
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
-self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => (k.startsWith("boot-recon-") || k.startsWith("boot-recon-") && "boot-recon" === "boot-recon") && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
+self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith("field-hub-") && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET" || !mine(req.url)) return;

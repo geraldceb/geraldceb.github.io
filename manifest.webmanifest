@@ -1,7 +1,7 @@
 {
- "name": "BCX Boot Stock Recon",
- "short_name": "Boot Recon",
- "description": "Confirm boot stock against the Nav ledger and create the Boot Stock Recon PDF.",
+ "name": "BCX Field Apps",
+ "short_name": "BCX Apps",
+ "description": "BCX DBN field apps: Boot Recon, Fault Tags, Spares Custody and Store Visit, one login.",
  "id": "./",
  "start_url": "./",
  "scope": "./",
