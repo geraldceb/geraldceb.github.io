@@ -94,6 +94,11 @@ label.import input { position: absolute; inset: 0; opacity: 0; width: 100%; curs
 .seg button + button { border-left: 1px solid var(--line); }
 .seg button[aria-pressed=true] { background: var(--ink); color: var(--surface); }
 .seg button[aria-pressed=true].rtc { background: var(--rtc); color: #fff; }
+.tagf { display: grid; gap: 8px; border-top: 1px dashed var(--line); padding-top: 8px; }
+.tagf textarea { width: 100%; font: 400 15px/1.3 var(--body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+.tagf input[type=text] { padding: 8px; font-size: 15px; background: var(--surface); }
+.tagf .yn { display: flex; align-items: center; gap: 10px; font-size: 14px; } .tagf .yn .seg { margin-left: auto; }
+.tagf .need { font-size: 13px; color: var(--poor); font-weight: 600; }
 .party { border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); padding: 12px; display: grid; gap: 10px; }
 .party h3 { margin: 0; font: 700 17px/1.1 var(--display); }
 .sigwrap { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 8px; height: 150px; touch-action: none; }
@@ -128,7 +133,7 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
 </style>
 
 <header class="top"><div class="wrap">
-  <div class="mark" id="home-link"><img class="logo" src="data:image/jpeg;base64,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" alt="BCX"><div class="title"><span>CUSTODY</span><small>Developed by Gerald Pakree · v<span class="ver">2.2</span></small></div></div>
+  <div class="mark" id="home-link"><img class="logo" src="data:image/jpeg;base64,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" alt="BCX"><div class="title"><span>CUSTODY</span><small>Developed by Gerald Pakree · v<span class="ver">2.7</span></small></div></div>
   <div class="right">
     <button class="iconbtn" id="btn-settings" title="Settings" aria-label="Settings">&#9881;</button>
   </div>
@@ -172,9 +177,16 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
 <section id="v-out" hidden style="display:grid;gap:16px">
   <section class="card">
     <h2><span class="n">1</span> Boot Stock Issue</h2>
-    <p class="hint">Pick the issues Stores printed today, or import a PDF from your phone. Collecting for several engineers? Pick them all.</p>
+    <p class="hint">Pick the issues Stores printed, or pick them from the ledger, or import a PDF. Collecting for several engineers? Add them all.</p>
     <button class="btn primary block" id="o-office">Pick from office PDFs</button>
     <div class="list" id="o-officebox" hidden></div>
+    <button class="btn block" id="o-ledger-open">Pick from the ledger</button>
+    <div class="list" id="o-ledgerbox" hidden>
+      <div class="small" id="o-led-info"></div>
+      <label class="import" style="min-height:46px">Import a new Item Ledger Entries (.xlsx)<input type="file" id="o-led-import" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+      <div class="field"><label class="lbl" for="o-led-eng">Taking stock for</label><select id="o-led-eng"></select></div>
+      <div class="list" id="o-led-list"></div>
+    </div>
     <label class="import"><span id="o-pdf-lbl">Import PDF from this phone</span><input type="file" id="o-pdf" accept="application/pdf,.pdf" multiple></label>
     <div class="row"><button class="btn small" id="o-manual">No PDF? Type the items in</button></div>
     <div class="msg" id="o-msg"></div>
@@ -224,12 +236,14 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
   <section class="card" id="r-pick" hidden>
     <h2><span class="n">2</span> What are you sending back? <span class="aside" id="r-count"></span></h2>
     <p class="hint">Faulty boot items are ticked. Tick any working items too, and mark RTCs.</p>
+    <label class="small" style="display:flex;gap:8px;align-items:center;font-size:15px;color:var(--ink)"><input type="checkbox" id="r-tags" checked style="width:20px;height:20px;accent-color:var(--good)"> Make fault tags for these items</label>
     <input type="search" id="r-search" placeholder="Search description, serial, SO">
     <div class="seg" role="group" aria-label="Show"><button data-view="faulty" aria-pressed="true">Faulty boot</button><button data-view="working" aria-pressed="false">Working boot</button><button data-view="sel" aria-pressed="false">Selected</button></div>
     <div class="list" id="r-items"></div>
     <details class="more"><summary>Item not on the ledger?</summary><div style="margin-top:8px"><button class="btn small" id="r-add">+ Add item by hand</button></div></details>
     <div class="list" id="r-extra"></div>
     <button class="btn primary block" id="r-next">Next: sign the handover</button>
+    <button class="btn block" id="r-prep">Prepare only: print tags now, hand over later</button>
     <div class="msg" id="r-check"></div>
   </section>
 </section>
@@ -249,6 +263,7 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
     <h2><span class="mono" id="tv-ref"></span> <span class="aside" id="tv-status"></span></h2>
     <dl class="kv" id="tv-kv"></dl>
     <button class="btn primary block" id="tv-hand">Hand over these items</button>
+    <button class="btn block" id="tv-tags" hidden>Print fault tags</button>
     <div class="msg" id="tv-msg"></div>
   </section>
   <section class="card"><h2>Items</h2><div class="list" id="tv-items"></div></section>
@@ -292,7 +307,7 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
     <h2 style="justify-content:center" id="d-title">Handover signed</h2>
     <div id="d-sub" class="small"></div>
     <div class="bigqr" id="d-qr-wrap"><canvas id="d-qr"></canvas><div class="ref" id="d-ref"></div><div class="small" style="color:#555">Next person: scan this to continue the trail</div></div>
-    <div class="row" style="justify-content:center"><button class="btn primary" id="d-pdf">Save PDF</button><button class="btn" id="d-share">Share PDF</button></div>
+    <div class="row" style="justify-content:center"><button class="btn primary" id="d-pdf">Save PDF</button><button class="btn" id="d-share">Share PDF</button><button class="btn" id="d-tags" hidden>Fault tags PDF</button></div>
     <div class="msg" id="d-msg"></div>
     <button class="btn block" id="d-home">Done</button>
   </section>
@@ -13029,6 +13044,7 @@ const CTPDF = (() => {
 
     // ---- notes ----
     const notes = [];
+    if (t.prepared) notes.push(`Prepared by ${t.createdBy} on ${String(t.created).slice(0, 16)}: items listed and fault tags made before the first handover. No signatures at that step.`);
     hops.forEach(h => { if (h.short || h.note) notes.push(`Hop ${h.hop}: ${h.short ? "NOT RECEIVED: " + h.short + ". " : ""}${h.note || ""}`); });
     if (notes.length) {
       section("Notes");
@@ -13218,6 +13234,106 @@ const NAVPDF = (() => {
 })();
 if (typeof module !== "undefined") module.exports = NAVPDF;
 </script>
+<script>const FT = (() => {
+  const PW = 612, PH = 792, TAG_W = 248, TAG_H = 216;
+  const COLS = [48, 314], ROWS = [59, 281.5, 512];
+  const BLUE = [0.09, 0.27, 0.62], BLUE_FILL = [0.86, 0.91, 0.98];
+  function clean(s) {
+    return String(s == null ? "" : s).replace(/[–—−]/g, "-").replace(/[‘’‛]/g, "'")
+      .replace(/[“”]/g, '"').replace(/…/g, "...").replace(/[\t\r\n]+/g, " ").replace(/[^\x20-\x7E\xA0-\xFF]/g, "");
+  }
+  function wrap(text, measure, widths) { // fill successive lines of different widths
+    const words = clean(text).split(/ +/).filter(Boolean), out = [];
+    let i = 0;
+    for (const w of widths) {
+      let line = "";
+      while (i < words.length) { const t = line ? line + " " + words[i] : words[i]; if (measure(t) <= w) { line = t; i++; } else break; }
+      if (!line && i < words.length) { let wd = words[i], cut = wd.length; while (cut > 1 && measure(wd.slice(0, cut)) > w) cut--; line = wd.slice(0, cut); words[i] = wd.slice(cut); }
+      out.push(line);
+    }
+    return {lines: out, overflow: i < words.length};
+  }
+  const pagesFor = n => Math.max(1, Math.ceil(n / 6));
+
+  /* tags: [{date, call, customer, location, equipment, fault, accessories, engineer, serial, stock, rtc:"yes"|"no"|"", urgent:"yes"|"no"|"", working}] */
+  async function build(PDFLib, tags) {
+    const {PDFDocument, StandardFonts, rgb} = PDFLib;
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.Helvetica), bold = await doc.embedFont(StandardFonts.HelveticaBold);
+    const col = c => rgb(c[0], c[1], c[2]);
+    // RTC tags first, then a fresh page for the rest, so RTC pages can be printed on blue paper.
+    const rtcTags = tags.filter(t => t.rtc === "yes"), rest = tags.filter(t => t.rtc !== "yes");
+    const pad = rtcTags.length && rest.length ? (6 - rtcTags.length % 6) % 6 : 0;
+    const ordered = rtcTags.concat(Array(pad).fill(null), rest);
+    let overflow = 0;
+    for (let i = 0; i < ordered.length; i++) {
+      if (i % 6 === 0) doc.addPage([PW, PH]);
+      const pg = doc.getPage(doc.getPageCount() - 1), t = ordered[i];
+      if (!t) continue;
+      const x0 = COLS[i % 2], top = ROWS[Math.floor((i % 6) / 2)];
+      const blue = t.rtc === "yes", ink = col(blue ? BLUE : [0, 0, 0]);
+      const Y = off => PH - (top + off);
+      const lab = (s, x, off, o = {}) => pg.drawText(s, {x, y: Y(off), size: o.size || 7.6, font: o.font || bold, color: o.color || ink});
+      const line = (xa, xb, off, w = 0.6, dash) => pg.drawLine({start: {x: xa, y: Y(off)}, end: {x: xb, y: Y(off)}, thickness: w, color: ink, dashArray: dash});
+      const val = (s, x, xr, off, size = 8) => {
+        s = clean(s); if (!s) return; let z = size; while (z > 5 && font.widthOfTextAtSize(s, z) > xr - x - 2) z -= 0.25;
+        pg.drawText(s, {x: x + 1, y: Y(off - 0.4), size: z, font, color: rgb(0, 0, 0)});
+      };
+      const R = x0 + TAG_W - 4, L = x0 + 3;
+      const after = (txt, min = 0) => Math.max(L + bold.widthOfTextAtSize(txt, 7.6) + 4, min);
+      // frame and header
+      if (blue) pg.drawRectangle({x: x0, y: Y(12.5), width: TAG_W, height: 12.5, color: col(BLUE_FILL)});
+      pg.drawRectangle({x: x0, y: Y(TAG_H), width: TAG_W, height: TAG_H, borderColor: ink, borderWidth: blue ? 1.6 : 1});
+      const head = "BCX FS DURBAN- CUSTOMER FAULT TAG";
+      lab(head, x0 + TAG_W / 2 - bold.widthOfTextAtSize(head, 7.8) / 2, 9.6, {size: 7.8});
+      line(x0, x0 + TAG_W, 12.5, 1.6);
+      if (blue) { // RTC badge
+        const bw = 26; pg.drawRectangle({x: R - bw, y: Y(10.8), width: bw, height: 9, color: col(BLUE)});
+        pg.drawText("RTC", {x: R - bw + (bw - bold.widthOfTextAtSize("RTC", 7.5)) / 2, y: Y(8.6), size: 7.5, font: bold, color: rgb(1, 1, 1)});
+      }
+      // rows
+      const dx = after("Date:"), crx = x0 + 128 + bold.widthOfTextAtSize("Call ref:", 7.6) + 4;
+      lab("Date:", L, 22.2); line(dx, x0 + 124, 24); val(t.date, dx, x0 + 124, 22.2);
+      lab("Call ref:", x0 + 128, 22.2); line(crx, R, 24); val(t.call, crx, R, 22.2);
+      const cx = Math.max(after("Customer"), after("Location:"));
+      lab("Customer", L, 33.5); line(cx, R, 35.5); val(t.customer, cx, R, 33.5);
+      lab("Location:", L, 44.8); line(cx, R, 46.8); val(t.location, cx, R, 44.8);
+      const ex = after("Equipment type:");
+      lab("Equipment type:", L, 56.1); line(ex, R, 58.1); val(t.equipment, ex, R, 56.1);
+      lab("Fault Description:", L, 67.4);
+      const fx = after("Fault Description:"), measure = s => font.widthOfTextAtSize(s, 8);
+      [69.4, 80.7, 92].forEach((o, k) => line(k ? L : fx, R, o));
+      const fw = wrap(t.fault, measure, [R - fx - 2, R - L - 2, R - L - 2]);
+      fw.lines.forEach((s, k) => s && pg.drawText(s, {x: (k ? L : fx) + 1, y: Y([67.4, 78.7, 90][k] - 0.4), size: 8, font: t.working ? bold : font, color: rgb(0, 0, 0)}));
+      lab("Accessories attached:", L, 101.3);
+      const ax = after("Accessories attached:");
+      [103.3, 114.6, 125.9].forEach((o, k) => line(k ? L : ax, R, o));
+      const aw = wrap(t.accessories, measure, [R - ax - 2, R - L - 2, R - L - 2]);
+      aw.lines.forEach((s, k) => s && pg.drawText(s, {x: (k ? L : ax) + 1, y: Y([101.3, 112.6, 123.9][k] - 0.4), size: 8, font, color: rgb(0, 0, 0)}));
+      if (fw.overflow || aw.overflow) overflow++;
+      const gx = after("Field. Eng.");
+      lab("Field. Eng.", L, 135.1); line(gx, R, 137.1); val(t.engineer, gx, R, 135.1, 8.5);
+      line(x0, x0 + TAG_W, 141.5, 0.8, [5, 3]);
+      const sx = after("SERIAL NUMBER:-"), kx = after("STOCK CODE:-");
+      lab("SERIAL NUMBER:-", L, 150.3); line(sx, R, 152.3); val(t.serial, sx, R, 150.3);
+      lab("STOCK CODE:-", L, 161.6); line(kx, R, 163.6); val(t.stock, kx, R, 161.6);
+      // yes / no rows, chosen answer circled
+      const ring = (txt, x, off) => { const w = bold.widthOfTextAtSize(txt, 7.6); pg.drawEllipse({x: x + w / 2, y: Y(off - 2.6), xScale: w / 2 + 4, yScale: 6, borderColor: ink, borderWidth: 1.2}); };
+      lab("(YES)", L, 172.8); lab("RETURN TO CUSTOMER", x0 + TAG_W / 2 - bold.widthOfTextAtSize("RETURN TO CUSTOMER", blue ? 8.2 : 7.6) / 2, 172.8, {size: blue ? 8.2 : 7.6}); lab("(NO)", R - 22, 172.8);
+      if (t.rtc === "yes") ring("(YES)", L, 172.8); if (t.rtc === "no") ring("(NO)", R - 22, 172.8);
+      line(x0, x0 + TAG_W, 176, 1.2);
+      lab("(YES)", L + 26, 186); lab("URGENT", x0 + TAG_W / 2 - bold.widthOfTextAtSize("URGENT", 7.6) / 2, 186); lab("(NO)", R - 44, 186);
+      if (t.urgent === "yes") ring("(YES)", L + 26, 186); if (t.urgent === "no") ring("(NO)", R - 44, 186);
+      line(x0, x0 + TAG_W, 189.5, 0.6);
+      lab("Repair Ref:", L, 198.5); line(L, L + 40, 199.6, 0.5);
+    }
+    if (!ordered.length) doc.addPage([PW, PH]);
+    doc.setTitle("BCX Fault Tags");
+    return {bytes: await doc.save(), pages: doc.getPageCount(), rtc: tags.filter(t => t.rtc === "yes").length, overflow};
+  }
+  return {build, pagesFor, clean};
+})();
+if (typeof module !== "undefined") module.exports = FT;</script>
 <script>/* BCX "Manage users" (Admin only) - shared by Boot Recon, Fault Tags and Spares Custody.
    BCXUsers.open(container, call, meCode, onChange)  - call(body) -> Promise of the script's JSON reply. */
 const BCXUsers = (() => {
@@ -13350,7 +13466,7 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "2.2";
+const APP_VERSION = "2.7";
 const DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const SITE = "https://geraldceb.github.io/custody/";
 const RES_DEFAULT = [["ARSMAH", "Arshad Mahomed", "148156", "TARSMAH", "FARSMAH"], ["ARVRAJ", "Arvin Rajcoomar", "149032", "TARVRAJ", "FARVRAJ"], ["BENFYN", "Bevan C Fynn", "152072", "TBENFYN", "FBENFYN"], ["BRAHIR", "Branden Harilal", "148249", "TBRAHIR", "FBRAHIR"], ["CALJON", "Caleb Jonah", "150263", "TCALJON", "FCALJON"], ["CLIMTH", "Clifford Bonga Mthiyane", "148224", "TCLIMTH", "FCLIMTH"], ["DALSTA", "Dale Eric Stadler", "148711", "TDALSTA", "FDALSTA"], ["DAMMUN", "Damien Munien", "154458", "TDAMMUN", "FDAMMUN"], ["DEVBUG", "Deven Bugwandeen", "148351", "TDEVBUG", "FDEVBUG"], ["DHINAI", "Dhilend Raj Naidu", "152921", "TDHINAI", "FDHINAI"], ["EUGCHE", "Eugene Chetty", "148204", "TEUGCHE", "FEUGCHE"], ["GERPAK", "Gerald Pakree", "148154", "TGERPAK", "FGERPAK"], ["GOPRAJ", "Gopaul Erald Rajendran", "148980", "TGOPRAJ", "FGOPRAJ"], ["JAHKHA", "Jahmeel Khan", "150978", "TJAHKHA", "FJAHKHA"], ["JERPAK", "Jeremy Christopher Pakree", "148748", "TJERPAK", "FJERPAK"], ["KEESTA", "Keegan Stapelfeldt", "148346", "TKEESTA", "FKEESTA"], ["KYLDAV", "Kylan David", "998025", "TKYLDAV", "FKYLDAV"], ["MAHYUS", "Mahomed Faheem Yusuf", "148362", "TMAHYUS", "FMAHYUS"], ["MAHPER", "Mahomed S Peroo", "152017", "TMAHPER", "FMAHPER"], ["MITSOO", "Mithesh Soomaroo", "153985", "TMITSOO", "FMITSOO"], ["MLUNZI", "Mlungisi Nzimande", "995154", "TMLUNZI", "FMLUNZI"], ["SAIKHA", "Mohammed Saif Khan", "153708", "TSAIKHA", "FSAIKHA"], ["MOHEBR", "Mohammed Z Ebrahim", "149013", "TMOHEBR", "FMOHEBR"], ["NADKHA", "Nadeem Khan", "151408", "TNADKHA", "FNADKHA"], ["NAEMAN", "Naeson Manikkam", "148350", "TNAEMAN", "FNAEMAN"], ["NELGOV", "Nelanthran Govinden", "148729", "TNELGOV", "FNELGOV"], ["NISNAI", "Nishay Naidoo", "998026", "TNISNAI", "FNISNAI"], ["NIVMAH", "Nivendra Maharaj", "148771", "TNIVMAH", "FNIVMAH"], ["PHENGW", "Phelelani Ndumiso Ngwane", "148388", "TPHENGW", "FPHENGW"], ["RAJNAI", "Raj Naidoo", "145998", "TRAJNAI", "FRAJNAI"], ["RIVMUR", "Rivasen B Muruvan", "148997", "TRIVMUR", "FRIVMUR"], ["RONHAR", "Ronesh Harilall", "148275", "TRONHAR", "FRONHAR"], ["SHAEBR", "Shaahid Ebrahim", "150189", "TSHAEBR", "FSHAEBR"], ["SIPNGE", "Siphesihle Ngeleka", "154054", "TSIPNGE", "FSIPNGE"], ["SIYKHU", "Siyabonga Khumalo", "154032", "TSIYKHU", "FSIYKHU"], ["SUGMAR", "Sugandren Mari", "148209", "TSUGMAR", "FSUGMAR"], ["SULISA", "Suleyman Isaacs", "998148", "TSULISA", "FSULISA"], ["UWACAS", "Uwais Syed Cassim", "155138", "TUWACAS", "FUWACAS"], ["UZAMAH", "Uzair Mahomed", "148813", "TUZAMAH", "FUZAMAH"], ["VENPIL", "Venay Pillay", "148142", "TVENPIL", "FVENPIL"], ["VERRAG", "Veron Raghoo", "148228", "TVERRAG", "FVERRAG"], ["VINJAC", "Vincent Jaku", "148352", "TVINJAC", "FVINJAC"], ["WASKHA", "Waseem Khan", "151827", "TWASKHA", "FWASKHA"], ["ZIABOB", "Zia Bobat", "154377", "TZIABOB", "FZIABOB"], ["ZUBKHA", "Zubair Khan", "149008", "TZUBKHA", "FZUBKHA"]];
@@ -13435,7 +13551,7 @@ async function loadTrails() {
     box.innerHTML = j.trails.length ? j.trails.map(t => {
       const cls = t.status === "COMPLETE" ? "done" : t.shortItems ? "short" : "";
       return `<button class="trow ${cls}" data-ref="${esc(t.ref)}"><span class="r1"><span class="ref">${esc(t.ref)}</span>
-        <span class="chip ${t.status === "COMPLETE" ? "ok" : "open"}">${t.status === "COMPLETE" ? "Complete" : "Open"}</span>
+        <span class="chip ${t.status === "COMPLETE" ? "ok" : "open"}">${t.status === "COMPLETE" ? "Complete" : t.hops === 0 ? "Prepared" : "Open"}</span>
         <span class="chip">${t.type === "OUT" ? "Outbound" : "Return"}</span>${t.shortItems ? `<span class="chip bad">${t.shortItems} missing</span>` : ""}</span>
         <span class="r2">${t.type === "OUT" ? "For " + esc(t.bookedToName || t.bookedTo) : "From " + esc(t.bookedToName || t.bookedTo)} · ${t.items} item${t.items === 1 ? "" : "s"} · now with <b>${esc(t.currentHolderName)}</b><br>${esc(t.lastHopAt)}${t.navDoc ? " · " + esc(t.navDoc) : ""}</span></button>`;
     }).join("") : '<div class="empty">No open trails.</div>';
@@ -13456,11 +13572,11 @@ function userOptions(sel, filter, value, placeholder) {
  * ==================================================================== */
 let OUT = null;
 const blankItem = cond => ({itemNo: "", description: "", serial: "", tag: "", so: "", qty: 1, condition: cond});
-const blankIssue = () => ({navDoc: "", posted: "", bookedTo: "", printedCount: null, items: [blankItem("Working")], pages: null});
+const blankIssue = () => ({navDoc: "", posted: "", bookedTo: "", printedCount: null, items: [blankItem("Working")], pages: null, removed: [], photos: []});
 function startOut() {
   OUT = {issues: [], photos: [], source: "", raw: ""};
   ["o-pdf", "o-paper"].forEach(id => $(id).value = "");
-  $("o-pdf-lbl").textContent = "Import PDF from this phone"; $("o-rawbox").hidden = true; $("o-rawbox").open = false; $("o-officebox").hidden = true; OFFICE.all = false;
+  $("o-pdf-lbl").textContent = "Import PDF from this phone"; $("o-rawbox").hidden = true; $("o-rawbox").open = false; $("o-officebox").hidden = true; OFFICE.all = false; $("o-ledgerbox").hidden = true; LEDPICK.days = 2;
   $("o-review").hidden = $("o-finish").hidden = true; msg("o-msg", ""); msg("o-check", ""); $("o-thumbs").innerHTML = "";
   show("v-out");
 }
@@ -13499,7 +13615,7 @@ async function addPdfBytes(bytes, file, officeId) {
   catch (e) { return {kind: "err", text: esc(file.name) + ": couldn't open that PDF (" + esc(e.message) + ")."}; }
   if (r.hasText && r.issues.length) {
     const fresh = r.issues.filter(iss => !iss.navDoc || !OUT.issues.some(x => x.navDoc === iss.navDoc));
-    fresh.forEach(iss => OUT.issues.push(Object.assign(blankIssue(), iss, {pdf: bytes, pdfName: file.name, officeId})));
+    fresh.forEach(iss => OUT.issues.push(Object.assign(blankIssue(), iss, {pdf: bytes, pdfName: file.name, officeId, items: iss.items.map(x => Object.assign(x, {fromBI: true}))})));
     const skipped = r.issues.length - fresh.length;
     const items = fresh.reduce((a, i) => a + i.items.length, 0);
     if (!fresh.length) return {kind: "ok", text: `${esc(file.name)}: already added.`};
@@ -13521,12 +13637,12 @@ async function openOffice() {
   const box = $("o-officebox");
   if (!box.hidden && !OFFICE.busy) { box.hidden = true; return; }
   box.hidden = false; box.innerHTML = '<div class="empty"><span class="spinner"></span> Loading today\'s office PDFs...</div>';
-  try { OFFICE.list = (await api("officeIssues", {days: 3})).issues; }
+  try { OFFICE.list = (await api("officeIssues", {days: 3})).issues.map(o => o.navDoc === "NOT_ISSUE" ? Object.assign(o, {notIssue: true}) : o); }
   catch (e) { box.innerHTML = `<div class="empty">${e instanceof Offline ? "No signal. Try again when you have signal, or import a PDF from this phone." : esc(e.message)}</div>`; return; }
   renderOffice();
   // read any the phones haven't read yet, so the list shows BI numbers and names
   OFFICE.busy = true;
-  for (const o of OFFICE.list.filter(x => !x.navDoc && !x.unreadable)) {
+  for (const o of OFFICE.list.filter(x => !x.navDoc && !x.unreadable && !x.notIssue)) {
     try {
       const b = await officeBytes(o.id);
       const r = await NAVPDF.read(b.slice(), new URL("./", location.href));
@@ -13534,6 +13650,9 @@ async function openOffice() {
       if (r.hasText && iss) {
         Object.assign(o, {navDoc: r.issues.map(i => i.navDoc).filter(Boolean).join(", "), bookedTo: iss.bookedTo, bookedToName: userName(iss.bookedTo) || iss.bookedName, items: r.issues.reduce((a, i) => a + i.items.length, 0)});
         api("tagIssue", {id: o.id, navDoc: o.navDoc, bookedTo: o.bookedTo, bookedToName: o.bookedToName, items: o.items}).catch(() => {});
+      } else if (r.hasText) {
+        // has text but no Boot Stock Issue in it: not an issue - hide it, and tell the server so it's hidden for everyone
+        o.notIssue = true; api("tagIssue", {id: o.id, navDoc: "NOT_ISSUE", items: 0}).catch(() => {});
       } else o.unreadable = true;
     } catch (e) { o.unreadable = true; }
     renderOffice();
@@ -13547,8 +13666,9 @@ async function officeBytes(id) {
 function renderOffice() {
   const box = $("o-officebox"); if (box.hidden) return;
   const added = new Set(OUT.issues.map(i => i.officeId).filter(Boolean));
-  const open = OFFICE.list.filter(o => !o.usedRef), used = OFFICE.list.length - open.length;
-  const list = OFFICE.all ? OFFICE.list : open;
+  const real = OFFICE.list.filter(o => !o.notIssue);
+  const open = real.filter(o => !o.usedRef), used = real.length - open.length;
+  const list = OFFICE.all ? real : open;
   const t = s => String(s || "").slice(5, 16).replace("/", "-");
   box.innerHTML = (list.map(o => `<button class="trow ${added.has(o.id) ? "done" : ""}" data-oid="${esc(o.id)}">
       <span class="r1"><span class="ref">${esc(o.navDoc || (o.unreadable ? o.file : "Reading..."))}</span>
@@ -13571,6 +13691,62 @@ async function pickOffice(id) {
     renderOut(true);
   } catch (e) { msg("o-msg", e instanceof Offline ? "No signal to load that PDF." : esc(e.message), "err"); }
 }
+/* ---------- ledger as a source: the engineer's recent Boot Stock Issues (BI) on his working boot ---------- */
+const LEDPICK = {days: 2};
+const isoDay = dt => new Date(dt.getTime() - dt.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+function openLedgerPick() {
+  const box = $("o-ledgerbox");
+  if (!box.hidden) { box.hidden = true; return; }
+  box.hidden = false;
+  const sel = $("o-led-eng");
+  if (!sel.options.length) {
+    sel.innerHTML = '<option value="">Choose the engineer</option>' + RES().slice().sort((a, b) => a[1].localeCompare(b[1])).map(r => `<option value="${esc(r[0])}">${esc(title(r[1]))} (${esc(r[0])})</option>`).join("");
+  }
+  renderLedgerPick();
+}
+function ledgerIssuesFor(code) {
+  const L = loadLedger(), r = RES().find(x => x[0] === code);
+  if (!L || !r) return {L, r, issues: []};
+  const by = {};
+  L.rows.forEach(x => {
+    const [date, doc, so, job, item, desc, serial, tag, loc, qty] = x;
+    if (loc !== r[3] || !/^BI/i.test(String(doc))) return;   // Boot Stock Issues into his working boot
+    const k = String(doc).toUpperCase();
+    (by[k] = by[k] || {navDoc: k, date, rows: []}).rows.push(x);
+    if (String(date) > String(by[k].date)) by[k].date = date;
+  });
+  const issues = Object.values(by).sort((a, b) => String(b.date).localeCompare(String(a.date)) || b.navDoc.localeCompare(a.navDoc));
+  return {L, r, issues};
+}
+function renderLedgerPick() {
+  const L = loadLedger(), code = $("o-led-eng").value;
+  $("o-led-info").innerHTML = L ? `Ledger <b>${esc(L.date || L.file)}</b> on this phone. Boot Stock Issues only show once Nav has posted them and you have a new copy of the ledger.` : "No ledger on this phone yet. Import this week's Item Ledger Entries.";
+  const box = $("o-led-list");
+  if (!L || !code) { box.innerHTML = ""; return; }
+  const {r, issues} = ledgerIssuesFor(code);
+  if (!r) { box.innerHTML = '<div class="empty">This Nav code has no boot locations set up.</div>'; return; }
+  const today = new Date(), cut = isoDay(new Date(today.getFullYear(), today.getMonth(), today.getDate() - (LEDPICK.days - 1)));
+  const recent = issues.filter(i => String(i.date) >= cut), older = issues.length - recent.length;
+  const added = new Set(OUT.issues.map(i => i.navDoc).filter(Boolean));
+  const when = d => { const t = isoDay(today), y = isoDay(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1)); return d === t ? "today" : d === y ? "yesterday" : ddmmyyyy(d + "T"); };
+  box.innerHTML = recent.map(i => `<button class="trow ${added.has(i.navDoc) ? "done" : ""}" data-lbi="${esc(i.navDoc)}">
+      <span class="r1"><span class="ref">${esc(i.navDoc)}</span>${added.has(i.navDoc) ? '<span class="chip ok">Added</span>' : ""}</span>
+      <span class="r2">${i.rows.length} item${i.rows.length === 1 ? "" : "s"} · posted ${esc(when(String(i.date)))} · ${esc(i.rows.slice(0, 2).map(x => x[5]).join(", "))}${i.rows.length > 2 ? "..." : ""}</span></button>`).join("")
+    + (recent.length ? "" : `<div class="empty">No Boot Stock Issues for ${esc(title(r[1]))} ${LEDPICK.days === 2 ? "today or yesterday" : `in the last ${LEDPICK.days} days`} on this ledger.</div>`)
+    + (LEDPICK.days !== 2 ? '<button class="btn small" data-lmore>Show only today and yesterday</button>' : older ? `<button class="btn small" data-lmore>Show older issues (${older})</button>` : "")
+    + (recent.length ? '<div class="small">Tap each issue you are taking. Tap again to remove it.</div>' : "");
+}
+function pickLedgerIssue(doc) {
+  const code = $("o-led-eng").value, k = OUT.issues.findIndex(i => i.navDoc === doc);
+  if (k >= 0) { OUT.issues.splice(k, 1); if (!OUT.issues.length) { $("o-review").hidden = $("o-finish").hidden = true; } else renderOut(true); return renderLedgerPick(); }
+  const iss = ledgerIssuesFor(code).issues.find(i => i.navDoc === doc); if (!iss) return;
+  if (OUT.issues.length === 1 && !OUT.issues[0].navDoc && !OUT.issues[0].items.some(x => x.description || x.itemNo || x.serial)) OUT.issues = [];
+  OUT.issues.push(Object.assign(blankIssue(), {navDoc: doc, posted: ddmmyyyy(String(iss.date) + "T"), bookedTo: code, printedCount: iss.rows.length, source: "ledger",
+    items: iss.rows.map(x => Object.assign(fromLedgerRow(x), {fromBI: true}))}));
+  msg("o-msg", `Added ${esc(doc)} for ${esc(userName(code))} from the ledger (${iss.rows.length} item${iss.rows.length === 1 ? "" : "s"}).` + (OUT.issues.length > 1 ? `<br><b>${OUT.issues.length} issues, ${issueCount()} items in total.</b>` : ""), "ok");
+  renderOut(true); renderLedgerPick();
+}
+
 function manualOut() { if (!OUT.issues.length) OUT.issues.push(blankIssue()); renderOut(); }
 
 function itemEditor(it, i, list) {
@@ -13584,7 +13760,13 @@ function itemEditor(it, i, list) {
       <div class="field"><span class="lbl">SO</span><input type="text" class="mono" data-f="so" value="${esc(it.so)}"></div>
       <div class="field"><span class="lbl">Qty</span><input type="number" min="1" data-f="qty" value="${esc(it.qty)}"></div>
       ${list === "r" ? `<div class="field"><span class="lbl">Condition</span><select data-f="condition">${["Faulty", "Working", "RTC"].map(c => `<option ${c === it.condition ? "selected" : ""}>${c}</option>`).join("")}</select></div>` : ""}
-    </div></div>`;
+    </div>
+    ${list === "r" && RET && RET.tags ? `<div class="grid"><div class="field"><span class="lbl">Customer</span><input type="text" data-f="cust" value="${esc(it.cust || "")}"></div>
+      <div class="field"><span class="lbl">Location</span><input type="text" data-f="loc" value="${esc(it.loc || "")}"></div>
+      <div class="field"><span class="lbl">Accessories</span><input type="text" data-f="acc" value="${esc(it.acc || "")}"></div>
+      <div class="field"><span class="lbl">Urgent</span><select data-f="urgent"><option value=""></option><option value="yes" ${it.urgent === "yes" ? "selected" : ""}>Yes</option><option value="no" ${it.urgent === "no" ? "selected" : ""}>No</option></select></div></div>
+      <div class="field"><span class="lbl">Fault description (not needed for Working)</span><input type="text" data-f="fault" value="${esc(it.fault || "")}"></div>` : ""}
+  </div>`;
 }
 function bindEditor(boxId, getList, after) {
   $(boxId).addEventListener("input", e => {
@@ -13607,7 +13789,7 @@ function bookedOptions(sel) {
   return '<option value="">Choose the engineer</option>' + list.map(([c, n]) => `<option value="${esc(c)}" ${c === sel ? "selected" : ""}>${esc(n)} (${esc(c)})</option>`).join("");
 }
 function issueCheck(iss) {
-  const n = iss.items.length, pc = iss.printedCount;
+  const n = iss.items.length + (iss.removed || []).length, pc = iss.printedCount;
   if (pc == null) return "";
   return pc !== n ? `<div class="msg warn">The printout says <b>${pc}</b> item${pc === 1 ? "" : "s"} but there ${n === 1 ? "is" : "are"} <b>${n}</b> here. Check for a missed or extra line.</div>`
     : `<div class="msg ok">Matches the printout total (${pc}).</div>`;
@@ -13623,10 +13805,17 @@ function renderOut(noScroll) {
     <div class="field"><span class="lbl">Booked to (boot owner)</span><select data-if="bookedTo">${bookedOptions(iss.bookedTo)}</select></div>
     <div class="list">${iss.items.map((it, i) => itemEditor(it, i, "o")).join("")}</div>
     <button class="btn small" data-additem="${k}">+ Add item</button>
+    ${(iss.removed || []).length ? `<div class="msg ${iss.photos.length ? "ok" : "warn"}" style="display:grid;gap:8px">
+      <b>Not taking ${iss.removed.length} item${iss.removed.length === 1 ? "" : "s"} from ${esc(iss.navDoc || "this issue")}:</b>
+      ${iss.removed.map((x, n) => `<span class="row" style="justify-content:space-between"><span>${esc(x.description || x.itemNo)}${x.serial ? " · S/N " + esc(x.serial) : ""}</span><button class="btn small" data-restore="${n}">Put back</button></span>`).join("")}
+      <span>${iss.photos.length ? "Pic of the signed BI added." : "<b>Required:</b> take a pic of the signed BI showing these items struck off."}</span>
+      <div class="thumbs">${iss.photos.map((ph, n) => `<figure><img alt="BI photo ${n + 1}" src="data:image/jpeg;base64,${ph}"><button data-ipdel="${n}" aria-label="Remove photo">&times;</button></figure>`).join("")}</div>
+      <label class="import" style="min-height:44px;background:var(--surface)">Take pic of the signed BI<input type="file" accept="image/*" capture="environment" data-ipic="${k}"></label>
+    </div>` : ""}
     ${issueCheck(iss)}
   </div>`).join("");
   outSummary();
-  renderOffice();
+  renderOffice(); if (!$("o-ledgerbox").hidden) renderLedgerPick();
   if (!noScroll) setTimeout(() => { if (!$("o-review").hidden) $("o-review").scrollIntoView({behavior: "smooth", block: "start"}); }, 50);
 }
 function outSummary() {
@@ -13658,6 +13847,7 @@ async function collectAll() {
     if (!iss.items.length) { renderOut(); return err(lab + "add at least one item."); }
     if (!iss.bookedTo) { renderOut(); return err(lab + "choose who the stock is booked to."); }
     if (iss.items.some(i => !i.description && !i.itemNo)) { renderOut(); return err(lab + "every item needs a description or item number."); }
+    if ((iss.removed || []).length && !(iss.photos || []).length) { renderOut(true); const box = document.querySelector(`[data-iss="${k}"] [data-ipic]`); if (box) box.closest(".msg").scrollIntoView({block: "center"}); return err(`${iss.navDoc || lab || "An issue"}: you're not taking every item, so take a pic of the signed BI showing them struck off.`); }
   }
   $("o-go").disabled = true; msg("o-check", '<span class="spinner"></span> Saving...');
   COLLECTED = [];
@@ -13665,12 +13855,14 @@ async function collectAll() {
     for (const iss of OUT.issues) {
       if (iss.done) { COLLECTED.push(iss.done); continue; }
       const sub = await subsetPdf(iss.pdf, iss.pages);
-      const payload = {clientId: iss.clientId || (iss.clientId = uid()), officeId: iss.officeId || "", navPdf: sub ? bytesToB64(sub) : "", photos: OUT.photos,
+      const pics = OUT.photos.concat(iss.photos || []);
+      const payload = {clientId: iss.clientId || (iss.clientId = uid()), officeId: iss.officeId || "", navPdf: sub ? bytesToB64(sub) : "", photos: pics,
+        leftBehind: (iss.removed || []).map(x => [x.itemNo, x.description, x.serial && "S/N " + x.serial].filter(Boolean).join(" ")),
         trail: {navDoc: iss.navDoc.toUpperCase(), navPosted: iss.posted, bookedTo: iss.bookedTo, bookedToName: userName(iss.bookedTo) || iss.bookedTo,
           items: iss.items.map((it, i) => Object.assign({line: i + 1}, it))}};
       try {
         const res = await api("collect", payload);
-        const bytes = await makePdf(res, 1, false, {attachPdf: sub, attachPhotos: OUT.photos});
+        const bytes = await makePdf(res, 1, false, {attachPdf: sub, attachPhotos: pics});
         iss.done = {res, bytes, name: `${res.ref} collected.pdf`};
         uploadQuiet(res.ref, 1, bytes);
       } catch (e) {
@@ -13706,11 +13898,12 @@ function showCollected() {
 let RET = null, retView = "faulty";
 const RES = () => { const saved = ls.get("brl-res2", null) || []; return RES_DEFAULT.map(d => saved.find(x => x[1] === d[1]) || d); };
 function loadLedger() {
-  const own = ls.get("ft-ledger", null), br = ls.get("brl-ledger", null), ct = ls.get("ct-ledger", null);
+  const own = ls.get("ft-ledger", null), br = ls.get("brl-ledger", null), ct = ls.get("ct-ledger", null) || window.__ledger || null;
   return [ct, own, br].filter(Boolean).sort((a, b) => (b.importedAt || 0) - (a.importedAt || 0))[0] || null;
 }
 function startRet() {
-  RET = {eng: me().role === "ENG" ? me().code : "", items: [], extra: [], sel: {}, cond: {}, q: ""};
+  RET = {eng: me().role === "ENG" ? me().code : "", items: [], extra: [], sel: {}, cond: {}, q: "", tags: true, t: {}};
+  $("r-tags").checked = true;
   const wrap = $("r-eng-wrap"); wrap.hidden = me().role === "ENG";
   if (!wrap.hidden) { const sel = $("r-eng"); sel.innerHTML = '<option value="">Choose the engineer</option>' + RES().map(r => `<option value="${esc(r[0])}">${esc(title(r[1]))} (${esc(r[0])})</option>`).join(""); }
   $("r-extra").innerHTML = ""; $("r-search").value = ""; msg("r-check", "");
@@ -13731,10 +13924,13 @@ function buildRetItems() {
     const kind = loc === r[4] ? "faulty" : (loc === r[3] && type === "BI") ? "working" : null;
     if (!kind) return;
     const base = kind[0] + ":" + (serial ? "S" + serial : doc + "|" + item); seen[base] = (seen[base] || 0) + 1;
-    RET.items.push({key: base + (seen[base] > 1 ? "#" + seen[base] : ""), kind, itemNo: item, description: String(desc).trim(), serial, tag, so, doc, qty: Math.abs(Number(qty)) || 1});
+    const parts = String(ship || "").split(" - ");
+    RET.items.push({key: base + (seen[base] > 1 ? "#" + seen[base] : ""), kind, itemNo: item, description: String(desc).trim(), serial, tag, so, doc, qty: Math.abs(Number(qty)) || 1,
+      cust: (parts[0] || "").trim(), loc: parts.slice(1).join(" - ").trim()});
   });
   RET.items.sort((a, b) => a.description.localeCompare(b.description));
-  RET.items.forEach(it => { if (RET.sel[it.key] == null) RET.sel[it.key] = it.kind === "faulty"; if (!RET.cond[it.key]) RET.cond[it.key] = it.kind === "faulty" ? "Faulty" : "Working"; });
+  RET.items.forEach(it => { if (RET.sel[it.key] == null) RET.sel[it.key] = it.kind === "faulty"; if (!RET.cond[it.key]) RET.cond[it.key] = it.kind === "faulty" ? "Faulty" : "Working";
+    if (!RET.t[it.key]) RET.t[it.key] = {call: it.so || "", cust: it.cust, loc: it.loc, fault: "", acc: "", urgent: "", copies: it.serial ? 1 : it.qty}; });
   $("r-pick").hidden = false;
   const nf = RET.items.filter(i => i.kind === "faulty").length, nw = RET.items.length - nf;
   msg("r-msg", `${nf} faulty and ${nw} working boot items for ${esc(title(r[1]))}.`, "ok");
@@ -13749,27 +13945,90 @@ function renderRetItems() {
       <label class="ih"><input type="checkbox" data-act="sel" ${on ? "checked" : ""}><span><span class="desc">${esc(it.description)}</span><br>
       <span class="meta">${esc(it.itemNo)} · S/N ${esc(it.serial || "-")} · Tag ${esc(it.tag || "-")}${it.so ? " · " + esc(it.so) : ""}</span></span></label>
       ${on ? `<div class="seg" role="group" aria-label="Condition">${["Faulty", "Working", "RTC"].map(x => `<button data-act="cond" data-c="${x}" class="${x === "RTC" ? "rtc" : ""}" aria-pressed="${x === c}">${x}</button>`).join("")}</div>` : ""}
+      ${on && RET.tags ? tagForm(it, RET.t[it.key], c) : ""}
     </div>`;
   }).join("") || `<div class="empty">${retView === "faulty" ? "Nothing in the faulty boot on this ledger." : retView === "working" ? "Nothing in the working boot on this ledger." : "Nothing selected yet."}</div>`;
   const n = RET.items.filter(i => RET.sel[i.key]).length + RET.extra.length;
   $("r-count").textContent = `${n} selected`;
 }
-function retNext() {
-  const chosen = RET.items.filter(i => RET.sel[i.key]).map(i => ({itemNo: i.itemNo, description: i.description, serial: i.serial, tag: i.tag, so: i.so, qty: i.qty, condition: RET.cond[i.key]}))
-    .concat(RET.extra.filter(i => i.description || i.itemNo || i.serial));
-  if (!chosen.length) return msg("r-check", "Tick at least one item.", "err");
-  const L = loadLedger(), r = RES().find(x => x[0] === RET.eng);
-  startHandover({isNew: true, trail: {type: "RET", navDoc: L ? "Ledger " + (L.date || L.file) : "", bookedTo: RET.eng, bookedToName: r ? title(r[1]) : RET.eng,
-    items: chosen.map((it, i) => Object.assign({line: i + 1}, it))}});
+/* ---------- fault tags (what the Fault Tags app asked), per returned item ---------- */
+const NOT_USED = "NOT USED";
+function tagNeed(t, cond) {
+  const m = [];
+  if (cond === "Working") return m;
+  if (!String(t.fault || "").trim()) m.push("fault description");
+  if (cond === "Faulty" && !t.urgent) m.push("Urgent");
+  return m;
 }
-async function importLedger(file) {
-  msg("r-msg", "Reading " + esc(file.name) + "...");
+function tagForm(it, t, cond) {
+  const need = tagNeed(t, cond), many = !it.serial && (it.qty || 1) > 1;
+  return `<div class="tagf">
+    <div class="grid"><div class="field"><span class="lbl">Call ref</span><input type="text" class="mono" data-tf="call" value="${esc(t.call)}"></div>
+      <div class="field"><span class="lbl">Customer</span><input type="text" data-tf="cust" value="${esc(t.cust)}"></div></div>
+    <div class="field"><span class="lbl">Location</span><input type="text" data-tf="loc" value="${esc(t.loc)}"></div>
+    <div class="field"><span class="lbl">Fault description${cond === "Working" ? "" : " (required)"}</span>${cond === "Working" ? `<div class="small"><b>${NOT_USED}</b> (working stock)</div>` : `<textarea rows="2" data-tf="fault" placeholder="What is wrong with the unit">${esc(t.fault)}</textarea>`}</div>
+    <div class="field"><span class="lbl">Accessories attached</span><input type="text" data-tf="acc" value="${esc(t.acc)}" placeholder="e.g. power cable, stand (optional)"></div>
+    ${cond === "Faulty" ? `<div class="yn"><span>Urgent</span><span class="seg" role="group" aria-label="Urgent"><button data-tf-urgent="yes" aria-pressed="${t.urgent === "yes"}">Yes</button><button data-tf-urgent="no" aria-pressed="${t.urgent === "no"}">No</button></span></div>`
+      : cond === "RTC" ? `<div class="small">Return to customer: <b>Yes</b> · Urgent: <b>Yes</b> (RTC is always urgent, prints blue)</div>` : `<div class="small">Return to customer: No · Urgent: No</div>`}
+    ${many ? `<div class="yn"><span>Tags to print</span><input type="number" min="1" max="99" data-tf="copies" value="${esc(t.copies)}" style="width:80px;margin-left:auto"></div>` : ""}
+    <div class="need" ${need.length ? "" : "hidden"}>Still needed: ${esc(need.join(", "))}</div>
+  </div>`;
+}
+const tagFields = (t, cond) => ({tagCall: t.call || "", customer: t.cust || "", location: t.loc || "", fault: cond === "Working" ? NOT_USED : (t.fault || ""), accessories: t.acc || "",
+  urgent: cond === "RTC" ? "yes" : cond === "Working" ? "no" : (t.urgent || ""), copies: Math.max(1, Math.min(99, Number(t.copies) || 1))});
+// tags for a trail's items (works for any phone, from what was saved)
+function tagsFor(items, engineer) {
+  const d = new Date(), today = `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`, tags = [];
+  items.filter(i => i.fault || i.customer || i.tagCall).forEach(i => {
+    const tag = {date: today, call: i.tagCall || i.so, customer: i.customer, location: i.location, equipment: i.description, fault: i.fault, accessories: i.accessories,
+      engineer, serial: i.serial, stock: i.itemNo, rtc: i.condition === "RTC" ? "yes" : "no", urgent: i.condition === "RTC" ? "yes" : (i.urgent || "no"), working: i.condition === "Working"};
+    for (let c = 0; c < (i.serial ? 1 : Math.max(1, Number(i.copies) || 1)); c++) tags.push(tag);
+  });
+  return tags;
+}
+async function saveTags(items, engineer) {
+  const tags = tagsFor(items, engineer);
+  if (!tags.length) return null;
+  const out = await FT.build(PDFLib, tags);
+  const d = new Date(), name = `Fault Tags - ${engineer} ${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}.pdf`;
+  savePdf(out.bytes, name);
+  return {name, tags: tags.length, pages: out.pages, rtc: out.rtc, overflow: out.overflow};
+}
+function retChosen() {
+  const chosen = RET.items.filter(i => RET.sel[i.key]).map(i => Object.assign({itemNo: i.itemNo, description: i.description, serial: i.serial, tag: i.tag, so: i.so, qty: i.qty, condition: RET.cond[i.key]},
+      RET.tags ? tagFields(RET.t[i.key], RET.cond[i.key]) : {}))
+    .concat(RET.extra.filter(i => i.description || i.itemNo || i.serial).map(i => Object.assign({}, i, RET.tags ? tagFields({call: i.so, cust: i.cust, loc: i.loc, fault: i.fault, acc: i.acc, urgent: i.urgent, copies: i.qty}, i.condition) : {})));
+  if (!chosen.length) { msg("r-check", "Tick at least one item.", "err"); return null; }
+  if (RET.tags) {
+    const bad = RET.items.filter(i => RET.sel[i.key] && tagNeed(RET.t[i.key], RET.cond[i.key]).length).length
+      + RET.extra.filter(i => (i.description || i.itemNo || i.serial) && tagNeed({fault: i.fault, urgent: i.urgent}, i.condition).length).length;
+    if (bad) { retView = "sel"; document.querySelectorAll("#r-pick .seg[aria-label=Show] button").forEach(x => x.setAttribute("aria-pressed", x.dataset.view === "sel")); renderRetItems();
+      msg("r-check", `${bad} item${bad === 1 ? " needs" : "s need"} fault tag details (fault description and Urgent). Or untick "Make fault tags".`, "err"); return null; }
+  }
+  const L = loadLedger(), r = RES().find(x => x[0] === RET.eng);
+  return {type: "RET", navDoc: L ? "Ledger " + (L.date || L.file) : "", bookedTo: RET.eng, bookedToName: r ? title(r[1]) : RET.eng,
+    items: chosen.map((it, i) => Object.assign({line: i + 1}, it))};
+}
+function retNext() { const trail = retChosen(); if (trail) startHandover({isNew: true, trail}); }
+async function retPrepare() {
+  const trail = retChosen(); if (!trail) return;
+  const btn = $("r-prep"); btn.disabled = true; msg("r-check", '<span class="spinner"></span> Preparing...');
+  try {
+    const res = await api("prepare", {clientId: RET.prepId || (RET.prepId = uid()), trail});
+    msg("r-check", "");
+    TRAIL = {trail: res.trail, items: res.items, hops: res.hops}; renderTrail();
+    msg("tv-msg", RET.tags ? "Prepared. Tap <b>Print fault tags</b> and tag the items. When you meet the next person, open this trail from <b>Open trails</b> and tap <b>Hand over these items</b>."
+      : "Prepared. When you meet the next person, open this trail from <b>Open trails</b> and tap <b>Hand over these items</b>.", "ok");
+  } catch (e) { msg("r-check", e instanceof Offline ? "Preparing needs signal. Try again when you have signal, or go straight to the handover." : esc(e.message), "err"); }
+  finally { btn.disabled = false; }
+}
+async function readLedgerFile(file) {
   let rows;
-  try { rows = await XLSX_MINI.read(file); } catch (e) { return msg("r-msg", "That file couldn't be read. Import the .xlsx exactly as exported from Nav.", "err"); }
+  try { rows = await XLSX_MINI.read(file); } catch (e) { throw new Error("That file couldn't be read. Import the .xlsx exactly as exported from Nav."); }
   const h = (rows[0] || []).map(v => String(v || "").trim()), col = n => h.indexOf(n);
   const need = ["Posting Date", "Document No.", "Service Order No.", "Job No.", "Item No.", "Description", "Serial No.", "Tag No.", "Location Code", "Remaining Quantity", "Ship-To Name"];
   const ix = need.map(col);
-  if (ix[4] < 0 || ix[5] < 0 || ix[8] < 0) return msg("r-msg", "This doesn't look like an Item Ledger Entries export.", "err");
+  if (ix[4] < 0 || ix[5] < 0 || ix[8] < 0) throw new Error("This doesn't look like an Item Ledger Entries export.");
   let maxD = 0;
   const data = rows.slice(1).filter(r => r[ix[8]]).map(r => {
     const v = ix.map(i => i < 0 || r[i] == null ? "" : r[i]);
@@ -13779,7 +14038,13 @@ async function importLedger(file) {
   });
   const m = /(\d{4})-(\d{2})-(\d{2})T/.exec(file.name);
   const L = {date: m ? `${m[3]}/${m[2]}/${m[1]}` : (maxD ? ddmmyyyy(XLSX_MINI.serialToDate(maxD).toISOString()) : ""), file: file.name, rows: data, importedAt: Date.now()};
-  if (!ls.set("ct-ledger", L)) { window.__ledger = L; msg("r-msg", "Ledger loaded, but this phone couldn't keep a copy.", "warn"); }
+  const kept = ls.set("ct-ledger", L); if (!kept) window.__ledger = L;
+  return {L, kept};
+}
+async function importLedger(file) {
+  msg("r-msg", "Reading " + esc(file.name) + "...");
+  try { const {kept} = await readLedgerFile(file); if (!kept) msg("r-msg", "Ledger loaded, but this phone couldn't keep a copy.", "warn"); }
+  catch (e) { return msg("r-msg", esc(e.message), "err"); }
   renderLedgerInfo(); buildRetItems();
 }
 
@@ -13877,6 +14142,9 @@ async function uploadPdf(ref, hop, bytes) {
     else msg("d-msg", "PDF not saved to the log: " + esc(e.message), "err");
   }
 }
+let renderExtraR = () => {};
+const hasTags = items => (items || []).some(i => i.fault || i.customer || i.tagCall);
+const tagMsg = r => `Saved ${esc(r.name)}: ${r.tags} tag${r.tags === 1 ? "" : "s"} on ${r.pages} page${r.pages === 1 ? "" : "s"}` + (r.rtc ? `. RTC tags are blue, on the first ${Math.ceil(r.rtc / 6)} page${Math.ceil(r.rtc / 6) === 1 ? "" : "s"} for blue paper.` : ".") + (r.overflow ? ` ${r.overflow} description${r.overflow === 1 ? " was" : "s were"} too long for the tag and got cut short.` : "");
 function showDone(res) {
   const t = res.trail, complete = t.status === "COMPLETE";
   $("d-title").textContent = complete ? "Trail complete" : `Hop ${res.hop} signed`;
@@ -13887,6 +14155,7 @@ function showDone(res) {
   $("d-ref").textContent = t.ref;
   $("d-pdf").disabled = $("d-share").disabled = false;
   $("d-share").hidden = !(navigator.canShare && navigator.canShare({files: [new File([""], "x.pdf", {type: "application/pdf"})]}));
+  $("d-tags").hidden = !(res.trail.type === "RET" && hasTags(res.items));
   show("v-done");
 }
 function showQueued(payload) {
@@ -13970,19 +14239,20 @@ async function openTrail(ref) {
 function renderTrail() {
   const {trail: t, items, hops} = TRAIL;
   $("tv-ref").textContent = t.ref;
-  $("tv-status").innerHTML = `<span class="chip ${t.status === "COMPLETE" ? "ok" : "open"}">${t.status === "COMPLETE" ? "Complete" : "Open"}</span>`;
+  $("tv-status").innerHTML = `<span class="chip ${t.status === "COMPLETE" ? "ok" : "open"}">${t.status === "COMPLETE" ? "Complete" : t.hops === 0 ? "Prepared" : "Open"}</span>`;
   $("tv-kv").innerHTML = [["Type", t.type === "OUT" ? "Outbound (office to engineer)" : "Return (to stores)"], [t.type === "OUT" ? "Booked to" : "From boot of", `${t.bookedToName} (${t.bookedTo})`],
     ["Nav document", t.navDoc || "-"], ["Now with", `${t.currentHolderName} (${t.currentHolder})`], ["Started", `${t.created} by ${t.createdBy}`], ["Items", `${t.items}${t.shortItems ? ` (${t.shortItems} missing)` : ""}`]]
     .map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
   const canHand = t.status !== "COMPLETE";
   $("tv-hand").hidden = !canHand;
+  $("tv-tags").hidden = !(t.type === "RET" && hasTags(items));
   $("tv-items").innerHTML = items.map(it => {
     const miss = /^Missing/.test(it.status);
     return `<div class="item ${miss ? "miss" : it.condition === "RTC" ? "rtc" : "sel"}"><div><span class="desc">${esc(it.description || it.itemNo)}</span> <span class="chip ${it.condition === "RTC" ? "rtc" : ""}">${esc(it.condition)}</span>
       <br><span class="meta">${esc(it.itemNo)} · S/N ${esc(it.serial || "-")} · Tag ${esc(it.tag || "-")}${it.so ? " · " + esc(it.so) : ""}</span><br><span class="small" style="${miss ? "color:var(--poor);font-weight:600" : ""}">${esc(it.status)}</span></div></div>`;
   }).join("");
-  $("tv-hops").innerHTML = hops.map(h => `<div class="hop"><span class="no">${h.hop}</span><div><b>${esc(h.giver.name)}</b> to <b>${esc(h.receiver.name)}</b><br><span class="small">${esc(h.at)} · ${h.itemsReceived} item${h.itemsReceived === 1 ? "" : "s"}${h.short ? ` · <b style="color:var(--poor)">not received: ${esc(h.short)}</b>` : ""}${h.note ? "<br>Note: " + esc(h.note) : ""}</span>
-    ${h.sigReceiver ? `<br><img alt="Signature" src="data:image/png;base64,${h.sigReceiver}">` : ""}<div class="row" style="margin-top:6px"><button class="btn small" data-pdf="${h.hop}">PDF</button><span class="small mono">${esc(h.verification)}</span></div></div></div>`).join("") || '<div class="empty">No handovers yet.</div>';
+  $("tv-hops").innerHTML = (t.hops === 0 ? `<div class="empty">Prepared by ${esc(t.createdBy)} on ${esc(t.created)}. Not handed over yet.</div>` : "") + hops.map(h => `<div class="hop"><span class="no">${h.hop}</span><div><b>${esc(h.giver.name)}</b> to <b>${esc(h.receiver.name)}</b><br><span class="small">${esc(h.at)} · ${h.itemsReceived} item${h.itemsReceived === 1 ? "" : "s"}${h.short ? ` · <b style="color:var(--poor)">not received: ${esc(h.short)}</b>` : ""}${h.note ? "<br>Note: " + esc(h.note) : ""}</span>
+    ${h.sigReceiver ? `<br><img alt="Signature" src="data:image/png;base64,${h.sigReceiver}">` : ""}<div class="row" style="margin-top:6px"><button class="btn small" data-pdf="${h.hop}">PDF</button><span class="small mono">${esc(h.verification)}</span></div></div></div>`).join("") || (t.hops === 0 ? "" : '<div class="empty">No handovers yet.</div>');
   msg("tv-msg", t.status !== "COMPLETE" && t.currentHolder !== me().code ? `To receive these items, ${esc(t.currentHolderName)} hands them over to you here, on either phone.` : "");
   show("v-trail");
 }
@@ -14070,6 +14340,10 @@ function init() {
   $("o-thumbs").onclick = e => { const i = e.target.dataset.opdel; if (i != null) { OUT.photos.splice(Number(i), 1); renderThumbsOut(); } };
   $("o-manual").onclick = () => { manualOut(); };
   $("o-office").onclick = () => openOffice();
+  $("o-ledger-open").onclick = openLedgerPick;
+  $("o-led-eng").onchange = () => { LEDPICK.days = 2; renderLedgerPick(); };
+  $("o-led-list").addEventListener("click", e => { if (e.target.closest("[data-lmore]")) { LEDPICK.days = LEDPICK.days === 2 ? 30 : 2; return renderLedgerPick(); } const b = e.target.closest("[data-lbi]"); if (b) pickLedgerIssue(b.dataset.lbi); });
+  $("o-led-import").onchange = async e => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; $("o-led-info").textContent = "Reading " + f.name + "..."; try { await readLedgerFile(f); renderLedgerPick(); } catch (er) { $("o-led-info").textContent = er.message; } };
   $("o-officebox").addEventListener("click", e => { if (e.target.closest("[data-oshowall]")) { OFFICE.all = !OFFICE.all; return renderOffice(); } const r = e.target.closest("[data-oid]"); if (r) pickOffice(r.dataset.oid); });
   $("o-addiss").onclick = () => { OUT.issues.push(blankIssue()); renderOut(); };
   $("o-go").onclick = collectAll;
@@ -14079,10 +14353,14 @@ function init() {
     const f = e.target.dataset.f; if (!f) return;
     const it = iss.items[Number(e.target.closest(".item").dataset.i)]; it[f] = f === "qty" ? Math.max(1, Number(e.target.value) || 1) : e.target.value.trim(); iss.done = null;
   });
-  $("o-issues").addEventListener("change", e => { if (e.target.dataset.if === "bookedTo") outSummary(); });
+  $("o-issues").addEventListener("change", async e => {
+    if (e.target.dataset.ipic != null) { const iss = OUT.issues[Number(e.target.dataset.ipic)], f = e.target.files[0]; e.target.value = ""; if (!f || !iss) return;
+      try { iss.photos.push(await imageToB64(f, 1600, 0.8)); iss.done = null; renderOut(true); msg("o-check", ""); } catch (er) { msg("o-check", esc(er.message), "err"); } return; } if (e.target.dataset.if === "bookedTo") outSummary(); });
   $("o-issues").addEventListener("click", e => {
     const box = e.target.closest("[data-iss]"); if (!box) return; const k = Number(box.dataset.iss), iss = OUT.issues[k];
-    if (e.target.dataset.del != null) { iss.items.splice(Number(e.target.dataset.del), 1); iss.done = null; renderOut(); }
+    if (e.target.dataset.del != null) { const [it] = iss.items.splice(Number(e.target.dataset.del), 1); if (it && it.fromBI) iss.removed.push(it); iss.done = null; renderOut(true); }
+    else if (e.target.dataset.restore != null) { const [it] = iss.removed.splice(Number(e.target.dataset.restore), 1); if (it) iss.items.push(it); iss.done = null; renderOut(true); }
+    else if (e.target.dataset.ipdel != null) { iss.photos.splice(Number(e.target.dataset.ipdel), 1); iss.done = null; renderOut(true); }
     else if (e.target.dataset.additem != null) { iss.items.push(blankItem("Working")); iss.done = null; renderOut(); }
     else if (e.target.dataset.delissue != null) { OUT.issues.splice(k, 1); renderOut(); }
   });
@@ -14094,20 +14372,30 @@ function init() {
   $("r-eng").onchange = e => { RET.eng = e.target.value; RET.sel = {}; RET.cond = {}; buildRetItems(); };
   $("r-search").oninput = e => { RET.q = e.target.value.trim(); renderRetItems(); };
   document.querySelectorAll("#r-pick .seg[aria-label=Show] button").forEach(b => b.onclick = () => { retView = b.dataset.view; document.querySelectorAll("#r-pick .seg[aria-label=Show] button").forEach(x => x.setAttribute("aria-pressed", x === b)); renderRetItems(); });
+  $("r-tags").onchange = e => { RET.tags = e.target.checked; renderRetItems(); renderExtraR(); };
+  $("r-items").addEventListener("input", e => {
+    const f = e.target.dataset.tf; if (!f) return; const card = e.target.closest(".item"), k = card.dataset.key, t = RET.t[k];
+    t[f] = f === "copies" ? Math.max(1, Math.min(99, Number(e.target.value) || 1)) : e.target.value;
+    const nd = card.querySelector(".tagf .need"), m = tagNeed(t, RET.cond[k]); if (nd) { nd.textContent = "Still needed: " + m.join(", "); nd.hidden = !m.length; }
+  });
   $("r-items").addEventListener("click", e => {
     const card = e.target.closest(".item"); if (!card) return; const k = card.dataset.key;
+    if (e.target.dataset.tfUrgent) { RET.t[k].urgent = e.target.dataset.tfUrgent; renderRetItems(); return; }
     if (e.target.dataset.act === "sel") { RET.sel[k] = e.target.checked; renderRetItems(); }
     if (e.target.dataset.act === "cond") { RET.cond[k] = e.target.dataset.c; renderRetItems(); }
   });
   $("r-add").onclick = () => { RET.extra.push(blankItem("Faulty")); renderExtra(); };
   const renderExtra = () => { $("r-extra").innerHTML = RET.extra.map((it, i) => itemEditor(it, i, "r")).join(""); renderRetItems(); };
+  renderExtraR = renderExtra;
   bindEditor("r-extra", () => RET.extra, renderExtra);
-  $("r-next").onclick = retNext;
+  $("r-next").onclick = retNext; $("r-prep").onclick = retPrepare;
   // find
   $("f-scan").onclick = startScan; $("scan-close").onclick = stopScan;
   $("f-go").onclick = () => { const r = $("f-ref").value.trim().toUpperCase(); if (r) openTrail(r); };
   $("f-ref").addEventListener("keydown", e => { if (e.key === "Enter") $("f-go").click(); });
   $("tv-hand").onclick = () => startHandover({isNew: false, trail: TRAIL.trail, items: TRAIL.items});
+  $("tv-tags").onclick = async () => { try { const r = await saveTags(TRAIL.items, TRAIL.trail.bookedTo); msg("tv-msg", r ? tagMsg(r) : "No fault tag details on this trail.", r ? "ok" : "warn"); } catch (e) { msg("tv-msg", "Couldn't make the tags: " + esc(e.message), "err"); } };
+  $("d-tags").onclick = async () => { if (!LAST) return; try { const r = await saveTags(LAST.res.items, LAST.res.trail.bookedTo); msg("d-msg", r ? tagMsg(r) : "No fault tag details.", r ? "ok" : "warn"); } catch (e) { msg("d-msg", "Couldn't make the tags: " + esc(e.message), "err"); } };
   $("tv-hops").onclick = async e => { const h = e.target.dataset.pdf; if (!h) return; const bytes = await makePdf(TRAIL, Number(h)); savePdf(bytes, `${TRAIL.trail.ref} hop ${h}.pdf`); };
   // handover
   $("h-items").addEventListener("change", e => { const card = e.target.closest(".item"); if (!card) return; HAND.received[card.dataset.line] = e.target.checked; renderHandItems(); });
