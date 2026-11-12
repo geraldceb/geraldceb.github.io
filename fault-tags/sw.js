@@ -1,5 +1,5 @@
 // Offline support for BCX Fault Tags. The version changes whenever the app changes.
-const CACHE = "fault-tags-v2-2-20261111";
+const CACHE = "fault-tags-v2-3-20261112";
 const EXCLUDE = []; // other apps in sub-folders of this site keep their own offline copy
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 const BASE = new URL("./", self.registration.scope).pathname;

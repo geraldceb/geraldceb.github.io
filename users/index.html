@@ -1,0 +1,266 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<title>Manage users</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* My Boot Stock: an engineer's own boot stock aging, from the Item Ledger Entries.
+   Rules (Gerald's boot aging): working-boot maint stock (BI) may stay 30 days, older is overdue;
+   faulty-boot stock is aged 0-2 / 3-7 / 8+ days and should be returned; project stock (TR/TS) is shown for information. */
+:root { --bg:#F3F1EF; --surface:#FFFFFF; --sunk:#ECE8E5; --ink:#1D1A1A; --muted:#6E6662; --line:#DED8D3; --accent:#D2231B;
+  --good:#1F7A4D; --good-soft:#E1F1E8; --poor:#B4261D; --poor-soft:#F8E2DF; --warn:#8A5A00; --warn-soft:#F7ECD4; --info:#2D5B8A; --info-soft:#E2ECF6;
+  --display:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif; --body:"Barlow","Segoe UI",Roboto,Arial,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; }
+@media (prefers-color-scheme: dark) { :root { --bg:#151314; --surface:#1F1C1D; --sunk:#2A2627; --ink:#F2EEEC; --muted:#A79F9B; --line:#3A3436; --accent:#F0453B;
+  --good:#5BC98F; --good-soft:#17352A; --poor:#FF7B70; --poor-soft:#3D1D1B; --warn:#E8B45A; --warn-soft:#3A2E15; --info:#8DB8E8; --info-soft:#1B2A3A; color-scheme: dark } }
+* { box-sizing: border-box; } [hidden] { display: none !important; }
+html { padding-top: env(safe-area-inset-top,0px); padding-bottom: env(safe-area-inset-bottom,0px); }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.45 var(--body); }
+.wrap { max-width: 640px; margin: 0 auto; padding: 0 16px; }
+header.top { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; align-items: center; gap: 10px; padding-block: 10px; }
+.logo { height: 28px; width: auto; background: #fff; border-radius: 4px; padding: 2px 3px; }
+.mark { display: grid; gap: 3px; } .mark b { font: 700 20px/1 var(--display); } .mark small { font: 500 11px/1 var(--body); color: var(--muted); }
+main { padding-block: 16px 40px; display: grid; gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 12px; }
+h2 { margin: 0; font: 700 19px/1.15 var(--display); display: flex; gap: 8px; align-items: baseline; } h2 .aside { margin-left: auto; font: 500 13px/1 var(--body); color: var(--muted); }
+.btn { font: 600 15px/1 var(--body); min-height: 42px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.btn.small { min-height: 34px; padding: 7px 10px; font-size: 13px; } .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+select, input[type=search] { font: 400 16px/1.2 var(--body); padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--sunk); color: var(--ink); width: 100%; }
+.small { font-size: 13px; color: var(--muted); }
+.msg { font-size: 14px; } .msg.ok { color: var(--good); } .msg.err { color: var(--poor); } .msg.warn { color: var(--warn); }
+.tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.tile { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 2px; background: var(--surface); }
+.tile .n { font: 700 30px/1 var(--display); } .tile .l { font-size: 13px; color: var(--muted); } .tile .s { font-size: 12.5px; }
+.tile.bad { border-color: var(--poor); background: var(--poor-soft); } .tile.bad .n { color: var(--poor); }
+.tile.ok .n { color: var(--good); } .tile.warn { border-color: var(--warn); background: var(--warn-soft); } .tile.warn .n { color: var(--warn); }
+.bars { display: grid; gap: 7px; }
+.bar { display: grid; grid-template-columns: 74px 1fr 34px; gap: 8px; align-items: center; font-size: 13.5px; }
+.bar .t { display: block; height: 16px; background: var(--sunk); border-radius: 4px; overflow: hidden; } .bar .f { display: block; height: 100%; border-radius: 4px; background: var(--good); }
+.bar .f.warn { background: #D9A23A; } .bar .f.bad { background: var(--poor); } .bar .c { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-wrap: wrap; }
+.seg button { font: 600 14px/1 var(--body); padding: 9px 11px; border: 0; background: var(--surface); color: var(--ink); border-right: 1px solid var(--line); cursor: pointer; }
+.seg button:last-child { border-right: 0; } .seg button[aria-pressed=true] { background: var(--ink); color: var(--surface); }
+.list { display: grid; gap: 8px; }
+.it { border: 1px solid var(--line); border-left: 4px solid var(--good); border-radius: 8px; padding: 10px 12px; display: grid; gap: 3px; }
+.it.bad { border-left-color: var(--poor); } .it.warn { border-left-color: #D9A23A; } .it.info { border-left-color: var(--info); }
+.it .h { display: flex; gap: 8px; align-items: baseline; } .it .d { font-weight: 600; } .it .age { margin-left: auto; font: 700 15px/1 var(--display); white-space: nowrap; }
+.it.bad .age { color: var(--poor); } .it.warn .age { color: var(--warn); }
+.it .m { font: 500 12.5px/1.4 var(--mono); color: var(--muted); }
+.chip { font: 600 11px/1 var(--body); text-transform: uppercase; letter-spacing: .04em; padding: 4px 6px; border-radius: 5px; background: var(--sunk); color: var(--muted); white-space: nowrap; }
+.chip.bad { background: var(--poor-soft); color: var(--poor); } .chip.info { background: var(--info-soft); color: var(--info); }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; } th, td { text-align: left; padding: 7px 4px; border-bottom: 1px solid var(--line); }
+th { font: 600 12px/1.2 var(--body); color: var(--muted); text-transform: uppercase; letter-spacing: .03em; } td.n { text-align: right; font-variant-numeric: tabular-nums; }
+tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
+.empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+#gate { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: grid; place-items: center; padding: 20px; }
+#gate .box { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 12px; text-align: center; }
+.bcx-home { display: inline-grid; place-items: center; width: 38px; height: 38px; color: var(--accent); text-decoration: none; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); flex: none; }
+.bcx-home svg { width: 20px; height: 20px; }
+.foot { text-align: center; font-size: 12px; color: var(--muted); }
+
+/* Manage users (Admin only): one person per card, a full-screen form to add or edit. */
+.big { min-height: 52px; font-size: 16px; border-radius: 10px; }
+.btn.danger { border-color: var(--poor); color: var(--poor); background: var(--surface); }
+.btn.good { background: var(--good); border-color: var(--good); color: #fff; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.fchip { font: 600 14px/1 var(--body); padding: 10px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+.fchip[aria-pressed=true] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.ucard { display: grid; grid-template-columns: 46px 1fr auto; gap: 12px; align-items: center; width: 100%; text-align: left; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.ucard:active { background: var(--sunk); } .ucard.off { opacity: .55; }
+.av { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font: 700 17px/1 var(--display); background: var(--sunk); color: var(--ink); }
+.av.STORES { background: var(--info-soft); color: var(--info); } .av.ADMIN { background: var(--poor-soft); color: var(--accent); }
+.ucard .nm { font: 600 17px/1.2 var(--body); } .ucard .sub { font-size: 13px; color: var(--muted); margin-top: 3px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.ucard .go { font-size: 24px; color: var(--muted); }
+.chip.ok { background: var(--good-soft); color: var(--good); } .chip.warn { background: var(--warn-soft); color: var(--warn); }
+.field { display: grid; gap: 6px; } .lbl { font: 600 12px/1.2 var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.field input { font: 400 18px/1.2 var(--body); padding: 13px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--sunk); color: var(--ink); width: 100%; }
+.field input[readonly] { opacity: .7; }
+.seg3 { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg3 button { font: 600 15px/1 var(--body); min-height: 48px; border: 0; border-right: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.seg3 button:last-child { border-right: 0; } .seg3 button[aria-pressed=true] { background: var(--ink); color: var(--surface); }
+.toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; }
+.toggle input { width: 26px; height: 26px; accent-color: var(--good); }
+.pinbox { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: 10px; }
+.pinbox .pin { font: 700 26px/1 var(--mono); letter-spacing: .12em; flex: 1; }
+.facts { display: grid; gap: 6px; font-size: 14px; } .facts div { display: flex; gap: 8px; } .facts b { min-width: 120px; color: var(--muted); font-weight: 500; }
+.warnbox { border: 1px solid var(--poor); background: var(--poor-soft); border-radius: 10px; padding: 12px; font-size: 14px; display: grid; gap: 10px; }
+.okbox { border: 1px solid var(--good); background: var(--good-soft); border-radius: 10px; padding: 12px; font-size: 15px; display: grid; gap: 10px; }
+.stick { position: sticky; bottom: 0; background: linear-gradient(transparent, var(--bg) 30%); padding: 14px 0 6px; display: grid; gap: 8px; }
+</style></head><body>
+<div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Manage users</b><p class="small" id="gate-t" style="margin:0">Only the Admin can manage users. Log in on the BCX Field Apps page with your Admin login.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
+<header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
+  <img class="logo" src="data:image/jpeg;base64,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" alt="BCX" width="61" height="28"><div class="mark"><b>Manage users</b><small>Developed by Gerald Pakree · v1.0</small></div></div></header>
+
+<main class="wrap" id="v-list" hidden>
+  <button class="btn primary big" id="add">+ Add a person</button>
+  <section class="card">
+    <input type="search" id="q" placeholder="Search name or Nav code" autocomplete="off" spellcheck="false">
+    <div class="chips" id="filt">
+      <button class="fchip" data-f="all" aria-pressed="true">All</button><button class="fchip" data-f="ENG" aria-pressed="false">Engineers</button>
+      <button class="fchip" data-f="STORES" aria-pressed="false">Stores</button><button class="fchip" data-f="ADMIN" aria-pressed="false">Admin</button>
+      <button class="fchip" data-f="locked" aria-pressed="false">Locked out</button><button class="fchip" data-f="off" aria-pressed="false">Switched off</button></div>
+    <div class="small" id="count"></div>
+  </section>
+  <div class="msg" id="lmsg"></div>
+  <div class="list" id="list"><div class="empty">Loading...</div></div>
+  <div class="row" style="justify-content:space-between"><button class="btn small" id="reload">Refresh</button><button class="btn small" id="csv">Download the list (CSV)</button></div>
+  <div class="foot">Manage users v1.0 · Developed by Gerald Pakree<br>The same logins work in all the BCX field apps.</div>
+</main>
+
+<main class="wrap" id="v-edit" hidden>
+  <button class="btn small" id="back" style="justify-self:start">&#8249; All users</button>
+  <section class="card">
+    <h2 id="e-title">Add a person</h2>
+    <div id="e-facts" class="facts"></div>
+    <div id="e-alerts" style="display:grid;gap:10px"></div>
+    <div class="field"><span class="lbl">Name</span><input id="e-name" autocomplete="off" placeholder="e.g. Waseem Khan"></div>
+    <div class="field"><span class="lbl">Nav code</span><input id="e-code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. WASKHA"></div>
+    <div class="field"><span class="lbl">Role</span><div class="seg3" id="e-role"><button data-r="ENG">Engineer</button><button data-r="STORES">Stores</button><button data-r="ADMIN">Admin</button></div></div>
+    <div class="field"><span class="lbl">Email (optional, for custody emails)</span><input id="e-email" type="email" autocomplete="off" placeholder="name@bcx.co.za"></div>
+    <label class="toggle"><span><b>Active</b><br><span class="small">Switched off = can't log in, but stays on file</span></span><input type="checkbox" id="e-active" checked></label>
+  </section>
+  <section class="card">
+    <h2>PIN</h2>
+    <div class="pinbox" id="e-pinbox" hidden><span class="pin" id="e-pin">••••</span><button class="btn small" id="e-show">Show</button></div>
+    <div class="field"><span class="lbl" id="e-newpin-l">New PIN (4-8 digits)</span><input id="e-newpin" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="Leave empty to keep it"></div>
+    <button class="btn" id="e-rand">Make a random PIN</button>
+  </section>
+  <section class="card" id="e-more" hidden>
+    <h2>More</h2>
+    <button class="btn big" id="e-share">Send login details (WhatsApp / SMS)</button>
+    <button class="btn big" id="e-unlock" hidden>Unlock (too many wrong PINs)</button>
+    <button class="btn big" id="e-logout">Log out on all phones</button>
+    <button class="btn big danger" id="e-remove">Remove from the users list</button>
+  </section>
+  <div class="msg" id="emsg"></div>
+  <div class="stick"><button class="btn primary big" id="e-save">Save</button></div>
+</main>
+
+<script>
+const VER = "1.0", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const APP_URL = "https://geraldceb.github.io/";
+const ROLE = {ENG: "Engineer", STORES: "Stores", ADMIN: "Admin"};
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+const api = () => ls.get("ct-api") || DEFAULT_API;
+let SESS = null, USERS = [], MAX = 5, FILTER = "all", CUR = null, ROLEV = "ENG";
+function valid(s) { if (!s || !s.token || !s.user) return false; try { return Number(atob(s.token.replace(/-/g, "+").replace(/_/g, "/")).split("|")[1]) > Date.now(); } catch (e) { return false; } }
+function msg(id, t, k) { const m = $(id); m.innerHTML = t || ""; m.className = "msg" + (k ? " " + k : ""); }
+async function call(body) {
+  let r;
+  try { r = await fetch(api(), {method: "POST", body: JSON.stringify(Object.assign({token: SESS.token}, body)), redirect: "follow"}); }
+  catch (e) { throw new Error("No signal. Try again when you have signal."); }
+  let j; try { j = await r.json(); } catch (e) { throw new Error("The server didn't answer properly. Try again."); }
+  if (!j.ok) { if (/^LOGIN:/.test(j.error || "")) { $("gate-t").textContent = "Your login has expired. Log in again on the BCX Field Apps page."; $("gate").hidden = false; } throw new Error((j.error || "Failed.").replace(/^LOGIN:\s*/, "")); }
+  return j;
+}
+const initials = n => String(n || "?").split(/\s+/).filter(Boolean).map(w => w[0]).filter((c, i, a) => i === 0 || i === a.length - 1).join("").toUpperCase();
+const show = v => { ["v-list", "v-edit"].forEach(x => $(x).hidden = x !== v); window.scrollTo(0, 0); };
+
+// ---------- list ----------
+async function load(note) {
+  msg("lmsg", note ? note : "", note ? "ok" : "");
+  if (!USERS.length) $("list").innerHTML = '<div class="empty">Loading...</div>';
+  try { const j = await call({action: "adminUsers"}); USERS = j.users; MAX = j.maxFails || 5; renderList(); refreshSessionUsers(); }
+  catch (e) { msg("lmsg", esc(e.message), "err"); if (!USERS.length) $("list").innerHTML = ""; }
+}
+function renderList() {
+  const q = $("q").value.trim().toLowerCase();
+  const pass = u => (FILTER === "all" ? u.active : FILTER === "off" ? !u.active : FILTER === "locked" ? u.locked : u.active && u.role === FILTER)
+    && (!q || (u.name + " " + u.code + " " + (u.email || "")).toLowerCase().includes(q));
+  const list = USERS.filter(pass);
+  const on = USERS.filter(u => u.active), locked = USERS.filter(u => u.locked).length;
+  $("count").textContent = `${on.length} active: ${on.filter(u => u.role === "ENG").length} engineers, ${on.filter(u => u.role === "STORES").length} stores, ${on.filter(u => u.role === "ADMIN").length} admin` + (USERS.length - on.length ? ` · ${USERS.length - on.length} switched off` : "") + (locked ? ` · ${locked} locked out` : "");
+  $("list").innerHTML = list.map(u => `<button class="ucard ${u.active ? "" : "off"}" data-code="${esc(u.code)}"><span class="av ${u.role}">${esc(initials(u.name))}</span>
+      <span><span class="nm">${esc(u.name)}</span><span class="sub"><span class="mono">${esc(u.code)}</span><span class="chip ${u.role === "ADMIN" ? "bad" : u.role === "STORES" ? "info" : ""}">${ROLE[u.role] || u.role}</span>
+      ${u.active ? "" : '<span class="chip">Switched off</span>'}${u.locked ? '<span class="chip bad">Locked out</span>' : ""}${u.trailsHeld ? `<span class="chip warn">${u.trailsHeld} trail${u.trailsHeld === 1 ? "" : "s"}</span>` : ""}
+      <span>${u.lastLogin ? "Last login " + esc(u.lastLogin.slice(0, 10).split("/").reverse().join("/")) : "Never logged in"}</span></span></span><span class="go">&#8250;</span></button>`).join("")
+    || `<div class="empty">${q ? "No one matches “" + esc(q) + "”." : "No one here."}</div>`;
+}
+// keep the apps' people lists (handover pickers etc.) up to date
+async function refreshSessionUsers() { try { const j = await call({action: "users"}); SESS.users = j.users; ls.set("ct-session", SESS); } catch (e) {} }
+
+// ---------- edit ----------
+function setRole(r) { ROLEV = r; document.querySelectorAll("#e-role button").forEach(b => b.setAttribute("aria-pressed", b.dataset.r === r)); }
+function openEdit(code) {
+  const u = code ? USERS.find(x => x.code === code) : null; CUR = u;
+  $("e-title").textContent = u ? u.name : "Add a person";
+  $("e-name").value = u ? u.name : ""; $("e-code").value = u ? u.code : ""; $("e-code").readOnly = !!u;
+  $("e-email").value = u ? u.email || "" : ""; $("e-active").checked = u ? u.active : true; setRole(u ? u.role : "ENG");
+  $("e-newpin").value = ""; $("e-newpin-l").textContent = u ? "New PIN (4-8 digits)" : "PIN (4-8 digits, or leave empty for a random one)";
+  $("e-newpin").placeholder = u ? "Leave empty to keep it" : "Leave empty for a random PIN";
+  $("e-pinbox").hidden = !u; $("e-pin").textContent = "••••"; $("e-show").textContent = "Show";
+  $("e-more").hidden = !u; $("e-unlock").hidden = !(u && u.locked);
+  const me = SESS.user.code === (u && u.code);
+  $("e-remove").hidden = me;
+  $("e-facts").innerHTML = u ? `<div><b>Last login</b><span>${esc(u.lastLogin || "Never")}</span></div>
+      <div><b>Custody trails held</b><span>${u.trailsHeld ? `<span style="color:var(--warn);font-weight:600">${u.trailsHeld} open</span>` : "None"}</span></div>
+      ${u.loggedOutAt ? `<div><b>Logged out by Admin</b><span>${esc(u.loggedOutAt)}</span></div>` : ""}` : "";
+  $("e-alerts").innerHTML = u && u.locked ? `<div class="warnbox"><b>Locked out:</b> ${u.wrongPins} wrong PINs in a row. They can try again in 15 minutes, or tap <b>Unlock</b> below.</div>` : "";
+  msg("emsg", ""); show("v-edit"); if (!u) setTimeout(() => $("e-name").focus(), 50);
+}
+async function save() {
+  const isNew = !CUR, u = {code: $("e-code").value.trim().toUpperCase(), name: $("e-name").value.trim(), role: ROLEV, email: $("e-email").value.trim(), active: $("e-active").checked, pin: $("e-newpin").value.trim()};
+  if (!u.name) return msg("emsg", "Enter the person's name.", "err");
+  if (!/^[A-Z0-9_]{2,12}$/.test(u.code)) return msg("emsg", "The Nav code must be 2-12 letters or numbers, e.g. WASKHA.", "err");
+  if (u.pin && !/^\d{4,8}$/.test(u.pin)) return msg("emsg", "The PIN must be 4 to 8 digits.", "err");
+  if (CUR && CUR.trailsHeld && CUR.active && !u.active && !confirm(`${CUR.name} is holding ${CUR.trailsHeld} open custody trail${CUR.trailsHeld === 1 ? "" : "s"}. Once switched off, they can't hand those items over. Switch off anyway?`)) return;
+  const b = $("e-save"); b.disabled = true; msg("emsg", "Saving...");
+  try {
+    const j = await call({action: "saveUser", isNew, user: u});
+    const k = USERS.findIndex(x => x.code === j.user.code); if (k >= 0) USERS[k] = Object.assign(USERS[k], j.user); else USERS.push(Object.assign({trailsHeld: 0, lastLogin: ""}, j.user));
+    USERS.sort((x, y) => x.name.localeCompare(y.name)); refreshSessionUsers();
+    if (isNew || u.pin) { CUR = USERS.find(x => x.code === j.user.code); openEdit(CUR.code);
+      $("e-alerts").innerHTML = `<div class="okbox"><span><b>${isNew ? "Added" : "Saved"}.</b> ${esc(j.user.name)}'s PIN is <b class="mono" style="font-size:20px">${esc(j.user.pin)}</b>. It works straight away.</span><button class="btn good big" data-share>Send them their login details</button></div>`;
+      $("e-alerts").querySelector("[data-share]").onclick = shareLogin; }
+    else { show("v-list"); renderList(); msg("lmsg", `Saved ${esc(j.user.name)}.`, "ok"); }
+  } catch (e) { msg("emsg", esc(e.message), "err"); } finally { b.disabled = false; }
+}
+async function shareLogin() {
+  const u = CUR; if (!u) return;
+  let pin = u.pin; if (!pin) { try { pin = (await call({action: "getPin", code: u.code})).pin; } catch (e) { return msg("emsg", esc(e.message), "err"); } }
+  const text = `Hi ${u.name.split(" ")[0]}, your BCX Field Apps login:\nNav code: ${u.code}\nPIN: ${pin}\nOpen ${APP_URL} (or the BCX Field Apps app) and log in. Don't share your PIN.`;
+  if (navigator.share) { try { await navigator.share({text}); return; } catch (e) { if (e.name === "AbortError") return; } }
+  window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+}
+
+$("add").onclick = () => openEdit(null);
+$("back").onclick = () => { show("v-list"); renderList(); };
+$("list").onclick = e => { const b = e.target.closest("[data-code]"); if (b) openEdit(b.dataset.code); };
+$("q").addEventListener("input", renderList);
+$("filt").onclick = e => { const f = e.target.dataset.f; if (!f) return; FILTER = f; document.querySelectorAll("#filt .fchip").forEach(x => x.setAttribute("aria-pressed", x.dataset.f === f)); renderList(); };
+$("reload").onclick = () => load();
+$("e-role").onclick = e => { const r = e.target.dataset.r; if (r) setRole(r); };
+$("e-rand").onclick = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); $("e-newpin").value = String(1000 + a[0] % 9000); msg("emsg", "Random PIN filled in. Tap Save to use it.", "ok"); };
+$("e-show").onclick = () => { const s = $("e-pin").textContent !== "••••"; $("e-pin").textContent = s ? "••••" : (CUR.pin || "(no PIN)"); $("e-show").textContent = s ? "Show" : "Hide"; };
+$("e-save").onclick = save;
+$("e-share").onclick = shareLogin;
+$("e-unlock").onclick = async () => { try { await call({action: "unlockUser", code: CUR.code}); CUR.locked = false; CUR.wrongPins = 0; openEdit(CUR.code); msg("emsg", `${esc(CUR.name)} is unlocked and can log in now.`, "ok"); } catch (e) { msg("emsg", esc(e.message), "err"); } };
+$("e-logout").onclick = async () => {
+  const me = CUR.code === SESS.user.code;
+  if (!confirm(me ? "Log yourself out on every phone, including this one?" : `Log ${CUR.name} out on every phone? They'll need their PIN to log in again. Use this for a lost or shared phone.`)) return;
+  try { await call({action: "logoutEverywhere", code: CUR.code}); if (me) { location.href = "../"; return; } msg("emsg", `${esc(CUR.name)} is logged out on all phones.`, "ok"); load(); }
+  catch (e) { msg("emsg", esc(e.message), "err"); }
+};
+$("e-remove").onclick = async () => {
+  const u = CUR;
+  if (!confirm(`Remove ${u.name} (${u.code}) from the users list?${u.trailsHeld ? `\n\nThey are holding ${u.trailsHeld} open custody trail${u.trailsHeld === 1 ? "" : "s"}.` : ""}\n\nThey won't be able to log in. Their past custody trails stay. To keep them on file, switch them off instead.`)) return;
+  try { await call({action: "removeUser", code: u.code}); USERS = USERS.filter(x => x.code !== u.code); refreshSessionUsers(); show("v-list"); renderList(); msg("lmsg", `Removed ${esc(u.name)}.`, "ok"); }
+  catch (e) { msg("emsg", esc(e.message), "err"); }
+};
+$("csv").onclick = () => {
+  const rows = [["Nav code", "Name", "Role", "Active", "Email", "Last login", "Custody trails held"]].concat(USERS.map(u => [u.code, u.name, ROLE[u.role] || u.role, u.active ? "Yes" : "No", u.email || "", u.lastLogin || "", u.trailsHeld || 0]));
+  const csv = rows.map(r => r.map(v => /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : v).join(",")).join("\r\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], {type: "text/csv"}));
+  const d = new Date(); a.download = `BCX users ${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}.csv`; a.click();
+};
+
+SESS = ls.get("ct-session");
+if (!valid(SESS) || SESS.user.role !== "ADMIN") $("gate").hidden = false;
+else { show("v-list"); load(); }
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+</script></body></html>
