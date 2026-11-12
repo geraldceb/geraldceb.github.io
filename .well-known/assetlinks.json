@@ -46,5 +46,17 @@
         "17:34:A2:E6:89:4C:3D:37:CC:32:B6:6F:39:D6:48:C2:8B:B7:CF:E1:F7:4A:03:AF:0F:72:B9:12:FC:71:76:96"
       ]
     }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.bcx.fieldapps",
+      "sha256_cert_fingerprints": [
+        "65:43:23:72:8F:6B:31:45:6F:9E:D5:B6:ED:04:A4:A7:C0:38:60:7E:B7:CC:BE:CC:D4:5B:BD:86:10:C7:85:A8"
+      ]
+    }
   }
 ]
