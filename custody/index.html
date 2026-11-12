@@ -83,6 +83,10 @@ label.import input { position: absolute; inset: 0; opacity: 0; width: 100%; curs
 .trow .tick { width: 22px; height: 22px; border: 2px solid var(--line); border-radius: 6px; display: inline-grid; place-items: center; font: 700 15px/1 var(--body); color: #fff; flex: none; }
 .trow.pick { border-color: var(--good); background: var(--good-soft); } .trow.pick .tick { background: var(--good); border-color: var(--good); }
 .trow.off { opacity: .45; }
+.absent { display: flex; gap: 8px; align-items: center; font-size: 14px; padding: 4px 0; }
+.warnbox { border: 1px solid var(--poor); background: var(--poor-soft); color: var(--ink); border-radius: 8px; padding: 10px; font-size: 13.5px; display: grid; gap: 8px; }
+.warnbox input, #c-reasonx { font: 400 16px/1.2 var(--body); padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.unconf { color: var(--poor); font-weight: 600; }
 .multibar { position: sticky; bottom: 8px; display: grid; gap: 6px; background: var(--surface, #fff); border: 1px solid var(--line); border-radius: 10px; padding: 10px; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
 .grp { font: 600 13px/1.2 var(--mono); padding: 8px 2px 2px; border-top: 1px solid var(--line); display: flex; gap: 8px; align-items: center; }
 .grp:first-child { border-top: 0; padding-top: 0; }
@@ -139,7 +143,7 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
 </style>
 
 <header class="top"><div class="wrap">
-  <div class="mark" id="home-link"><img class="logo" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAA8AIMDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDuPiB8WbbwDrFtp1xpU1208AnDxyhAPmIxyPauT/4aV03/AKFy7/8AAlf8K5f9pD/kd9L/AOwcP/Rslc74K+EmseONEfVLC+soIlnMJWYtnIAOeAfWgD0r/hpXTf8AoXLv/wACV/wqez/aQ0OSdVu9EvoIieXSRZMfhxXI/wDDOHib/oK6V+cn/wATWZr/AMC/Fmh6bJfRtaX6RKWkjtmJcDuQCBn8OaAPpTw74n0jxVp4vdHvUuYejAcMh9GB5BrZr4o8DeLr3wZ4lt9TtZG8ncFuYQeJou4Pv6e9fZ0d5bzWKXqyr9meISiQnA2EZz+VAE5YKCSQAOpNefeIvjN4O8PyNB9ve/uE4MdivmAH/eyF/WvHPij8WrvxReTaTo9w9vokZKllOGuvc/7PoPz9uE8O+ENe8V3PkaNp01ztOHkHCJ9WPAoA9vf9pPSwxC+Hrxl7EzqD/Ktbwr8c7LxT4nstEi0S4t5LtiolecELgE9Me1ecQ/s8eL5EDSXWlRE/wmZyR+S103gT4J+I/DHjXTNZvLvTXt7WQtIsMjljlSOMoPWgD0TxH8QB4c1Q2U+kTyKVDRyrIAHHqKj0T4mWOr6rFYPZy2pl4R5HBBbsPxrU8aeGV8SaK0cYAu4MvbsfX+79D/hXgxEkEpBDRyxvyOhUj+tctWpOE/I+my3AYPHYZ2Vqi31f3n1B1pa5LwL4nHiDRwJmX7bb4SYevo34/wA81k/Frx2vgzww6Wrj+1r4GO1GeYx3k/Dt74rpi1JXR87Woyo1HTnujI8VfHTSPDXiG50iLTptQNsdss0UoVQ/dRx2/nVvwT8XV8c66NMsfDtzEqqZJp2nBWJfU8dzxivlmOOe9uliiR5riaQKoHzM7E/qSa+v/hp4Hj8D+Fo7V1U6jcYlvJF7v2UH0Xp+Z70zM7eiiigD5k/aQ/5HfS/+wcP/AEbJXoH7O/8AyTu4/wCv+T/0FK8//aQ/5HfS/wDsHD/0bJXA6F4+8T+GrA2WjatLa2pkMpjWNCNxxk8g+goA+2ailmjt4XlkdUjQFmZjgADqTXx+PjD49H/MxTf9+o//AIms/WfiL4t8QWTWepa5cTWzfeiAVA312gZ/GgDI16e1ufEWqT2QC2kt3K8KjtGXJH6Yr3T4heI7rw/8EPDejhzHeanZQxSYPIiWNSw/HKj8TXlPw28LQeLvG1npt3cRxW4/fSq7YaVF5KL6k/yya7j9o1yPFGj2yjEUVjlAOgy5H9BQB5/4B8Iy+NfFdtpSMY4P9ZcyhfuRDr+J4A9zX2Lo+jWGhaZDp2m26W9tCMKij9T6n3rxH9mu0ix4gvTjzh5MQ9h85P8AT8q9/oAKKKKAEryP4m+F/s0/9u2qfupSFuVA6N2b8ehr1zIqreWkF7azWtwoeKVSrqe4NROmpqx14HGTwlZVI7dfQ+e/DutzeHtahv4slR8s0f8AfQ9R/hXnPj3xLfeKfFt5qN6rR4by4YSf9VGOi/1+pNeg65pyaTrd5YRzCdIHKrIPT0PuOhrEXwtaeI/FGk2k11HaC5uBFK7HBYddo/2uMD6rXLQnyvkZ9LneDhXorF0+i+9HUfAXwB59x/wl2pR/uoiUsFYfeboZPw6D3z6V9D1WsbO202xgsrSJYbeBBHFGnRVHAFWa7T48KKKKAPmT9pD/AJHfS/8AsHD/ANGyVq/B74b+GPFvg2XUNYsZJ7lLt4gwmZflCqRwD7msr9pD/kd9L/7Bw/8ARsldf8CNe0bS/Ac0F/qtlazG9kYRzXCocbU5wTQB03/CjvAP/QJl/wDAqX/GsnX/AIB+FrzTJV0ZJrC+CkxSNO0iE9gwOePpXoP/AAmPhn/oYdK/8C4/8ax9f+J3hTw/psl4+sWl3KFJjtraYPJIewwOn1NAHyHDPfaBriyxs0F9Yz5BHVZEP+Ir2H47wHWNF8K+LIV/c3Ntskx/CWAkX+b/AJV45d3FxrOs3Fz5e65vbhpNqjqztnA/E19e3vgm31j4Y23hS8YB47GKJZeuyVFGG/MflmgDxH4BeJodH8Xz6TcOEi1SNVQk8eauSo/EFh9cV9RV8K6tpOo+Gdbm06+ie3vbWTsccjowPp3Br2zwN8fYY7SKw8WpL5iDaL+Fd2//AH1659x+VAHv1FchD8UPBE0QdfE2ngf7Um0/keauWHjvwtql7FZWOvWNxdSnEcUcoLMcZ4FAHQ4rk/HXiZfD2jEQuv264ykA9PVvw/niujvbyCwspbu4cJDCpd2PYCvnrxFrc3iDWZr6XIU/LCh/gQdB/jWFeryqy3PXybL/AK1W5pfDH8fIzVWSeYIoaSWRsAdSxP8AWvP9d1SefWCV8yH7K+2MdGQg9fY5FfQ3wx8L+fcf29dp+6iJW2Rh1bu34dBXHfHjwB9ivf8AhLNOi/0a4YLeoo+5J2f6Hv7/AFqMPSsuZnbn2Yc8vq1N6Lf17fI9P+FXjuPxt4YRpmX+1LTEV2nqez/Q/wA8131fFHgTxddeCvFFtqsG94c+Xcwhv9bEeo+vce4r7M03ULXVtOt9QspRLa3CCSKQdwa6j5st0UUUAfOP7QOk6nqPjLTpLLT7u6RNPCs0ELOFPmScZAryP/hGdf8A+gHqX/gJJ/hX3VRQB8K/8Izr/wD0A9S/8BJP8Kt2PgrxPfziG28PanI5/wCnVwPxJGBX2/RQB4n8LvgzLoOoQ674kEbXseGt7RDuETf3mPQn0A6V7ZRRQBx3jf4eaL48slS+jMN5GMQ3kQ+dPY+o9j+lfPfiH4I+MNDldrazGqWw6S2hyce6Hn8s19a0UAfDEnhTxFE5R9B1RWHUG0k/wrsPhToOsWvxN0Oa50m+hhWV90klu6qP3bdSRX1vRQB5T8StT1LUJ10exs7t7WMhpnjhYiRuy5x0H8/pXH6D4U1HWNYhtJbW4t4Cd00skRQKo69e9fQLAbugpRjJwBWMqHNLmbPZw+dPD0PYUoW8/PuRWdpDY2sVtAgSKJQqKOwFM1HT7XVtOuNPvYhLa3CGOWM/xA1borY8Zycndnxr4v8Ah3rnhrxJdabBp95eWqtvgnigZg8Z6cgdex9xXqHwN17W9KlbwxrGm6hHZyEyWc0ts4WJupQkjgHqPf6173RQAUUUUAf/2Q==" alt="BCX"><div class="title"><span>CUSTODY</span><small>Developed by Gerald Pakree · v<span class="ver">3.3</span></small></div></div>
+  <div class="mark" id="home-link"><img class="logo" src="data:image/jpeg;base64,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" alt="BCX"><div class="title"><span>CUSTODY</span><small>Developed by Gerald Pakree · v<span class="ver">3.4</span></small></div></div>
   <div class="right">
     <button class="iconbtn" id="btn-settings" title="Settings" aria-label="Settings">&#9881;</button>
   </div>
@@ -240,7 +244,8 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
     <h2><span class="n">1</span> Ledger</h2>
     <div class="small" id="r-ledger-info"></div>
     <label class="import">Import Nav Item Ledger Entries (.xlsx)<input type="file" id="r-import" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
-    <div class="field" id="r-eng-wrap" hidden><label class="lbl" for="r-eng">Engineer (boot owner)</label><select id="r-eng"></select></div>
+    <div class="field" id="r-eng-wrap" hidden><label class="lbl" for="r-eng">Engineer (boot owner)</label><select id="r-eng"></select>
+      <div class="small" id="r-eng-hint" hidden>Pick someone else if you're carrying spares from their boot. They sign when they hand them to you, or, if they aren't there, you record that you collected them.</div></div>
     <div class="msg" id="r-msg"></div>
   </section>
   <section class="card" id="r-pick" hidden>
@@ -277,7 +282,14 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
     <div class="msg" id="tv-msg"></div>
   </section>
   <section class="card"><h2>Items</h2><div class="list" id="tv-items"></div></section>
-  <section class="card"><h2>Custody trail</h2><div class="list" id="tv-hops"></div></section>
+  <section class="card"><h2>Custody trail</h2><div class="list" id="tv-hops"></div>
+    <div id="tv-confirm" hidden class="warnbox">
+      <b id="c-title">Confirm this handover</b>
+      <div id="c-text"></div>
+      <div class="sigwrap"><canvas id="c-sig"></canvas><div class="ph">Sign here</div><button class="btn small clr" data-clear="c-sig">Clear</button></div>
+      <div class="row"><button class="btn primary" id="c-go">Confirm with my signature</button><button class="btn" id="c-cancel">Cancel</button></div>
+      <div class="msg" id="c-msg"></div>
+    </div></section>
 </section>
 
 <!-- HANDOVER -->
@@ -292,8 +304,11 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
     <div class="party" id="p-giver">
       <h3>Handed over by</h3>
       <select id="g-code"></select>
+      <label class="small absent" id="g-absent-wrap" hidden><input type="checkbox" id="g-absent"> <span id="g-absent-lbl">Not here to sign</span></label>
+      <div id="g-absent-box" hidden class="warnbox">You're recording that you collected these items <b>without their signature</b>. Your signature only. It's flagged in red on the PDF and in the emails until <span class="g-nm"></span> confirms it in the app with their own login, or the Admin approves it. Don't use someone else's PIN.
+        <input id="g-reason" placeholder="Why can't they sign? e.g. not on site, on leave" autocomplete="off"></div>
       <input type="password" id="g-pin" inputmode="numeric" maxlength="8" placeholder="PIN" autocomplete="off"><div class="small" id="g-me" hidden>Logged in on this phone, so no PIN needed. Just sign.</div>
-      <div class="sigwrap"><canvas id="g-sig"></canvas><div class="ph">Sign here</div><button class="btn small clr" data-clear="g-sig">Clear</button></div>
+      <div class="sigwrap" id="g-sigwrap"><canvas id="g-sig"></canvas><div class="ph">Sign here</div><button class="btn small clr" data-clear="g-sig">Clear</button></div>
     </div>
     <div class="party" id="p-recv">
       <h3>Received by</h3>
@@ -13015,6 +13030,8 @@ const CTPDF = (() => {
       text(fit(`${h.giver.code} - ${sn(h.giver.name)}`, 134, 9), hx[2] + 3, y, 9); text(fit(`${h.receiver.code} - ${sn(h.receiver.name)}`, 134, 9), hx[3] + 3, y, 9);
       const office = h.giver.code === "OFFICE";
       if (office) text("-", hx[4] + 3, y, 9, F, GREY);
+      else if (h.confirmed === "NO") text("NO SIG", hx[4] + 3, y, 8, FB, POOR);
+      else if (/^Not signed/.test(h.confirmed || "")) text("ADMIN", hx[4] + 3, y, 8, FB, POOR);
       else text(o.pending && h.hop === hopNo ? "..." : "OK", hx[4] + 3, y, 9, FB, o.pending && h.hop === hopNo ? GREY : GREEN);
       text(String(h.itemsReceived) + (h.short ? "*" : ""), hx[5] + 3, y, 9, h.short ? FB : F, h.short ? POOR : BLACK);
       const s = office ? null : await sig(h.sigReceiver);
@@ -13047,7 +13064,11 @@ const CTPDF = (() => {
         const s = await sig(sb);
         if (s) { const sh = 40, sw3 = Math.min(half - 40, s.width * sh / s.height); page.drawImage(s, {x: x + 4, y: y - 78, width: sw3, height: sh}); }
         page.drawLine({start: {x, y: y - 80}, end: {x: x + half - 30, y: y - 80}, thickness: 0.6, color: GREY});
-        text(o.pending ? "Signature  |  PIN check pending (no signal)" : `Signature  |  PIN verified by server  ${hop.at.slice(0, 16)}`, x, y - 92, 8, F, GREY);
+        const cf = hop.confirmed || "";
+        if (k === 0 && cf === "NO") { text("NOT SIGNED - collected without custody", x + 4, y - 60, 9.5, FB, POOR); text("Awaiting confirmation by the giver or the Admin", x, y - 92, 8, FB, POOR); }
+        else if (k === 0 && /^Not signed/.test(cf)) { text("NOT SIGNED BY GIVER", x + 4, y - 60, 9.5, FB, POOR); text(fit(cf.replace(/^Not signed by [^-]+- /, ""), half - 30, 8), x, y - 92, 8, F, POOR); }
+        else if (k === 0 && /^Confirmed/.test(cf)) text(fit(`Signed later by the giver ${cf.replace(/^Confirmed by [^)]*\) /, "")} (own login)`, half - 30, 8), x, y - 92, 8, F, GREY);
+        else text(o.pending ? "Signature  |  PIN check pending (no signal)" : `Signature  |  PIN verified by server  ${hop.at.slice(0, 16)}`, x, y - 92, 8, F, GREY);
       }
       text(hop.giver.code === undefined ? "" : "Receiver confirms the items marked above were checked and physically received.", M + 10, y - 110, 8.5, FI);
       y -= 138;
@@ -13056,7 +13077,7 @@ const CTPDF = (() => {
     // ---- notes ----
     const notes = [];
     if (t.prepared) notes.push(`Prepared by ${t.createdBy} on ${String(t.created).slice(0, 16)}: items listed and fault tags made before the first handover. No signatures at that step.`);
-    hops.forEach(h => { if (h.short || h.note) notes.push(`Hop ${h.hop}: ${h.short ? "NOT RECEIVED: " + h.short + ". " : ""}${h.note || ""}`); });
+    hops.forEach(h => { if (h.short || h.note || h.confirmed) notes.push(`Hop ${h.hop}: ${h.short ? "NOT RECEIVED: " + h.short + ". " : ""}${h.note || ""}${h.confirmed === "NO" ? " NOT YET CONFIRMED BY " + (h.giver.name || h.giver.code).toUpperCase() + "." : h.confirmed ? " " + h.confirmed + "." : ""}`); });
     if (notes.length) {
       section("Notes");
       for (const n of notes) {
@@ -13481,7 +13502,7 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "3.3";
+const APP_VERSION = "3.4";
 const DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const SITE = "https://geraldceb.github.io/custody/";
 const RES_DEFAULT = [["ARSMAH", "Arshad Mahomed", "148156", "TARSMAH", "FARSMAH"], ["ARVRAJ", "Arvin Rajcoomar", "149032", "TARVRAJ", "FARVRAJ"], ["BENFYN", "Bevan C Fynn", "152072", "TBENFYN", "FBENFYN"], ["BRAHIR", "Branden Harilal", "148249", "TBRAHIR", "FBRAHIR"], ["CALJON", "Caleb Jonah", "150263", "TCALJON", "FCALJON"], ["CLIMTH", "Clifford Bonga Mthiyane", "148224", "TCLIMTH", "FCLIMTH"], ["DALSTA", "Dale Eric Stadler", "148711", "TDALSTA", "FDALSTA"], ["DAMMUN", "Damien Munien", "154458", "TDAMMUN", "FDAMMUN"], ["DEVBUG", "Deven Bugwandeen", "148351", "TDEVBUG", "FDEVBUG"], ["DHINAI", "Dhilend Raj Naidu", "152921", "TDHINAI", "FDHINAI"], ["EUGCHE", "Eugene Chetty", "148204", "TEUGCHE", "FEUGCHE"], ["GERPAK", "Gerald Pakree", "148154", "TGERPAK", "FGERPAK"], ["GOPRAJ", "Gopaul Erald Rajendran", "148980", "TGOPRAJ", "FGOPRAJ"], ["JAHKHA", "Jahmeel Khan", "150978", "TJAHKHA", "FJAHKHA"], ["JERPAK", "Jeremy Christopher Pakree", "148748", "TJERPAK", "FJERPAK"], ["KEESTA", "Keegan Stapelfeldt", "148346", "TKEESTA", "FKEESTA"], ["KYLDAV", "Kylan David", "998025", "TKYLDAV", "FKYLDAV"], ["MAHYUS", "Mahomed Faheem Yusuf", "148362", "TMAHYUS", "FMAHYUS"], ["MAHPER", "Mahomed S Peroo", "152017", "TMAHPER", "FMAHPER"], ["MITSOO", "Mithesh Soomaroo", "153985", "TMITSOO", "FMITSOO"], ["MLUNZI", "Mlungisi Nzimande", "995154", "TMLUNZI", "FMLUNZI"], ["SAIKHA", "Mohammed Saif Khan", "153708", "TSAIKHA", "FSAIKHA"], ["MOHEBR", "Mohammed Z Ebrahim", "149013", "TMOHEBR", "FMOHEBR"], ["NADKHA", "Nadeem Khan", "151408", "TNADKHA", "FNADKHA"], ["NAEMAN", "Naeson Manikkam", "148350", "TNAEMAN", "FNAEMAN"], ["NELGOV", "Nelanthran Govinden", "148729", "TNELGOV", "FNELGOV"], ["NISNAI", "Nishay Naidoo", "998026", "TNISNAI", "FNISNAI"], ["NIVMAH", "Nivendra Maharaj", "148771", "TNIVMAH", "FNIVMAH"], ["PHENGW", "Phelelani Ndumiso Ngwane", "148388", "TPHENGW", "FPHENGW"], ["RAJNAI", "Raj Naidoo", "145998", "TRAJNAI", "FRAJNAI"], ["RIVMUR", "Rivasen B Muruvan", "148997", "TRIVMUR", "FRIVMUR"], ["RONHAR", "Ronesh Harilall", "148275", "TRONHAR", "FRONHAR"], ["SHAEBR", "Shaahid Ebrahim", "150189", "TSHAEBR", "FSHAEBR"], ["SIPNGE", "Siphesihle Ngeleka", "154054", "TSIPNGE", "FSIPNGE"], ["SIYKHU", "Siyabonga Khumalo", "154032", "TSIYKHU", "FSIYKHU"], ["SUGMAR", "Sugandren Mari", "148209", "TSUGMAR", "FSUGMAR"], ["SULISA", "Suleyman Isaacs", "998148", "TSULISA", "FSULISA"], ["UWACAS", "Uwais Syed Cassim", "155138", "TUWACAS", "FUWACAS"], ["UZAMAH", "Uzair Mahomed", "148813", "TUZAMAH", "FUZAMAH"], ["VENPIL", "Venay Pillay", "148142", "TVENPIL", "FVENPIL"], ["VERRAG", "Veron Raghoo", "148228", "TVERRAG", "FVERRAG"], ["VINJAC", "Vincent Jaku", "148352", "TVINJAC", "FVINJAC"], ["WASKHA", "Waseem Khan", "151827", "TWASKHA", "FWASKHA"], ["ZIABOB", "Zia Bobat", "154377", "TZIABOB", "FZIABOB"], ["ZUBKHA", "Zubair Khan", "149008", "TZUBKHA", "FZUBKHA"]];
@@ -13579,12 +13600,45 @@ const searchQ = () => ($("t-search") ? $("t-search").value : "").trim();
 function matches(t, q) {
   if (!q) return true;
   const hay = [t.ref, t.type === "OUT" ? "outbound office collect" : "return", t.status === "COMPLETE" ? "complete completed closed" : t.hops === 0 ? "prepared open" : "open",
-    t.bookedTo, t.bookedToName, t.currentHolder, t.currentHolderName, t.createdBy, t.navDoc, t.created, t.lastHopAt, t.completedAt, t.find].join(" ").toLowerCase();
+    t.bookedTo, t.bookedToName, t.currentHolder, t.currentHolderName, t.createdBy, t.navDoc, t.created, t.lastHopAt, t.completedAt, t.find,
+    t.unconfirmed ? "unconfirmed not signed without custody" : ""].join(" ").toLowerCase();
   return q.toLowerCase().split(/\s+/).every(w => hay.includes(w));
 }
 function onSearch() {
   if (searchQ() && !TRAILS_DONE) { clearTimeout(searchTimer); searchTimer = setTimeout(loadTrails, 350); renderTrailList(); }
   else renderTrailList();
+}
+
+/* ---------- collected without custody: confirm later (v3.4) ---------- */
+let CONF = null;
+function openConfirm(hop) {
+  const h = TRAIL.hops.find(x => x.hop === hop); if (!h) return;
+  CONF = {hop};
+  $("c-title").textContent = `Confirm hop ${hop}`;
+  $("c-text").innerHTML = `${esc(h.receiver.name)} recorded collecting these items from you on ${esc(String(h.at).slice(0, 16))} without your signature. Sign below to confirm you handed them over.`;
+  $("tv-confirm").hidden = false; msg("c-msg", "");
+  PADS.c.resize(); PADS.c.clear(); $("tv-confirm").scrollIntoView({behavior: "smooth", block: "center"});
+}
+async function afterConfirm(res, hop, where) {
+  TRAIL = {trail: res.trail, items: res.items, hops: res.hops}; renderTrail();
+  const {bytes} = await rebuildPdf(TRAIL, hop);
+  const err = await sendPdf(TRAIL.trail.ref, hop, bytes, true);
+  msg(where, err ? `Confirmed. The updated PDF isn't in the log yet (${esc(err)}); it will be tried again.` : "Confirmed. The updated PDF is saved to the log and emailed.", err ? "warn" : "ok");
+}
+async function confirmHop() {
+  if (!CONF) return;
+  if (PADS.c.empty()) return msg("c-msg", "Sign to confirm.", "err");
+  $("c-go").disabled = true; msg("c-msg", '<span class="spinner"></span> Saving...');
+  try { const res = await api("confirmHop", {ref: TRAIL.trail.ref, hop: CONF.hop, sig: PADS.c.png()}); $("tv-confirm").hidden = true; await afterConfirm(res, CONF.hop, "tv-msg"); CONF = null; }
+  catch (e) { msg("c-msg", e instanceof Offline ? "Confirming needs signal. Try again when you have signal." : esc(e.message), "err"); }
+  finally { $("c-go").disabled = false; }
+}
+async function approveHop(hop, btn) {
+  const h = TRAIL.hops.find(x => x.hop === hop);
+  if (!confirm(`Approve hop ${hop} without ${h ? h.giver.name : "the giver"}'s signature? The PDF will say it was approved by you.`)) return;
+  btn.disabled = true; msg("tv-msg", '<span class="spinner"></span> Saving...');
+  try { await afterConfirm(await api("confirmHop", {ref: TRAIL.trail.ref, hop}), hop, "tv-msg"); }
+  catch (e) { msg("tv-msg", e instanceof Offline ? "Approving needs signal." : esc(e.message), "err"); btn.disabled = false; }
 }
 
 /* ---------- several trails at once (v3.0) ---------- */
@@ -13598,14 +13652,14 @@ function setPick(on) {
 function renderTrailList() {
   const box = $("t-list");
   const q = searchQ();
-  const list = TRAILS.filter(t => (PICK ? t.status !== "COMPLETE" : (q || $("t-done").checked || t.status !== "COMPLETE")) && matches(t, q));
+  const list = TRAILS.filter(t => (PICK ? t.status !== "COMPLETE" : (q || $("t-done").checked || t.status !== "COMPLETE" || t.waitingForMe)) && matches(t, q));
   $("t-count").textContent = q ? `${list.length} found${list.length >= 400 ? " (showing the latest 400)" : ""}` : "";
   box.innerHTML = list.length ? list.map(t => {
       const picked = PICK && PICK.refs.includes(t.ref);
       const cls = (t.status === "COMPLETE" ? "done" : t.shortItems ? "short" : "") + (picked ? " pick" : "") + (PICK && !picked && !pickable(t) ? " off" : "");
       return `<button class="trow ${cls}" data-ref="${esc(t.ref)}"><span class="r1">${PICK ? `<span class="tick">${picked ? "&#10003;" : ""}</span>` : ""}<span class="ref">${esc(t.ref)}</span>
         <span class="chip ${t.status === "COMPLETE" ? "ok" : "open"}">${t.status === "COMPLETE" ? "Complete" : t.hops === 0 ? "Prepared" : "Open"}</span>
-        <span class="chip">${t.type === "OUT" ? "Outbound" : "Return"}</span>${t.shortItems ? `<span class="chip bad">${t.shortItems} missing</span>` : ""}</span>
+        <span class="chip">${t.type === "OUT" ? "Outbound" : "Return"}</span>${t.shortItems ? `<span class="chip bad">${t.shortItems} missing</span>` : ""}${t.waitingForMe ? '<span class="chip bad">Confirm: you</span>' : t.unconfirmed ? '<span class="chip bad">Not signed by giver</span>' : ""}</span>
         <span class="r2">${t.type === "OUT" ? "For " + esc(t.bookedToName || t.bookedTo) : "From " + esc(t.bookedToName || t.bookedTo)} · ${t.items} item${t.items === 1 ? "" : "s"} · now with <b>${esc(t.currentHolderName)}</b><br>${esc(t.lastHopAt)}${t.navDoc ? " · " + esc(t.navDoc) : ""}</span></button>`;
     }).join("") : `<div class="empty">${q ? "Nothing matches “" + esc(q) + "”." + ($("t-done").checked || TRAILS_DONE ? "" : " Searching completed trails too...") : "No open trails."}</div>`;
   $("t-multi").textContent = PICK ? "Cancel" : "Select several"; $("t-multi-hint").hidden = !PICK;
@@ -13986,8 +14040,9 @@ function loadLedger() {
 function startRet() {
   RET = {eng: me().role === "ENG" ? me().code : "", items: [], extra: [], sel: {}, cond: {}, q: "", tags: true, t: {}};
   $("r-tags").checked = true;
-  const wrap = $("r-eng-wrap"); wrap.hidden = me().role === "ENG";
-  if (!wrap.hidden) { const sel = $("r-eng"); sel.innerHTML = '<option value="">Choose the engineer</option>' + RES().map(r => `<option value="${esc(r[0])}">${esc(title(r[1]))} (${esc(r[0])})</option>`).join(""); }
+  const wrap = $("r-eng-wrap"); wrap.hidden = false; $("r-eng-hint").hidden = me().role !== "ENG";
+  const sel = $("r-eng"); sel.innerHTML = (me().role === "ENG" ? "" : '<option value="">Choose the engineer</option>') + RES().map(r => `<option value="${esc(r[0])}">${esc(title(r[1]))} (${esc(r[0])})${r[0] === me().code ? " - my boot" : ""}</option>`).join("");
+  sel.value = RET.eng; $("r-prep").hidden = false;
   $("r-extra").innerHTML = ""; $("r-search").value = ""; msg("r-check", "");
   renderLedgerInfo(); buildRetItems(); show("v-ret");
 }
@@ -14151,7 +14206,7 @@ function startHandover(h) {
     const gDefault = h.trail.type === "OUT" ? (me().role !== "ENG" ? mine : "") : (h.trail.bookedTo || mine);
     userOptions($("g-code"), gFilter, gDefault, h.trail.type === "OUT" ? "Choose Stores person" : "Choose...");
     $("g-code").disabled = false;
-    const rDefault = h.trail.type === "OUT" && me().role === "ENG" ? mine : "";
+    const rDefault = (h.trail.type === "OUT" && me().role === "ENG") || (h.trail.type === "RET" && h.trail.bookedTo && h.trail.bookedTo !== mine) ? mine : "";
     userOptions($("r-code"), u => true, rDefault, "Choose who receives");
   } else {
     userOptions($("g-code"), u => u.code === h.trail.currentHolder, h.trail.currentHolder);
@@ -14162,7 +14217,7 @@ function startHandover(h) {
   handReset();
 }
 function handReset() {
-  ["g-pin", "r-pin", "h-note"].forEach(id => $(id).value = "");
+  ["g-pin", "r-pin", "h-note", "g-reason"].forEach(id => $(id).value = ""); $("g-absent").checked = false;
   pinVis();
   $("h-thumbs").innerHTML = ""; msg("h-msg", ""); $("h-note-req").hidden = true;
   show("v-hand");
@@ -14186,9 +14241,19 @@ function startHandoverMany(groups) {
   handReset();
 }
 function pinVis() {
+  // "not here to sign": only on a single handover, when the giver isn't the phone owner and isn't the office
+  const g = $("g-code").value, canAbsent = HAND && !HAND.multi && g && g !== me().code && g !== "OFFICE" && !(HAND.isNew && HAND.trail.type === "OUT");
+  $("g-absent-wrap").hidden = !canAbsent; if (!canAbsent) $("g-absent").checked = false;
+  const absent = $("g-absent").checked;
+  $("g-absent-lbl").textContent = `${userName(g) || "They"} isn't here to sign: I collected these items from them`;
+  document.querySelectorAll(".g-nm").forEach(x => x.textContent = userName(g) || "they");
+  $("g-absent-box").hidden = !absent; $("g-sigwrap").hidden = absent;
+  if (absent) { $("r-code").value = me().code; $("r-code").disabled = true; } else $("r-code").disabled = false;
   [["g-code", "g-pin", "g-me"], ["r-code", "r-pin", "r-me"]].forEach(([sel, pin, note]) => {
-    const mine = $(sel).value === me().code; $(pin).hidden = mine; $(note).hidden = !mine; if (mine) $(pin).value = "";
+    const mine = $(sel).value === me().code; $(pin).hidden = mine || (sel === "g-code" && absent); $(note).hidden = !mine; if (mine) $(pin).value = "";
   });
+  $("h-go").textContent = absent ? "Record: I have these items" : "Confirm handover";
+  if (!absent && current === "v-hand" && PADS.g.empty()) PADS.g.resize();
 }
 function renderHandItems() {
   let lastRef = null;
@@ -14212,6 +14277,7 @@ async function submitHandover() {
   if (g !== me().code && r !== me().code) return err(`You (${me().code}) are logged in on this phone, so you must be one of the two people.`);
   if (!received.length) return err("The receiver must tick the items they physically received.");
   if (received.length < HAND.list.length && !note) return err("Some items aren't ticked. Add a note saying why.");
+  if ($("g-absent").checked && !HAND.multi) return submitTakeover(g, received, note);
   if ((g !== me().code && !gp) || (r !== me().code && !rp)) return err(`${g !== me().code && !gp ? userName(g) : userName(r)} must enter their PIN.`);
   if (PADS.g.empty() || PADS.r.empty()) return err("Both people must sign.");
   if (HAND.multi) return submitMany(g, r, gp, rp, note);
@@ -14224,6 +14290,21 @@ async function submitHandover() {
   } catch (e) {
     if (e instanceof Offline) { queueAdd({kind: "handover", payload, label: HAND.isNew ? "New " + (HAND.trail.type === "OUT" ? "outbound" : "return") + " trail" : HAND.trail.ref}); showQueued(payload); }
     else err(esc(e.message));
+  } finally { $("h-go").disabled = false; }
+}
+
+// collected without custody: the giver isn't here, so only the phone owner signs; flagged until the giver confirms
+async function submitTakeover(g, received, note) {
+  const err = t => msg("h-msg", t, "err"), reason = $("g-reason").value.trim();
+  if (!reason) return err(`Say why ${esc(userName(g))} can't sign (for example: not on site).`);
+  if (PADS.r.empty()) return err("Sign to confirm you have the items.");
+  const payload = {clientId: HAND.clientId || (HAND.clientId = uid()), ref: HAND.isNew ? null : HAND.trail.ref, trail: HAND.isNew ? HAND.trail : null,
+    from: g, reason, sig: PADS.r.png(), received, note, photos: HAND.photos};
+  $("h-go").disabled = true; msg("h-msg", '<span class="spinner"></span> Saving...');
+  try { await finishHop(await api("takeover", payload)); }
+  catch (e) {
+    if (e instanceof Offline) { queueAdd({kind: "takeover", payload, label: (HAND.isNew ? "New return" : HAND.trail.ref) + " (collected from " + userName(g) + ")"}); showQueued(payload); }
+    else err(/Unknown action/i.test(e.message) ? "This needs the Google script updated to v2.7. Ask Gerald, or get " + esc(userName(g)) + " to sign." : esc(e.message));
   } finally { $("h-go").disabled = false; }
 }
 
@@ -14315,9 +14396,9 @@ async function rebuildPdf(t, hop) {
   return {bytes: await makePdf(t, hop, false, {attachPhotos: ph || []}), photos: ph};
 }
 // returns "" when the log has it, otherwise what went wrong (the PDF stays in the send list)
-async function sendPdf(ref, hop, bytes) {
-  const qid = queueAdd({kind: "pdf", ref, hop, label: `${ref} hop ${hop} PDF`, notBefore: Date.now() + 180000});
-  try { await api("uploadPdf", {ref, hop, pdf: bytesToB64(bytes)}); queueDel(qid); return ""; }
+async function sendPdf(ref, hop, bytes, replace) {
+  const qid = queueAdd({kind: "pdf", ref, hop, replace: !!replace, label: `${ref} hop ${hop} PDF${replace ? " (updated)" : ""}`, notBefore: Date.now() + 180000});
+  try { await api("uploadPdf", {ref, hop, pdf: bytesToB64(bytes), replace: !!replace}); queueDel(qid); return ""; }
   catch (e) {
     if (e instanceof Offline) { queueSet(qid, {notBefore: 0}); return "no signal, it will be sent automatically"; }
     queueSet(qid, {notBefore: Date.now() + 60000}); return e.message;
@@ -14342,8 +14423,10 @@ const tagMsg = r => `Saved ${esc(r.name)}: ${r.tags} tag${r.tags === 1 ? "" : "s
 function showDone(res) {
   const t = res.trail, complete = t.status === "COMPLETE";
   $("d-multi").hidden = true; $("d-single").hidden = false;
-  $("d-title").textContent = complete ? "Trail complete" : `Hop ${res.hop} signed`;
-  $("d-sub").innerHTML = (complete ? `${esc(t.ref)}: all handovers are done.` : `Items are now with <b>${esc(t.currentHolderName)}</b>.`)
+  const hp = (res.hops || []).find(x => x.hop === res.hop), unconf = hp && hp.confirmed === "NO";
+  $("d-title").textContent = unconf ? "Recorded: you have the items" : complete ? "Trail complete" : `Hop ${res.hop} signed`;
+  $("d-sub").innerHTML = (unconf ? `<b style="color:var(--poor)">Not signed by ${esc(hp.giver.name)}.</b> It's flagged until they confirm it in the app with their own login, or the Admin approves it.<br>` : "")
+    + (complete ? `${esc(t.ref)}: all handovers are done.` : `Items are now with <b>${esc(t.currentHolderName)}</b>.`)
     + (t.shortItems ? `<br><b style="color:var(--poor)">${t.shortItems} item${t.shortItems === 1 ? " was" : "s were"} not received. This is recorded on the trail and flagged to the admin.</b>` : "");
   $("d-qr-wrap").hidden = complete;
   if (!complete) drawQR($("d-qr"), SITE + "?t=" + t.ref);
@@ -14402,6 +14485,13 @@ async function processQueue() {
           await sendPdf(res.ref, res.hop, bytes);
           LAST = {res, bytes, name: `${res.ref} hop ${res.hop}.pdf`};
           if (current === "v-home" || current === "v-done") { showDone(res); msg("d-msg", "Sent: this handover was saved earlier with no signal.", "ok"); }
+        } else if (x.kind === "takeover") {
+          const res = await api("takeover", x.payload);
+          queueDel(x.id);
+          const bytes = await makePdf(res, res.hop, false, {attachPhotos: await photosForHop(res.ref, res.hop, x.payload.photos)});
+          await sendPdf(res.ref, res.hop, bytes);
+          LAST = {res, bytes, name: `${res.ref} hop ${res.hop}.pdf`};
+          if (current === "v-home" || current === "v-done") { showDone(res); msg("d-msg", "Sent: this was saved earlier with no signal.", "ok"); }
         } else if (x.kind === "handoverMany") {
           const res = await handoverManyApi(x.payload);
           queueDel(x.id);
@@ -14417,7 +14507,7 @@ async function processQueue() {
         } else if (x.kind === "pdf") {
           const t = await api("trail", {ref: x.ref});
           const h = (t.hops || []).find(y => y.hop === x.hop);
-          if (h && !h.pdf) { const {bytes} = await rebuildPdf(t, x.hop); await api("uploadPdf", {ref: x.ref, hop: x.hop, pdf: bytesToB64(bytes)}); }
+          if (h && (!h.pdf || x.replace)) { const {bytes} = await rebuildPdf(t, x.hop); await api("uploadPdf", {ref: x.ref, hop: x.hop, pdf: bytesToB64(bytes), replace: !!x.replace}); }
           queueDel(x.id);
         }
       } catch (e) {
@@ -14454,6 +14544,8 @@ function renderTrail() {
       <br><span class="meta">${esc(it.itemNo)} · S/N ${esc(it.serial || "-")} · Tag ${esc(it.tag || "-")}${it.so ? " · " + esc(it.so) : ""}</span><br><span class="small" style="${miss ? "color:var(--poor);font-weight:600" : ""}">${esc(it.status)}</span></div></div>`;
   }).join("");
   $("tv-hops").innerHTML = (t.hops === 0 ? `<div class="empty">Prepared by ${esc(t.createdBy)} on ${esc(t.created)}. Not handed over yet.</div>` : "") + hops.map(h => `<div class="hop"><span class="no">${h.hop}</span><div><b>${esc(h.giver.name)}</b> to <b>${esc(h.receiver.name)}</b><br><span class="small">${esc(h.at)} · ${h.itemsReceived} item${h.itemsReceived === 1 ? "" : "s"}${h.short ? ` · <b style="color:var(--poor)">not received: ${esc(h.short)}</b>` : ""}${h.note ? "<br>Note: " + esc(h.note) : ""}</span>
+    ${h.confirmed === "NO" ? `<br><span class="unconf">Not signed by ${esc(h.giver.name)}: collected without custody.</span>${h.giver.code === me().code ? ` <button class="btn small primary" data-confirm="${h.hop}">Confirm and sign</button>` : me().role === "ADMIN" ? ` <button class="btn small" data-approve="${h.hop}">Approve as Admin</button>` : ' <span class="small">Waiting for them to confirm.</span>'}`
+      : h.confirmed ? `<br><span class="small" style="color:var(--good)">${esc(h.confirmed)}</span>` : ""}
     ${h.sigReceiver ? `<br><img alt="Signature" src="data:image/png;base64,${h.sigReceiver}">` : ""}<div class="row" style="margin-top:6px"><button class="btn small" data-pdf="${h.hop}">PDF</button>${h.pdf ? "" : `<button class="btn small primary" data-resend="${h.hop}">Send to log</button>`}<span class="small mono">${esc(h.verification)}</span></div>${h.pdf ? "" : '<span class="small" style="color:var(--poor)">This PDF is not in the log yet.</span>'}</div></div>`).join("") || (t.hops === 0 ? "" : '<div class="empty">No handovers yet.</div>');
   msg("tv-msg", t.status !== "COMPLETE" && t.currentHolder !== me().code ? `To receive these items, ${esc(t.currentHolderName)} hands them over to you here, on either phone.` : "");
   show("v-trail");
@@ -14522,7 +14614,8 @@ function renderThumbs() { $("h-thumbs").innerHTML = HAND.photos.map((p, i) => `<
 function init() {
   fillCodes(); renderWho();
   $("s-ver").textContent = APP_VERSION; document.querySelectorAll(".mark .ver").forEach(x => x.textContent = APP_VERSION);
-  PADS.g = SigPad($("g-sig")); PADS.r = SigPad($("r-sig"));
+  PADS.g = SigPad($("g-sig")); PADS.r = SigPad($("r-sig")); PADS.c = SigPad($("c-sig"));
+  $("c-go").onclick = confirmHop; $("c-cancel").onclick = () => { $("tv-confirm").hidden = true; CONF = null; };
   window.addEventListener("resize", () => { if (current === "v-hand") { /* keep ink; only resize when empty */ if (PADS.g.empty()) PADS.g.resize(); if (PADS.r.empty()) PADS.r.resize(); } });
   $("l-go").onclick = doLogin; $("l-pin").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
   $("home-link").onclick = () => SESSION ? goHome() : show("v-login");
@@ -14577,7 +14670,9 @@ function init() {
   $("o-rawcopy").onclick = async () => { try { await navigator.clipboard.writeText($("o-raw").textContent); $("o-rawcopy").textContent = "Copied"; } catch (e) { const r = document.createRange(); r.selectNodeContents($("o-raw")); getSelection().removeAllRanges(); getSelection().addRange(r); } };
   // return
   $("r-import").onchange = e => { if (e.target.files[0]) importLedger(e.target.files[0]); e.target.value = ""; };
-  $("r-eng").onchange = e => { RET.eng = e.target.value; RET.sel = {}; RET.cond = {}; buildRetItems(); };
+  $("r-eng").onchange = e => { RET.eng = e.target.value; RET.sel = {}; RET.cond = {}; buildRetItems();
+    // preparing (no signatures) is only for your own boot; for someone else's, go straight to the handover
+    $("r-prep").hidden = me().role === "ENG" && RET.eng !== me().code; };
   $("r-search").oninput = e => { RET.q = e.target.value.trim(); renderRetItems(); };
   document.querySelectorAll("#r-pick .seg[aria-label=Show] button").forEach(b => b.onclick = () => { retView = b.dataset.view; document.querySelectorAll("#r-pick .seg[aria-label=Show] button").forEach(x => x.setAttribute("aria-pressed", x === b)); renderRetItems(); });
   $("r-tags").onchange = e => { RET.tags = e.target.checked; renderRetItems(); renderExtraR(); };
@@ -14605,6 +14700,9 @@ function init() {
   $("tv-tags").onclick = async () => { try { const r = await saveTags(TRAIL.items, TRAIL.trail.bookedTo); msg("tv-msg", r ? tagMsg(r) : "No fault tag details on this trail.", r ? "ok" : "warn"); } catch (e) { msg("tv-msg", "Couldn't make the tags: " + esc(e.message), "err"); } };
   $("d-tags").onclick = async () => { if (!LAST) return; try { const r = await saveTags(LAST.res.items, LAST.res.trail.bookedTo); msg("d-msg", r ? tagMsg(r) : "No fault tag details.", r ? "ok" : "warn"); } catch (e) { msg("d-msg", "Couldn't make the tags: " + esc(e.message), "err"); } };
   $("tv-hops").onclick = async e => {
+    const cf = e.target.dataset.confirm, ap = e.target.dataset.approve;
+    if (cf) return openConfirm(Number(cf));
+    if (ap) return approveHop(Number(ap), e.target);
     const h = e.target.dataset.pdf, rs = e.target.dataset.resend; if (!h && !rs) return;
     const btn = e.target, hop = Number(h || rs); btn.disabled = true;
     msg("tv-msg", `<span class="spinner"></span> ${rs ? "Sending the hop " + hop + " PDF to the log" : "Making the PDF"}...`);
@@ -14627,7 +14725,7 @@ function init() {
   $("h-photo").onchange = async e => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; if (HAND.photos.length >= 4) return msg("h-msg", "Up to 4 photos.", "warn"); try { HAND.photos.push(await imageToB64(f, 1600, 0.8)); renderThumbs(); } catch (er) { msg("h-msg", esc(er.message), "err"); } };
   $("h-thumbs").onclick = e => { const i = e.target.dataset.pdel; if (i != null) { HAND.photos.splice(Number(i), 1); renderThumbs(); } };
   $("h-go").onclick = submitHandover;
-  $("g-code").addEventListener("change", pinVis); $("r-code").addEventListener("change", pinVis);
+  $("g-code").addEventListener("change", pinVis); $("r-code").addEventListener("change", pinVis); $("g-absent").addEventListener("change", pinVis);
   // done
   $("d-pdf").onclick = () => LAST && savePdf(LAST.bytes, LAST.name);
   $("d-share").onclick = () => LAST && sharePdf(LAST.bytes, LAST.name);
