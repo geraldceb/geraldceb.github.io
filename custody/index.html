@@ -77,10 +77,15 @@ label.import input { position: absolute; inset: 0; opacity: 0; width: 100%; curs
 .chip.bad { background: var(--poor-soft); color: var(--poor); } .chip.rtc { background: var(--rtc-soft); color: var(--rtc); }
 .list { display: grid; gap: 8px; }
 .trow { border: 1px solid var(--line); border-left: 4px solid var(--warn); border-radius: 8px; background: var(--bg); padding: 10px 12px; display: grid; gap: 4px; text-align: left; color: var(--ink); width: 100%; font: inherit; }
-.trow.sel { outline: 2px solid var(--ink); } .grp { font-weight: 600; padding: 8px 2px 2px; border-top: 1px solid var(--line); margin-top: 4px; } .grp:first-child { border-top: 0; }
 .trow.done { border-left-color: var(--good); } .trow.short { border-left-color: var(--poor); }
 .trow .r1 { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; } .trow .ref { font: 500 14px/1 var(--mono); }
 .trow .r2 { font-size: 14px; color: var(--muted); }
+.trow .tick { width: 22px; height: 22px; border: 2px solid var(--line); border-radius: 6px; display: inline-grid; place-items: center; font: 700 15px/1 var(--body); color: #fff; flex: none; }
+.trow.pick { border-color: var(--good); background: var(--good-soft); } .trow.pick .tick { background: var(--good); border-color: var(--good); }
+.trow.off { opacity: .45; }
+.multibar { position: sticky; bottom: 8px; display: grid; gap: 6px; background: var(--surface, #fff); border: 1px solid var(--line); border-radius: 10px; padding: 10px; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+.grp { font: 600 13px/1.2 var(--mono); padding: 8px 2px 2px; border-top: 1px solid var(--line); display: flex; gap: 8px; align-items: center; }
+.grp:first-child { border-top: 0; padding-top: 0; }
 .empty { color: var(--muted); font-size: 14px; text-align: center; padding: 14px; }
 .item { border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 8px; background: var(--bg); padding: 10px 12px; display: grid; gap: 8px; }
 .item.sel { border-left-color: var(--good); } .item.rtc { border-left-color: var(--rtc); } .item.miss { border-left-color: var(--poor); opacity: .75; }
@@ -134,7 +139,7 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
 </style>
 
 <header class="top"><div class="wrap">
-  <div class="mark" id="home-link"><img class="logo" src="data:image/jpeg;base64,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" alt="BCX"><div class="title"><span>CUSTODY</span><small>Developed by Gerald Pakree · v<span class="ver">2.8</span></small></div></div>
+  <div class="mark" id="home-link"><img class="logo" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAA8AIMDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDuPiB8WbbwDrFtp1xpU1208AnDxyhAPmIxyPauT/4aV03/AKFy7/8AAlf8K5f9pD/kd9L/AOwcP/Rslc74K+EmseONEfVLC+soIlnMJWYtnIAOeAfWgD0r/hpXTf8AoXLv/wACV/wqez/aQ0OSdVu9EvoIieXSRZMfhxXI/wDDOHib/oK6V+cn/wATWZr/AMC/Fmh6bJfRtaX6RKWkjtmJcDuQCBn8OaAPpTw74n0jxVp4vdHvUuYejAcMh9GB5BrZr4o8DeLr3wZ4lt9TtZG8ncFuYQeJou4Pv6e9fZ0d5bzWKXqyr9meISiQnA2EZz+VAE5YKCSQAOpNefeIvjN4O8PyNB9ve/uE4MdivmAH/eyF/WvHPij8WrvxReTaTo9w9vokZKllOGuvc/7PoPz9uE8O+ENe8V3PkaNp01ztOHkHCJ9WPAoA9vf9pPSwxC+Hrxl7EzqD/Ktbwr8c7LxT4nstEi0S4t5LtiolecELgE9Me1ecQ/s8eL5EDSXWlRE/wmZyR+S103gT4J+I/DHjXTNZvLvTXt7WQtIsMjljlSOMoPWgD0TxH8QB4c1Q2U+kTyKVDRyrIAHHqKj0T4mWOr6rFYPZy2pl4R5HBBbsPxrU8aeGV8SaK0cYAu4MvbsfX+79D/hXgxEkEpBDRyxvyOhUj+tctWpOE/I+my3AYPHYZ2Vqi31f3n1B1pa5LwL4nHiDRwJmX7bb4SYevo34/wA81k/Frx2vgzww6Wrj+1r4GO1GeYx3k/Dt74rpi1JXR87Woyo1HTnujI8VfHTSPDXiG50iLTptQNsdss0UoVQ/dRx2/nVvwT8XV8c66NMsfDtzEqqZJp2nBWJfU8dzxivlmOOe9uliiR5riaQKoHzM7E/qSa+v/hp4Hj8D+Fo7V1U6jcYlvJF7v2UH0Xp+Z70zM7eiiigD5k/aQ/5HfS/+wcP/AEbJXoH7O/8AyTu4/wCv+T/0FK8//aQ/5HfS/wDsHD/0bJXA6F4+8T+GrA2WjatLa2pkMpjWNCNxxk8g+goA+2ailmjt4XlkdUjQFmZjgADqTXx+PjD49H/MxTf9+o//AIms/WfiL4t8QWTWepa5cTWzfeiAVA312gZ/GgDI16e1ufEWqT2QC2kt3K8KjtGXJH6Yr3T4heI7rw/8EPDejhzHeanZQxSYPIiWNSw/HKj8TXlPw28LQeLvG1npt3cRxW4/fSq7YaVF5KL6k/yya7j9o1yPFGj2yjEUVjlAOgy5H9BQB5/4B8Iy+NfFdtpSMY4P9ZcyhfuRDr+J4A9zX2Lo+jWGhaZDp2m26W9tCMKij9T6n3rxH9mu0ix4gvTjzh5MQ9h85P8AT8q9/oAKKKKAEryP4m+F/s0/9u2qfupSFuVA6N2b8ehr1zIqreWkF7azWtwoeKVSrqe4NROmpqx14HGTwlZVI7dfQ+e/DutzeHtahv4slR8s0f8AfQ9R/hXnPj3xLfeKfFt5qN6rR4by4YSf9VGOi/1+pNeg65pyaTrd5YRzCdIHKrIPT0PuOhrEXwtaeI/FGk2k11HaC5uBFK7HBYddo/2uMD6rXLQnyvkZ9LneDhXorF0+i+9HUfAXwB59x/wl2pR/uoiUsFYfeboZPw6D3z6V9D1WsbO202xgsrSJYbeBBHFGnRVHAFWa7T48KKKKAPmT9pD/AJHfS/8AsHD/ANGyVq/B74b+GPFvg2XUNYsZJ7lLt4gwmZflCqRwD7msr9pD/kd9L/7Bw/8ARsldf8CNe0bS/Ac0F/qtlazG9kYRzXCocbU5wTQB03/CjvAP/QJl/wDAqX/GsnX/AIB+FrzTJV0ZJrC+CkxSNO0iE9gwOePpXoP/AAmPhn/oYdK/8C4/8ax9f+J3hTw/psl4+sWl3KFJjtraYPJIewwOn1NAHyHDPfaBriyxs0F9Yz5BHVZEP+Ir2H47wHWNF8K+LIV/c3Ntskx/CWAkX+b/AJV45d3FxrOs3Fz5e65vbhpNqjqztnA/E19e3vgm31j4Y23hS8YB47GKJZeuyVFGG/MflmgDxH4BeJodH8Xz6TcOEi1SNVQk8eauSo/EFh9cV9RV8K6tpOo+Gdbm06+ie3vbWTsccjowPp3Br2zwN8fYY7SKw8WpL5iDaL+Fd2//AH1659x+VAHv1FchD8UPBE0QdfE2ngf7Um0/keauWHjvwtql7FZWOvWNxdSnEcUcoLMcZ4FAHQ4rk/HXiZfD2jEQuv264ykA9PVvw/niujvbyCwspbu4cJDCpd2PYCvnrxFrc3iDWZr6XIU/LCh/gQdB/jWFeryqy3PXybL/AK1W5pfDH8fIzVWSeYIoaSWRsAdSxP8AWvP9d1SefWCV8yH7K+2MdGQg9fY5FfQ3wx8L+fcf29dp+6iJW2Rh1bu34dBXHfHjwB9ivf8AhLNOi/0a4YLeoo+5J2f6Hv7/AFqMPSsuZnbn2Yc8vq1N6Lf17fI9P+FXjuPxt4YRpmX+1LTEV2nqez/Q/wA8131fFHgTxddeCvFFtqsG94c+Xcwhv9bEeo+vce4r7M03ULXVtOt9QspRLa3CCSKQdwa6j5st0UUUAfOP7QOk6nqPjLTpLLT7u6RNPCs0ELOFPmScZAryP/hGdf8A+gHqX/gJJ/hX3VRQB8K/8Izr/wD0A9S/8BJP8Kt2PgrxPfziG28PanI5/wCnVwPxJGBX2/RQB4n8LvgzLoOoQ674kEbXseGt7RDuETf3mPQn0A6V7ZRRQBx3jf4eaL48slS+jMN5GMQ3kQ+dPY+o9j+lfPfiH4I+MNDldrazGqWw6S2hyce6Hn8s19a0UAfDEnhTxFE5R9B1RWHUG0k/wrsPhToOsWvxN0Oa50m+hhWV90klu6qP3bdSRX1vRQB5T8StT1LUJ10exs7t7WMhpnjhYiRuy5x0H8/pXH6D4U1HWNYhtJbW4t4Cd00skRQKo69e9fQLAbugpRjJwBWMqHNLmbPZw+dPD0PYUoW8/PuRWdpDY2sVtAgSKJQqKOwFM1HT7XVtOuNPvYhLa3CGOWM/xA1borY8Zycndnxr4v8Ah3rnhrxJdabBp95eWqtvgnigZg8Z6cgdex9xXqHwN17W9KlbwxrGm6hHZyEyWc0ts4WJupQkjgHqPf6173RQAUUUUAf/2Q==" alt="BCX"><div class="title"><span>CUSTODY</span><small>Developed by Gerald Pakree · v<span class="ver">3.1</span></small></div></div>
   <div class="right">
     <button class="iconbtn" id="btn-settings" title="Settings" aria-label="Settings">&#9881;</button>
   </div>
@@ -147,10 +152,10 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
   <h2>Log in</h2>
   <p class="hint">Use your Nav code and the PIN you were given. The same login works in Boot Recon and Fault Tags.</p>
   <div class="field"><label class="lbl" for="l-code">Nav code</label>
-    <input type="text" id="l-code" class="mono" list="codes" autocapitalize="characters" autocomplete="username" placeholder="e.g. WASKHA"></div>
+    <input type="text" id="l-code" name="bcx-navcode-x" class="mono" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false"></div>
   <datalist id="codes"></datalist>
   <div class="field"><label class="lbl" for="l-pin">PIN</label>
-    <input type="password" id="l-pin" inputmode="numeric" autocomplete="current-password" maxlength="8"></div>
+    <input type="password" id="l-pin" name="bcx-pin-x" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></div>
   <button class="btn primary block" id="l-go">Log in</button>
   <div class="msg" id="l-msg"></div>
 </section>
@@ -168,10 +173,11 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
     </div>
   </section>
   <section class="card">
-    <h2>Open trails <span class="aside"><button class="btn small" id="t-multi" hidden>Hand over several</button> <button class="btn small" id="t-refresh">Refresh</button></span></h2>
-    <div class="msg" id="t-multibar" hidden></div>
+    <h2>Open trails <span class="aside"><button class="btn small" id="t-multi">Select several</button> <button class="btn small" id="t-refresh">Refresh</button></span></h2>
+    <p class="hint" id="t-multi-hint" hidden>Tick the trails going to the same person. They must all be with the same person now.</p>
     <div class="row" id="t-filter" hidden><label class="small"><input type="checkbox" id="t-done"> Include completed</label></div>
     <div class="list" id="t-list"><div class="empty">Loading...</div></div>
+    <div class="multibar" id="t-multi-go" hidden><button class="btn primary block" id="t-multi-next">Hand over</button><div class="msg" id="t-multi-msg"></div></div>
   </section>
 </section>
 
@@ -295,10 +301,9 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
       <div class="sigwrap"><canvas id="r-sig"></canvas><div class="ph">Sign here</div><button class="btn small clr" data-clear="r-sig">Clear</button></div>
     </div>
     <div class="field"><label class="lbl" for="h-note">Note <span id="h-note-req" hidden>(required: some items not received)</span></label><textarea id="h-note" rows="2" placeholder="Optional"></textarea></div>
-    <div class="field"><span class="lbl" id="h-photo-lbl">Photos (optional)</span>
+    <div class="field"><span class="lbl">Photos (optional)</span>
       <div class="thumbs" id="h-thumbs"></div>
-      <div class="row"><label class="import" style="min-height:46px;flex:1" id="h-photo-btn">Add photo<input type="file" id="h-photo" accept="image/*" capture="environment"></label><label class="import" style="min-height:46px;flex:1">From gallery<input type="file" id="h-photo-g" accept="image/*" multiple></label></div>
-      <div class="small">Photos go behind the signed PDF as extra pages.</div></div>
+      <label class="import" style="min-height:46px">Add photo<input type="file" id="h-photo" accept="image/*" capture="environment"></label></div>
     <button class="btn primary block" id="h-go">Confirm handover</button>
     <div class="msg" id="h-msg"></div>
   </section>
@@ -311,8 +316,8 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
     <h2 style="justify-content:center" id="d-title">Handover signed</h2>
     <div id="d-sub" class="small"></div>
     <div class="bigqr" id="d-qr-wrap"><canvas id="d-qr"></canvas><div class="ref" id="d-ref"></div><div class="small" style="color:#555">Next person: scan this to continue the trail</div></div>
-    <div class="row" style="justify-content:center"><button class="btn primary" id="d-pdf">Save PDF</button><button class="btn" id="d-share">Share PDF</button><button class="btn" id="d-tags" hidden>Fault tags PDF</button></div>
-    <div class="list" id="d-multi" hidden></div>
+    <div class="list" id="d-multi" hidden style="text-align:left"></div>
+    <div class="row" style="justify-content:center" id="d-single"><button class="btn primary" id="d-pdf">Save PDF</button><button class="btn" id="d-share">Share PDF</button><button class="btn" id="d-tags" hidden>Fault tags PDF</button></div>
     <div class="msg" id="d-msg"></div>
     <button class="btn block" id="d-home">Done</button>
   </section>
@@ -13078,12 +13083,11 @@ const CTPDF = (() => {
         got.forEach(pg => doc.addPage(pg));
       } catch (e) { /* attachment unreadable - the custody page still stands */ }
     }
-    for (const ph of (o.attachPhotos || [])) {
+    for (const b of (o.attachPhotos || [])) {
       try {
-        const b = typeof ph === "string" ? ph : ph.b64, lab = typeof ph === "string" ? "paperwork photo" : ph.label;
         const img = await doc.embedJpg(b64ToBytes(b));
         page = doc.addPage(A4);
-        text(`Attached: ${lab}  |  ${t.ref}`, M, H - 30, 9, FB, GREY);
+        text(`Attached: ${o.photoLabel || "paperwork photo"}  |  ${t.ref}`, M, H - 30, 9, FB, GREY);
         const sc = Math.min((W - 2 * M) / img.width, (H - 80) / img.height);
         page.drawImage(img, {x: (W - img.width * sc) / 2, y: H - 44 - img.height * sc, width: img.width * sc, height: img.height * sc});
       } catch (e) {}
@@ -13392,20 +13396,23 @@ const BCXUsers = (() => {
       try { USERS = (await call({action: "adminUsers"})).users; list(); }
       catch (e) { box.innerHTML = `<h3>Manage users</h3><div class="m2 err">${h(net(e))}</div><div class="row"><button data-a="retry">Try again</button><button data-a="close">Close</button></div>`; }
     }
-    function list(note) {
-      const t = q.toLowerCase();
+    function rowsHtml() {
+      const t = q.toLowerCase().trim();
       const rows = USERS.filter(u => (showOff || u.active) && (!t || (u.name + " " + u.code + " " + (ROLE[u.role] || "")).toLowerCase().includes(t)));
+      return rows.map(u => `<button class="u ${u.active ? "" : "off"}" data-code="${h(u.code)}"><b>${h(u.name)}</b>
+          <span class="tag ${u.role === "STORES" ? "st" : u.role === "ADMIN" ? "ad" : ""}">${h(ROLE[u.role] || u.role)}</span>
+          <span class="m">${h(u.code)}${u.active ? "" : " · switched off"}${u.email ? " · " + h(u.email) : ""}</span></button>`).join("") || '<div class="m2">No one matches.</div>';
+    }
+    function rowsOnly() { const l = box.querySelector(".list"); if (l) l.innerHTML = rowsHtml(); else list(); }
+    function list(note) {
       const on = USERS.filter(u => u.active).length;
       box.innerHTML = `<h3>Manage users <small>${on} active · ${USERS.length - on} off</small></h3>
         <input type="search" data-f="q" placeholder="Search name or code" value="${h(q)}">
         <div class="row"><button class="go" data-a="add">+ Add user</button><label class="tog" style="margin-left:auto"><input type="checkbox" data-f="off" ${showOff ? "checked" : ""}> Show switched off</label></div>
         <div class="m2"></div>
-        <div class="list">${rows.map(u => `<button class="u ${u.active ? "" : "off"}" data-code="${h(u.code)}"><b>${h(u.name)}</b>
-          <span class="tag ${u.role === "STORES" ? "st" : u.role === "ADMIN" ? "ad" : ""}">${h(ROLE[u.role] || u.role)}</span>
-          <span class="m">${h(u.code)}${u.active ? "" : " · switched off"}${u.email ? " · " + h(u.email) : ""}</span></button>`).join("") || '<div class="m2">No one matches.</div>'}</div>
+        <div class="list">${rowsHtml()}</div>
         <div class="row"><button data-a="close">Close</button></div>`;
       if (note) say(note, "ok");
-      const s = box.querySelector('[data-f="q"]'); if (document.activeElement && document.activeElement.dataset && document.activeElement.dataset.f === "q") { s.focus(); s.setSelectionRange(q.length, q.length); }
     }
     function form(u) {
       const isNew = !u; u = u || {code: "", name: "", role: "ENG", email: "", active: true, pin: ""};
@@ -13427,8 +13434,8 @@ const BCXUsers = (() => {
     }
     const val = f => { const el = box.querySelector(`[data-f="${f}"]`); return !el ? "" : el.type === "checkbox" ? el.checked : el.value.trim(); };
 
-    box.addEventListener("input", e => { if (e.target.dataset.f === "q") { q = e.target.value; list(); } });
-    box.addEventListener("change", e => { if (e.target.dataset.f === "off") { showOff = e.target.checked; list(); } });
+    box.addEventListener("input", e => { if (e.target.dataset.f === "q") { q = e.target.value; rowsOnly(); } });
+    box.addEventListener("change", e => { if (e.target.dataset.f === "off") { showOff = e.target.checked; rowsOnly(); } });
     box.addEventListener("click", async e => {
       const row = e.target.closest(".u"); if (row) { form(USERS.find(u => u.code === row.dataset.code)); return; }
       const a = e.target.dataset.a; if (!a) return;
@@ -13472,7 +13479,7 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "3.0";
+const APP_VERSION = "3.1";
 const DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const SITE = "https://geraldceb.github.io/custody/";
 const RES_DEFAULT = [["ARSMAH", "Arshad Mahomed", "148156", "TARSMAH", "FARSMAH"], ["ARVRAJ", "Arvin Rajcoomar", "149032", "TARVRAJ", "FARVRAJ"], ["BENFYN", "Bevan C Fynn", "152072", "TBENFYN", "FBENFYN"], ["BRAHIR", "Branden Harilal", "148249", "TBRAHIR", "FBRAHIR"], ["CALJON", "Caleb Jonah", "150263", "TCALJON", "FCALJON"], ["CLIMTH", "Clifford Bonga Mthiyane", "148224", "TCLIMTH", "FCLIMTH"], ["DALSTA", "Dale Eric Stadler", "148711", "TDALSTA", "FDALSTA"], ["DAMMUN", "Damien Munien", "154458", "TDAMMUN", "FDAMMUN"], ["DEVBUG", "Deven Bugwandeen", "148351", "TDEVBUG", "FDEVBUG"], ["DHINAI", "Dhilend Raj Naidu", "152921", "TDHINAI", "FDHINAI"], ["EUGCHE", "Eugene Chetty", "148204", "TEUGCHE", "FEUGCHE"], ["GERPAK", "Gerald Pakree", "148154", "TGERPAK", "FGERPAK"], ["GOPRAJ", "Gopaul Erald Rajendran", "148980", "TGOPRAJ", "FGOPRAJ"], ["JAHKHA", "Jahmeel Khan", "150978", "TJAHKHA", "FJAHKHA"], ["JERPAK", "Jeremy Christopher Pakree", "148748", "TJERPAK", "FJERPAK"], ["KEESTA", "Keegan Stapelfeldt", "148346", "TKEESTA", "FKEESTA"], ["KYLDAV", "Kylan David", "998025", "TKYLDAV", "FKYLDAV"], ["MAHYUS", "Mahomed Faheem Yusuf", "148362", "TMAHYUS", "FMAHYUS"], ["MAHPER", "Mahomed S Peroo", "152017", "TMAHPER", "FMAHPER"], ["MITSOO", "Mithesh Soomaroo", "153985", "TMITSOO", "FMITSOO"], ["MLUNZI", "Mlungisi Nzimande", "995154", "TMLUNZI", "FMLUNZI"], ["SAIKHA", "Mohammed Saif Khan", "153708", "TSAIKHA", "FSAIKHA"], ["MOHEBR", "Mohammed Z Ebrahim", "149013", "TMOHEBR", "FMOHEBR"], ["NADKHA", "Nadeem Khan", "151408", "TNADKHA", "FNADKHA"], ["NAEMAN", "Naeson Manikkam", "148350", "TNAEMAN", "FNAEMAN"], ["NELGOV", "Nelanthran Govinden", "148729", "TNELGOV", "FNELGOV"], ["NISNAI", "Nishay Naidoo", "998026", "TNISNAI", "FNISNAI"], ["NIVMAH", "Nivendra Maharaj", "148771", "TNIVMAH", "FNIVMAH"], ["PHENGW", "Phelelani Ndumiso Ngwane", "148388", "TPHENGW", "FPHENGW"], ["RAJNAI", "Raj Naidoo", "145998", "TRAJNAI", "FRAJNAI"], ["RIVMUR", "Rivasen B Muruvan", "148997", "TRIVMUR", "FRIVMUR"], ["RONHAR", "Ronesh Harilall", "148275", "TRONHAR", "FRONHAR"], ["SHAEBR", "Shaahid Ebrahim", "150189", "TSHAEBR", "FSHAEBR"], ["SIPNGE", "Siphesihle Ngeleka", "154054", "TSIPNGE", "FSIPNGE"], ["SIYKHU", "Siyabonga Khumalo", "154032", "TSIYKHU", "FSIYKHU"], ["SUGMAR", "Sugandren Mari", "148209", "TSUGMAR", "FSUGMAR"], ["SULISA", "Suleyman Isaacs", "998148", "TSULISA", "FSULISA"], ["UWACAS", "Uwais Syed Cassim", "155138", "TUWACAS", "FUWACAS"], ["UZAMAH", "Uzair Mahomed", "148813", "TUZAMAH", "FUZAMAH"], ["VENPIL", "Venay Pillay", "148142", "TVENPIL", "FVENPIL"], ["VERRAG", "Veron Raghoo", "148228", "TVERRAG", "FVERRAG"], ["VINJAC", "Vincent Jaku", "148352", "TVINJAC", "FVINJAC"], ["WASKHA", "Waseem Khan", "151827", "TWASKHA", "FWASKHA"], ["ZIABOB", "Zia Bobat", "154377", "TZIABOB", "FZIABOB"], ["ZUBKHA", "Zubair Khan", "149008", "TZUBKHA", "FZUBKHA"]];
@@ -13548,41 +13555,65 @@ function adminPins() {
   $("s-admin").hidden = !(SESSION && me().role === "ADMIN");
   const old = $("s-uhost").querySelector(".bcxu"); if (old) old.remove();
 }
-function goHome(push) { PICK = null; show("v-home", push); $("t-filter").hidden = !(me().role === "ADMIN" || me().role === "STORES"); loadTrails(); renderQueue(); }
+function goHome(push) { show("v-home", push); $("t-filter").hidden = !(me().role === "ADMIN" || me().role === "STORES"); loadTrails(); renderQueue(); }
 async function loadTrails() {
   const box = $("t-list"); box.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
   try {
     const j = await api("myTrails", {includeDone: $("t-done").checked});
     if (users().length === 0 || (Date.now() - (SESSION.at || 0)) > 6 * 3600e3) refreshUsers();
-    TRAILS = j.trails; renderTrailList(); return;
+    TRAILS = j.trails;
+    if (PICK) { PICK.refs = PICK.refs.filter(r => TRAILS.some(t => t.ref === r && t.status !== "COMPLETE" && t.currentHolder === PICK.holder)); if (!PICK.refs.length) PICK.holder = ""; }
+    renderTrailList();
   } catch (e) { box.innerHTML = `<div class="empty">${e instanceof Offline ? "No connection. Pull down or tap Refresh when you have signal." : esc(e.message)}</div>`; }
 }
-let TRAILS = [], PICK = null;
-const canHand = t => t.status !== "COMPLETE" && t.currentHolder === me().code;
+/* ---------- several trails at once (v3.0) ---------- */
+let TRAILS = [], PICK = null;   // PICK = {refs: [], holder: code} while choosing trails
+const pickable = t => t.status !== "COMPLETE" && (!PICK || !PICK.refs.length || t.currentHolder === PICK.holder);
+function setPick(on) {
+  PICK = on ? {refs: [], holder: ""} : null;
+  $("t-multi").textContent = on ? "Cancel" : "Select several"; $("t-multi-hint").hidden = !on;
+  msg("t-multi-msg", ""); renderTrailList();
+}
 function renderTrailList() {
-  const box = $("t-list"), j = {trails: TRAILS};
-  const mine = TRAILS.filter(canHand);
-  $("t-multi").hidden = mine.length < 2; $("t-multi").textContent = PICK ? "Cancel" : "Hand over several";
-  const bar = $("t-multibar"); bar.hidden = !PICK;
-  if (PICK) bar.innerHTML = `<div>Tap the trails you're handing to the same person (${mine.length} with you).</div><button class="btn primary block" id="t-multi-go" ${PICK.size < 2 ? "disabled" : ""}>Hand over ${PICK.size} trail${PICK.size === 1 ? "" : "s"}</button>`;
-  {
-    box.innerHTML = j.trails.length ? j.trails.filter(t => !PICK || canHand(t)).map(t => {
-      const cls = (t.status === "COMPLETE" ? "done" : t.shortItems ? "short" : "") + (PICK && PICK.has(t.ref) ? " sel" : "");
-      return `<button class="trow ${cls}" data-ref="${esc(t.ref)}"><span class="r1"><span class="ref">${esc(t.ref)}</span>
-        ${PICK ? `<input type="checkbox" tabindex="-1" ${PICK.has(t.ref) ? "checked" : ""} style="pointer-events:none">` : ""}<span class="chip ${t.status === "COMPLETE" ? "ok" : "open"}">${t.status === "COMPLETE" ? "Complete" : t.hops === 0 ? "Prepared" : "Open"}</span>
+  const box = $("t-list");
+  const list = PICK ? TRAILS.filter(t => t.status !== "COMPLETE") : TRAILS;
+  box.innerHTML = list.length ? list.map(t => {
+      const picked = PICK && PICK.refs.includes(t.ref);
+      const cls = (t.status === "COMPLETE" ? "done" : t.shortItems ? "short" : "") + (picked ? " pick" : "") + (PICK && !picked && !pickable(t) ? " off" : "");
+      return `<button class="trow ${cls}" data-ref="${esc(t.ref)}"><span class="r1">${PICK ? `<span class="tick">${picked ? "&#10003;" : ""}</span>` : ""}<span class="ref">${esc(t.ref)}</span>
+        <span class="chip ${t.status === "COMPLETE" ? "ok" : "open"}">${t.status === "COMPLETE" ? "Complete" : t.hops === 0 ? "Prepared" : "Open"}</span>
         <span class="chip">${t.type === "OUT" ? "Outbound" : "Return"}</span>${t.shortItems ? `<span class="chip bad">${t.shortItems} missing</span>` : ""}</span>
         <span class="r2">${t.type === "OUT" ? "For " + esc(t.bookedToName || t.bookedTo) : "From " + esc(t.bookedToName || t.bookedTo)} · ${t.items} item${t.items === 1 ? "" : "s"} · now with <b>${esc(t.currentHolderName)}</b><br>${esc(t.lastHopAt)}${t.navDoc ? " · " + esc(t.navDoc) : ""}</span></button>`;
     }).join("") : '<div class="empty">No open trails.</div>';
-  }
+  $("t-multi").textContent = PICK ? "Cancel" : "Select several"; $("t-multi-hint").hidden = !PICK;
+  $("t-multi").hidden = !PICK && TRAILS.filter(t => t.status !== "COMPLETE").length < 2;
+  const go = $("t-multi-go"); go.hidden = !PICK || !PICK.refs.length;
+  if (PICK && PICK.refs.length) $("t-multi-next").textContent = `Hand over ${PICK.refs.length} trail${PICK.refs.length === 1 ? "" : "s"} from ${userName(PICK.holder)}`;
 }
-async function startMulti() {
-  const refs = [...PICK]; msg("t-multibar", `<span class="spinner"></span> Loading ${refs.length} trails...`);
+function togglePick(ref) {
+  const t = TRAILS.find(x => x.ref === ref); if (!t) return;
+  const i = PICK.refs.indexOf(ref);
+  if (i >= 0) PICK.refs.splice(i, 1);
+  else if (!pickable(t)) return msg("t-multi-msg", t.status === "COMPLETE" ? "That trail is complete." : `${esc(t.ref)} is with ${esc(t.currentHolderName)}. Only trails with ${esc(userName(PICK.holder))} can go together.`, "warn");
+  else if (PICK.refs.length >= 15) return msg("t-multi-msg", "Up to 15 trails at a time.", "warn");
+  else { PICK.refs.push(ref); PICK.holder = t.currentHolder; }
+  if (!PICK.refs.length) PICK.holder = "";
+  msg("t-multi-msg", ""); renderTrailList();
+}
+async function pickNext() {
+  if (!PICK || !PICK.refs.length) return;
+  const btn = $("t-multi-next"); btn.disabled = true; msg("t-multi-msg", '<span class="spinner"></span> Loading the items...');
   try {
-    const got = [];
-    for (const ref of refs) got.push(await api("trail", {ref}));
-    PICK = null; renderTrailList();
-    startHandover({multi: got.map(t => ({trail: t.trail, items: t.items, photos: []}))});
-  } catch (e) { $("t-multibar").hidden = false; msg("t-multibar", e instanceof Offline ? "No connection. Try again when you have signal." : esc(e.message), "err"); }
+    let j;
+    try { j = await api("trailItems", {refs: PICK.refs}); }
+    catch (e) { if (!/Unknown action/i.test(e.message)) throw e;   // Google script older than v2.4
+      j = {trails: []}; for (const ref of PICK.refs) { const t = await api("trail", {ref}); j.trails.push({trail: t.trail, items: t.items}); } }
+    const bad = j.trails.find(x => !x.trail); if (bad) throw new Error(bad.ref + ": " + bad.error);
+    const gone = j.trails.find(x => x.trail.status === "COMPLETE" || x.trail.currentHolder !== PICK.holder);
+    if (gone) throw new Error(`${gone.trail.ref} has changed since this list loaded (now with ${gone.trail.currentHolderName}). Tap Refresh.`);
+    msg("t-multi-msg", ""); startHandoverMany(j.trails);
+  } catch (e) { msg("t-multi-msg", e instanceof Offline ? "Loading the trails needs signal." : esc(e.message), "err"); }
+  finally { btn.disabled = false; }
 }
 async function refreshUsers() { try { const j = await api("users"); SESSION.users = j.users; SESSION.at = Date.now(); ls.set("ct-session", SESSION); } catch (e) {} }
 
@@ -14082,16 +14113,11 @@ async function importLedger(file) {
 let HAND = null;
 function startHandover(h) {
   HAND = Object.assign({photos: [], received: {}}, h);
-  const live = its => its.filter(i => !/^Missing/.test(i.status || ""));
-  if (h.multi) {
-    HAND.trail = h.multi[0].trail;
-    HAND.list = []; h.multi.forEach((g, gi) => live(g.items).forEach(i => HAND.list.push(Object.assign({}, i, {_k: gi + "|" + i.line, _g: gi}))));
-  } else HAND.list = (h.isNew ? h.trail.items : live(h.items)).map(i => Object.assign({}, i, {_k: String(i.line)}));
-  HAND.list.forEach(i => HAND.received[i._k] = false);
-  $("h-ref").textContent = h.multi ? h.multi.length + " trails" : h.isNew ? "new trail" : h.trail.ref;
-  $("h-photo-lbl").textContent = h.multi ? "Photos for all trails (optional)" : "Photos (optional)";
-  $("h-photo-btn").firstChild.textContent = h.multi ? "Add photo (all trails)" : "Add photo";
-  $("h-sum").innerHTML = h.multi ? `Handing over <b>${h.multi.length} trails</b> at once: ${h.multi.map(g => esc(g.trail.ref)).join(", ")}. Each trail gets its own signed hop and PDF.` : h.isNew
+  const items = (h.isNew ? h.trail.items : h.items.filter(i => !/^Missing/.test(i.status || ""))).map(i => Object.assign({}, i, {k: String(i.line)}));
+  HAND.list = items;
+  items.forEach(i => HAND.received[i.k] = false);
+  $("h-ref").textContent = h.isNew ? "new trail" : h.trail.ref;
+  $("h-sum").innerHTML = h.isNew
     ? (h.trail.type === "OUT" ? `Outbound ${esc(h.trail.navDoc || "")} for <b>${esc(h.trail.bookedToName)}</b>. Stores hands over first.` : `Return from <b>${esc(h.trail.bookedToName)}</b>'s boot.`)
     : `${h.trail.type === "OUT" ? "Outbound for " : "Return from "}<b>${esc(h.trail.bookedToName)}</b> · now with <b>${esc(h.trail.currentHolderName)}</b> · hop ${h.trail.hops + 1}`;
   renderHandItems();
@@ -14105,17 +14131,36 @@ function startHandover(h) {
     const rDefault = h.trail.type === "OUT" && me().role === "ENG" ? mine : "";
     userOptions($("r-code"), u => true, rDefault, "Choose who receives");
   } else {
-    const h = HAND;
     userOptions($("g-code"), u => u.code === h.trail.currentHolder, h.trail.currentHolder);
     if (!$("g-code").value) $("g-code").innerHTML = `<option value="${esc(h.trail.currentHolder)}">${esc(h.trail.currentHolderName)} (${esc(h.trail.currentHolder)})</option>`;
     $("g-code").disabled = true;
     userOptions($("r-code"), u => u.code !== h.trail.currentHolder, mine !== h.trail.currentHolder ? mine : "", "Choose who receives");
   }
+  handReset();
+}
+function handReset() {
   ["g-pin", "r-pin", "h-note"].forEach(id => $(id).value = "");
   pinVis();
   $("h-thumbs").innerHTML = ""; msg("h-msg", ""); $("h-note-req").hidden = true;
   show("v-hand");
   PADS.g.resize(); PADS.r.resize(); PADS.g.clear(); PADS.r.clear();
+}
+// several trails, all with the same person, to one receiver: one PIN check, both sign once
+function startHandoverMany(groups) {
+  const holder = groups[0].trail.currentHolder, holderName = groups[0].trail.currentHolderName;
+  HAND = {multi: true, groups, photos: [], received: {}, clientIds: {}, trail: groups[0].trail};
+  HAND.list = [];
+  groups.forEach(g => g.items.filter(i => !/^Missing/.test(i.status || "")).forEach(i => HAND.list.push(Object.assign({}, i, {ref: g.trail.ref, k: g.trail.ref + "|" + i.line}))));
+  HAND.list.forEach(i => HAND.received[i.k] = false);
+  $("h-ref").textContent = groups.length + " trails";
+  $("h-sum").innerHTML = `<b>${groups.length} trails</b> · ${HAND.list.length} items · now with <b>${esc(holderName)}</b>. One signature each covers them all; every trail still gets its own PDF.`;
+  renderHandItems();
+  const mine = me().code;
+  userOptions($("g-code"), u => u.code === holder, holder);
+  if (!$("g-code").value) $("g-code").innerHTML = `<option value="${esc(holder)}">${esc(holderName)} (${esc(holder)})</option>`;
+  $("g-code").disabled = true;
+  userOptions($("r-code"), u => u.code !== holder, mine !== holder ? mine : "", "Choose who receives");
+  handReset();
 }
 function pinVis() {
   [["g-code", "g-pin", "g-me"], ["r-code", "r-pin", "r-me"]].forEach(([sel, pin, note]) => {
@@ -14123,26 +14168,20 @@ function pinVis() {
   });
 }
 function renderHandItems() {
-  const M = HAND.multi;
-  $("h-items").innerHTML = HAND.list.map((it, n) => {
-    const on = HAND.received[it._k];
-    let head = "";
-    if (M && (n === 0 || HAND.list[n - 1]._g !== it._g)) {
-      const g = M[it._g], t = g.trail;
-      head = `<div class="grp">${esc(t.ref)} <span class="small">· ${t.type === "OUT" ? "for" : "from"} ${esc(t.bookedToName || t.bookedTo)}</span>
-        <div class="thumbs">${g.photos.map((p, i) => `<figure><img alt="Photo ${i + 1}" src="data:image/jpeg;base64,${p}"><button data-tpdel="${it._g}|${i}" aria-label="Remove photo">&times;</button></figure>`).join("")}</div>
-        <label class="btn small" style="margin-top:4px">Add photo to this trail<input type="file" data-tpic="${it._g}" accept="image/*" capture="environment" hidden></label></div>`;
-    }
-    return head + `<div class="item ${on ? (it.condition === "RTC" ? "rtc" : "sel") : ""}" data-k="${esc(it._k)}"><label class="ih"><input type="checkbox" ${on ? "checked" : ""}>
+  let lastRef = null;
+  $("h-items").innerHTML = HAND.list.map(it => {
+    const on = HAND.received[it.k];
+    const head = HAND.multi && it.ref !== lastRef ? (lastRef = it.ref, `<div class="grp">${esc(it.ref)} <span class="chip">${((n) => n + (n === 1 ? " item" : " items"))(HAND.list.filter(x => x.ref === it.ref).length)}</span></div>`) : "";
+    return head + `<div class="item ${on ? (it.condition === "RTC" ? "rtc" : "sel") : ""}" data-k="${esc(it.k)}"><label class="ih"><input type="checkbox" ${on ? "checked" : ""}>
       <span><span class="desc">${esc(it.description || it.itemNo)}</span> ${it.condition ? `<span class="chip ${it.condition === "RTC" ? "rtc" : it.condition === "Faulty" ? "open" : ""}">${esc(it.condition)}</span>` : ""}<br>
       <span class="meta">${esc(it.itemNo)} · S/N ${esc(it.serial || "-")} · Tag ${esc(it.tag || "-")}${it.so ? " · " + esc(it.so) : ""}${it.qty > 1 ? " · Qty " + it.qty : ""}</span></span></label></div>`;
   }).join("");
-  const short = HAND.list.some(i => !HAND.received[i._k]);
-  $("h-note-req").hidden = !short || !HAND.list.some(i => HAND.received[i._k]);
+  const short = HAND.list.some(i => !HAND.received[i.k]);
+  $("h-note-req").hidden = !short || !HAND.list.some(i => HAND.received[i.k]);
 }
 async function submitHandover() {
   const g = $("g-code").value, r = $("r-code").value, gp = $("g-pin").value.trim(), rp = $("r-pin").value.trim(), note = $("h-note").value.trim();
-  const received = HAND.list.filter(i => HAND.received[i._k]).map(i => i.line);
+  const received = HAND.list.filter(i => HAND.received[i.k]).map(i => i.line);
   const err = t => msg("h-msg", t, "err");
   if (!g) return err("Choose who is handing over.");
   if (!r) return err("Choose who is receiving.");
@@ -14152,17 +14191,72 @@ async function submitHandover() {
   if (received.length < HAND.list.length && !note) return err("Some items aren't ticked. Add a note saying why.");
   if ((g !== me().code && !gp) || (r !== me().code && !rp)) return err(`${g !== me().code && !gp ? userName(g) : userName(r)} must enter their PIN.`);
   if (PADS.g.empty() || PADS.r.empty()) return err("Both people must sign.");
-  if (HAND.multi) return submitMulti(g, r, gp, rp, note);
+  if (HAND.multi) return submitMany(g, r, gp, rp, note);
   const payload = {clientId: HAND.clientId || (HAND.clientId = uid()), ref: HAND.isNew ? null : HAND.trail.ref, trail: HAND.isNew ? HAND.trail : null,
     giver: {code: g, pin: gp, sig: PADS.g.png()}, receiver: {code: r, pin: rp, sig: PADS.r.png()}, received, note, photos: HAND.photos, printout: HAND.printout || ""};
   $("h-go").disabled = true; msg("h-msg", '<span class="spinner"></span> Checking PINs and saving...');
   try {
     const res = await api("handover", payload);
-    await finishHop(res, payload.photos);
+    await finishHop(res);
   } catch (e) {
     if (e instanceof Offline) { queueAdd({kind: "handover", payload, label: HAND.isNew ? "New " + (HAND.trail.type === "OUT" ? "outbound" : "return") + " trail" : HAND.trail.ref}); showQueued(payload); }
     else err(esc(e.message));
   } finally { $("h-go").disabled = false; }
+}
+
+async function submitMany(g, r, gp, rp, note) {
+  const err = t => msg("h-msg", t, "err");
+  const empty = HAND.groups.find(gr => !HAND.list.some(i => i.ref === gr.trail.ref && HAND.received[i.k]));
+  if (empty) return err(`Nothing is ticked for ${esc(empty.trail.ref)}. Tick its items, or go back and untick that trail.`);
+  const payload = {giver: {code: g, pin: gp, sig: PADS.g.png()}, receiver: {code: r, pin: rp, sig: PADS.r.png()}, note, photos: HAND.photos,
+    trails: HAND.groups.map(gr => ({ref: gr.trail.ref, clientId: HAND.clientIds[gr.trail.ref] || (HAND.clientIds[gr.trail.ref] = uid()),
+      received: HAND.list.filter(i => i.ref === gr.trail.ref && HAND.received[i.k]).map(i => i.line)}))};
+  $("h-go").disabled = true; msg("h-msg", `<span class="spinner"></span> Checking PINs and saving ${payload.trails.length} trails...`);
+  try {
+    const res = await handoverManyApi(payload);
+    PICK = null; await finishMany(res.results, HAND.photos);
+  } catch (e) {
+    if (e instanceof Offline) { PICK = null; queueAdd({kind: "handoverMany", payload, label: payload.trails.length + " trails: " + payload.trails.map(t => t.ref).join(", ")}); showQueued(payload); }
+    else err(esc(e.message));
+  } finally { $("h-go").disabled = false; }
+}
+// Google script v2.4+ does all trails in one go (PINs checked once). An older script gets one handover per trail.
+async function handoverManyApi(payload) {
+  try { return await api("handoverMany", payload); }
+  catch (e) {
+    if (!/Unknown action/i.test(e.message)) throw e;
+    const results = [], others = r => payload.trails.filter(x => x.ref !== r).map(x => x.ref).join(", ");
+    for (const t of payload.trails) results.push(await api("handover", {clientId: t.clientId, ref: t.ref, giver: payload.giver, receiver: payload.receiver, received: t.received, photos: payload.photos,
+      note: (payload.note ? payload.note + " " : "") + (payload.trails.length > 1 ? "[Handed over together with " + others(t.ref) + "]" : "")}));
+    return {ok: true, results};
+  }
+}
+let MULTI = [];
+async function finishMany(results, photos) {
+  MULTI = [];
+  for (const res of results) MULTI.push({res, bytes: await makePdf(res, res.hop, false, {attachPhotos: photos || [], photoLabel: "handover photo"}), name: `${res.ref} hop ${res.hop}.pdf`});
+  showDoneMany();
+  let bad = 0;
+  for (const m of MULTI) {
+    if (m.res.duplicate) continue;
+    try { await api("uploadPdf", {ref: m.res.ref, hop: m.res.hop, pdf: bytesToB64(m.bytes)}); }
+    catch (e) { bad++; if (e instanceof Offline) queueAdd({kind: "pdf", ref: m.res.ref, hop: m.res.hop, label: `${m.res.ref} hop ${m.res.hop} PDF`}); }
+  }
+  msg("d-msg", bad ? `${bad} PDF${bad === 1 ? "" : "s"} not saved yet. ${navigator.onLine ? "" : "They'll be sent when there's signal."}` : "All PDFs saved to the custody log and emailed.", bad ? "warn" : "ok");
+}
+function showDoneMany() {
+  const done = MULTI.filter(m => m.res.trail.status === "COMPLETE").length, short = MULTI.reduce((a, m) => a + (m.res.trail.shortItems || 0), 0);
+  const to = MULTI[0].res.trail.currentHolderName;
+  $("d-title").textContent = `${MULTI.length} trails handed over`;
+  $("d-sub").innerHTML = (done === MULTI.length ? "All of them are complete." : `Items are now with <b>${esc(to)}</b>. ${MULTI[0].res.trail.currentHolder === me().code ? "They're on your" : "They're on " + esc(to) + "'s"} Open trails list.`)
+    + (short ? `<br><b style="color:var(--poor)">${short} item${short === 1 ? " was" : "s were"} not received. This is recorded and flagged to the admin.</b>` : "");
+  $("d-qr-wrap").hidden = true; $("d-single").hidden = true; $("d-tags").hidden = true;
+  const box = $("d-multi"); box.hidden = false;
+  box.innerHTML = MULTI.map((m, i) => `<div class="trow ${m.res.trail.status === "COMPLETE" ? "done" : ""}"><span class="r1" style="flex-wrap:nowrap"><span class="ref">${esc(m.res.ref)}</span>
+    <span class="chip ${m.res.trail.status === "COMPLETE" ? "ok" : "open"}">${m.res.trail.status === "COMPLETE" ? "Complete" : "Hop " + m.res.hop}</span>
+    <button class="btn small" data-mpdf="${i}" style="margin-left:auto">PDF</button>${m.res.trail.type === "RET" && hasTags(m.res.items) ? `<button class="btn small" data-mtags="${i}">Tags</button>` : ""}</span></div>`).join("");
+  msg("d-msg", '<span class="spinner"></span> Saving PDFs to the custody log...');
+  show("v-done");
 }
 
 /* ---------- after a hop is confirmed ---------- */
@@ -14171,68 +14265,8 @@ async function makePdf(res, hopNo, pending, extra) {
   return CTPDF.build(Object.assign({trail: res.trail, items: res.items, hops: res.hops, hopNo, logoJpg: CTPDF.b64ToBytes(LOGO_B64), qrUrl: SITE + "?t=" + res.trail.ref, appVersion: APP_VERSION, pending}, extra || {}));
 }
 function bytesToB64(u8) { let s = ""; const n = 0x8000; for (let i = 0; i < u8.length; i += n) s += String.fromCharCode.apply(null, u8.subarray(i, i + n)); return btoa(s); }
-async function submitMulti(g, r, gp, rp, note) {
-  const M = HAND.multi, err = t => msg("h-msg", t, "err");
-  const empty = M.filter((x, gi) => !HAND.list.some(i => i._g === gi && HAND.received[i._k]));
-  if (empty.length) return err(`Nothing ticked on ${empty.map(x => x.trail.ref).join(", ")}. Tick what was received, or go back and leave that trail out.`);
-  const gs = PADS.g.png(), rs = PADS.r.png(), done = [], queued = [], failed = [];
-  $("h-go").disabled = true;
-  try {
-    for (let gi = 0; gi < M.length; gi++) {
-      const x = M[gi];
-      msg("h-msg", `<span class="spinner"></span> Saving ${gi + 1} of ${M.length}: ${esc(x.trail.ref)}...`);
-      const received = HAND.list.filter(i => i._g === gi && HAND.received[i._k]).map(i => i.line);
-      const payload = {clientId: x.clientId || (x.clientId = uid()), ref: x.trail.ref, trail: null, giver: {code: g, pin: gp, sig: gs}, receiver: {code: r, pin: rp, sig: rs},
-        received, note, photos: HAND.photos.concat(x.photos).slice(0, 6), printout: ""};
-      if (queued.length) { queueAdd({kind: "handover", payload, label: x.trail.ref}); queued.push(x.trail.ref); continue; }
-      try {
-        const res = await api("handover", payload);
-        const bytes = await makePdf(res, res.hop, false, {attachPhotos: payload.photos});
-        msg("h-msg", `<span class="spinner"></span> Sending PDF ${gi + 1} of ${M.length} to the log...`);
-        const up = await uploadPdfQuiet(res.ref, res.hop, bytes);
-        done.push({res, bytes, name: `${res.ref} hop ${res.hop}.pdf`, up});
-      } catch (e) {
-        if (e instanceof Offline) { queueAdd({kind: "handover", payload, label: x.trail.ref}); queued.push(x.trail.ref); }
-        else if (!done.length) return err(esc(e.message));
-        else failed.push(`${x.trail.ref}: ${e.message}`);
-      }
-    }
-  } finally { $("h-go").disabled = false; }
-  showMultiDone(done, queued, failed);
-}
-async function uploadPdfQuiet(ref, hop, bytes) {
-  try { await api("uploadPdf", {ref, hop, pdf: bytesToB64(bytes)}); return ""; }
-  catch (e) { if (e instanceof Offline) { queueAdd({kind: "pdf", ref, hop, label: `${ref} hop ${hop} PDF`}); return "no signal, will send later"; } return e.message; }
-}
-async function trailPhotos(ref, upTo) {
-  try { const j = await api("photos", {ref}); return j.photos.filter(p => !upTo || p.hop <= upTo).map(p => ({b64: p.b64, label: `photo from hop ${p.hop}`})); }
-  catch (e) { return null; }
-}
-// Rebuild a hop's PDF with every photo of the trail so far (from Drive) and send it to the log.
-async function rebuildPdf(t, hop, send) {
-  const ph = await trailPhotos(t.trail.ref, hop);
-  const bytes = await makePdf(t, hop, false, {attachPhotos: ph || []});
-  if (send) await api("uploadPdf", {ref: t.trail.ref, hop, pdf: bytesToB64(bytes)});
-  return {bytes, photos: ph};
-}
-let MDONE = [];
-function showMultiDone(done, queued, failed) {
-  MDONE = done; LAST = done[0] || null;
-  $("d-title").textContent = `${done.length} trail${done.length === 1 ? "" : "s"} handed over`;
-  $("d-sub").innerHTML = (done[0] ? `Items are now with <b>${esc(done[0].res.trail.currentHolderName)}</b>. Each trail has its own signed PDF.` : "")
-    + (queued.length ? `<br><b>No signal for ${queued.map(esc).join(", ")}.</b> Saved on this phone and sent when there is signal.` : "")
-    + (failed.length ? `<br><b style="color:var(--poor)">Not saved: ${failed.map(esc).join("; ")}</b>` : "");
-  $("d-qr-wrap").hidden = true;
-  ["d-pdf", "d-share", "d-tags"].forEach(id => $(id).hidden = true);
-  const box = $("d-multi"); box.hidden = !done.length;
-  box.innerHTML = done.map((d, i) => `<div class="row" style="justify-content:space-between"><span><span class="mono">${esc(d.res.ref)}</span> · ${d.res.trail.status === "COMPLETE" ? "complete" : "hop " + d.res.hop}${d.res.trail.shortItems ? ` · <b style="color:var(--poor)">${d.res.trail.shortItems} missing</b>` : ""}<br><span class="small" style="color:${d.up ? "var(--poor)" : "var(--good)"}">${d.up ? "PDF not in the log yet: " + esc(d.up) : "PDF saved to the log and emailed"}</span></span>
-    <span><button class="btn small" data-mpdf="${i}">PDF</button>${d.res.trail.type === "RET" && hasTags(d.res.items) ? ` <button class="btn small" data-mtag="${i}">Tags</button>` : ""}</span></div>`).join("");
-  const bad = done.filter(d => d.up && !/later/.test(d.up)).length;
-  msg("d-msg", bad ? `${bad} PDF${bad === 1 ? "" : "s"} didn't reach the log. Open the trail from Open trails and tap <b>Send to log</b> on that hop.` : "", bad ? "err" : "ok");
-  show("v-done");
-}
-async function finishHop(res, photos) {
-  const bytes = await makePdf(res, res.hop, false, {attachPhotos: photos || []});
+async function finishHop(res) {
+  const bytes = await makePdf(res, res.hop, false, {attachPhotos: (HAND && HAND.photos) || [], photoLabel: "handover photo"});
   LAST = {res, bytes, name: `${res.ref} hop ${res.hop}.pdf`};
   showDone(res);
   uploadPdf(res.ref, res.hop, bytes);
@@ -14242,7 +14276,7 @@ async function uploadPdf(ref, hop, bytes) {
   try { await api("uploadPdf", {ref, hop, pdf: bytesToB64(bytes)}); msg("d-msg", "Saved to the custody log and emailed.", "ok"); }
   catch (e) {
     if (e instanceof Offline) { queueAdd({kind: "pdf", ref, hop, label: `${ref} hop ${hop} PDF`}); msg("d-msg", "Signal dropped. The PDF will be sent to the log automatically later.", "warn"); }
-    else msg("d-msg", "PDF not saved to the log: " + esc(e.message) + "<br>Open the trail and tap <b>Send to log</b> on this hop to try again.", "err");
+    else msg("d-msg", "PDF not saved to the log: " + esc(e.message), "err");
   }
 }
 let renderExtraR = () => {};
@@ -14250,7 +14284,7 @@ const hasTags = items => (items || []).some(i => i.fault || i.customer || i.tagC
 const tagMsg = r => `Saved ${esc(r.name)}: ${r.tags} tag${r.tags === 1 ? "" : "s"} on ${r.pages} page${r.pages === 1 ? "" : "s"}` + (r.rtc ? `. RTC tags are blue, on the first ${Math.ceil(r.rtc / 6)} page${Math.ceil(r.rtc / 6) === 1 ? "" : "s"} for blue paper.` : ".") + (r.overflow ? ` ${r.overflow} description${r.overflow === 1 ? " was" : "s were"} too long for the tag and got cut short.` : "");
 function showDone(res) {
   const t = res.trail, complete = t.status === "COMPLETE";
-  $("d-multi").hidden = true; $("d-pdf").hidden = false;
+  $("d-multi").hidden = true; $("d-single").hidden = false;
   $("d-title").textContent = complete ? "Trail complete" : `Hop ${res.hop} signed`;
   $("d-sub").innerHTML = (complete ? `${esc(t.ref)}: all handovers are done.` : `Items are now with <b>${esc(t.currentHolderName)}</b>.`)
     + (t.shortItems ? `<br><b style="color:var(--poor)">${t.shortItems} item${t.shortItems === 1 ? " was" : "s were"} not received. This is recorded on the trail and flagged to the admin.</b>` : "");
@@ -14263,7 +14297,7 @@ function showDone(res) {
   show("v-done");
 }
 function showQueued(payload) {
-  LAST = null; $("d-multi").hidden = true;
+  LAST = null; $("d-multi").hidden = true; $("d-single").hidden = false;
   $("d-title").textContent = "Saved on this phone";
   $("d-sub").innerHTML = "No signal. The handover will be sent and the PINs checked as soon as there is signal. The signed PDF is made then.";
   $("d-qr-wrap").hidden = true; $("d-pdf").disabled = $("d-share").disabled = true;
@@ -14306,10 +14340,16 @@ async function processQueue() {
         if (x.kind === "handover") {
           const res = await api("handover", x.payload);
           queueDel(x.id);
-          const bytes = await makePdf(res, res.hop, false, {attachPhotos: x.payload.photos || []});
+          const bytes = await makePdf(res, res.hop, false, {attachPhotos: x.payload.photos || [], photoLabel: "handover photo"});
           try { await api("uploadPdf", {ref: res.ref, hop: res.hop, pdf: bytesToB64(bytes)}); } catch (e) { if (e instanceof Offline) queueAdd({kind: "pdf", ref: res.ref, hop: res.hop, label: `${res.ref} hop ${res.hop} PDF`}); }
           LAST = {res, bytes, name: `${res.ref} hop ${res.hop}.pdf`};
           if (current === "v-home" || current === "v-done") { showDone(res); msg("d-msg", "Sent: this handover was saved earlier with no signal.", "ok"); }
+        } else if (x.kind === "handoverMany") {
+          const res = await handoverManyApi(x.payload);
+          queueDel(x.id);
+          if (current === "v-home" || current === "v-done") { await finishMany(res.results, x.payload.photos); }
+          else for (const r1 of res.results) { if (r1.duplicate) continue; const bytes = await makePdf(r1, r1.hop, false, {attachPhotos: x.payload.photos || [], photoLabel: "handover photo"});
+            try { await api("uploadPdf", {ref: r1.ref, hop: r1.hop, pdf: bytesToB64(bytes)}); } catch (e) { if (e instanceof Offline) queueAdd({kind: "pdf", ref: r1.ref, hop: r1.hop, label: `${r1.ref} hop ${r1.hop} PDF`}); } }
         } else if (x.kind === "collect") {
           const res = await api("collect", x.payload);
           queueDel(x.id);
@@ -14318,7 +14358,8 @@ async function processQueue() {
           try { await api("uploadPdf", {ref: res.ref, hop: 1, pdf: bytesToB64(bytes)}); } catch (e) { if (e instanceof Offline) queueAdd({kind: "pdf", ref: res.ref, hop: 1, label: `${res.ref} hop 1 PDF`}); }
         } else if (x.kind === "pdf") {
           const t = await api("trail", {ref: x.ref});
-          await rebuildPdf(t, x.hop, true);
+          const bytes = await makePdf(t, x.hop);
+          await api("uploadPdf", {ref: x.ref, hop: x.hop, pdf: bytesToB64(bytes)});
           queueDel(x.id);
         }
       } catch (e) {
@@ -14355,7 +14396,7 @@ function renderTrail() {
       <br><span class="meta">${esc(it.itemNo)} · S/N ${esc(it.serial || "-")} · Tag ${esc(it.tag || "-")}${it.so ? " · " + esc(it.so) : ""}</span><br><span class="small" style="${miss ? "color:var(--poor);font-weight:600" : ""}">${esc(it.status)}</span></div></div>`;
   }).join("");
   $("tv-hops").innerHTML = (t.hops === 0 ? `<div class="empty">Prepared by ${esc(t.createdBy)} on ${esc(t.created)}. Not handed over yet.</div>` : "") + hops.map(h => `<div class="hop"><span class="no">${h.hop}</span><div><b>${esc(h.giver.name)}</b> to <b>${esc(h.receiver.name)}</b><br><span class="small">${esc(h.at)} · ${h.itemsReceived} item${h.itemsReceived === 1 ? "" : "s"}${h.short ? ` · <b style="color:var(--poor)">not received: ${esc(h.short)}</b>` : ""}${h.note ? "<br>Note: " + esc(h.note) : ""}</span>
-    ${h.sigReceiver ? `<br><img alt="Signature" src="data:image/png;base64,${h.sigReceiver}">` : ""}<div class="row" style="margin-top:6px"><button class="btn small" data-pdf="${h.hop}">PDF</button>${h.pdf ? "" : `<button class="btn small primary" data-resend="${h.hop}">Send to log</button><span class="small" style="color:var(--poor)">PDF not in the log</span>`}<span class="small mono">${esc(h.verification)}</span></div></div></div>`).join("") || (t.hops === 0 ? "" : '<div class="empty">No handovers yet.</div>');
+    ${h.sigReceiver ? `<br><img alt="Signature" src="data:image/png;base64,${h.sigReceiver}">` : ""}<div class="row" style="margin-top:6px"><button class="btn small" data-pdf="${h.hop}">PDF</button><span class="small mono">${esc(h.verification)}</span></div></div></div>`).join("") || (t.hops === 0 ? "" : '<div class="empty">No handovers yet.</div>');
   msg("tv-msg", t.status !== "COMPLETE" && t.currentHolder !== me().code ? `To receive these items, ${esc(t.currentHolderName)} hands them over to you here, on either phone.` : "");
   show("v-trail");
 }
@@ -14434,7 +14475,11 @@ function init() {
   $("s-logout").onclick = logout;
   $("t-refresh").onclick = () => { loadTrails(); processQueue(); };
   $("t-done").onchange = loadTrails;
-  $("t-list").onclick = e => { const b = e.target.closest("[data-ref]"); if (!b) return; if (PICK) { PICK.has(b.dataset.ref) ? PICK.delete(b.dataset.ref) : PICK.add(b.dataset.ref); renderTrailList(); } else openTrail(b.dataset.ref); };
+  $("t-list").onclick = e => { const b = e.target.closest("[data-ref]"); if (!b) return; if (PICK) togglePick(b.dataset.ref); else openTrail(b.dataset.ref); };
+  $("t-multi").onclick = () => setPick(!PICK);
+  $("t-multi-next").onclick = pickNext;
+  $("d-multi").onclick = async e => { const i = e.target.dataset.mpdf, t = e.target.dataset.mtags; if (i != null && MULTI[i]) savePdf(MULTI[i].bytes, MULTI[i].name);
+    if (t != null && MULTI[t]) { try { const r = await saveTags(MULTI[t].res.items, MULTI[t].res.trail.bookedTo); if (r) msg("d-msg", tagMsg(r), "ok"); } catch (er) { msg("d-msg", esc(er.message), "err"); } } };
   $("queue-banner").onclick = e => { if (e.target.id === "q-retry") processQueue(); const d = e.target.dataset.qdel; if (d) queueDel(d); };
   $("go-out").onclick = startOut; $("go-ret").onclick = startRet; $("go-scan").onclick = () => { msg("f-msg", ""); $("f-ref").value = ""; show("v-find"); };
   // outbound
@@ -14500,33 +14545,12 @@ function init() {
   $("tv-hand").onclick = () => startHandover({isNew: false, trail: TRAIL.trail, items: TRAIL.items});
   $("tv-tags").onclick = async () => { try { const r = await saveTags(TRAIL.items, TRAIL.trail.bookedTo); msg("tv-msg", r ? tagMsg(r) : "No fault tag details on this trail.", r ? "ok" : "warn"); } catch (e) { msg("tv-msg", "Couldn't make the tags: " + esc(e.message), "err"); } };
   $("d-tags").onclick = async () => { if (!LAST) return; try { const r = await saveTags(LAST.res.items, LAST.res.trail.bookedTo); msg("d-msg", r ? tagMsg(r) : "No fault tag details.", r ? "ok" : "warn"); } catch (e) { msg("d-msg", "Couldn't make the tags: " + esc(e.message), "err"); } };
-  $("tv-hops").onclick = async e => {
-    const h = e.target.dataset.pdf, rs = e.target.dataset.resend; if (!h && !rs) return;
-    const btn = e.target; btn.disabled = true; msg("tv-msg", `<span class="spinner"></span> ${rs ? "Sending hop " + rs + " PDF to the log" : "Making the PDF"}...`);
-    try {
-      const {bytes, photos} = await rebuildPdf(TRAIL, Number(h || rs), !!rs);
-      const note = photos === null ? " (photos not included: the Google script needs v2.4)" : photos.length ? ` with ${photos.length} photo${photos.length === 1 ? "" : "s"}` : "";
-      if (rs) { const t = await api("trail", {ref: TRAIL.trail.ref}); TRAIL = t; renderTrail(); msg("tv-msg", `Hop ${rs} PDF saved to the log and emailed${note}.`, "ok"); }
-      else { savePdf(bytes, `${TRAIL.trail.ref} hop ${h}.pdf`); msg("tv-msg", "PDF ready" + note + ".", "ok"); }
-    } catch (er) { msg("tv-msg", (er instanceof Offline ? "No connection. Try again when you have signal." : "Couldn't send: " + esc(er.message)), "err"); }
-    finally { btn.disabled = false; }
-  };
+  $("tv-hops").onclick = async e => { const h = e.target.dataset.pdf; if (!h) return; const bytes = await makePdf(TRAIL, Number(h)); savePdf(bytes, `${TRAIL.trail.ref} hop ${h}.pdf`); };
   // handover
-  $("h-items").addEventListener("change", async e => {
-    const tp = e.target.dataset.tpic;
-    if (tp != null) { const g = HAND.multi[Number(tp)], fs = [...e.target.files]; e.target.value = "";
-      for (const f of fs) { if (HAND.photos.length + g.photos.length >= 6) { msg("h-msg", "Up to 6 photos per trail (shared + this trail).", "warn"); break; } try { g.photos.push(await imageToB64(f, 1600, 0.8)); } catch (er) { msg("h-msg", esc(er.message), "err"); } }
-      return renderHandItems(); }
-    const card = e.target.closest(".item"); if (!card) return; HAND.received[card.dataset.k] = e.target.checked; renderHandItems(); });
-  $("h-items").addEventListener("click", e => { const d = e.target.dataset.tpdel; if (d == null) return; const [g, i] = d.split("|").map(Number); HAND.multi[g].photos.splice(i, 1); renderHandItems(); });
-  $("h-all").onclick = () => { const all = !HAND.list.every(i => HAND.received[i._k]); HAND.list.forEach(i => HAND.received[i._k] = all); renderHandItems(); };
-  $("t-multi").onclick = () => { PICK = PICK ? null : new Set(); renderTrailList(); };
-  $("t-multibar").onclick = e => { if (e.target.id === "t-multi-go" && PICK && PICK.size > 1) startMulti(); };
-  $("d-multi").onclick = async e => { const p = e.target.dataset.mpdf, t = e.target.dataset.mtag;
-    if (p != null) { const d = MDONE[Number(p)]; savePdf(d.bytes, d.name); }
-    if (t != null) { const d = MDONE[Number(t)]; try { const r = await saveTags(d.res.items, d.res.trail.bookedTo); msg("d-msg", r ? tagMsg(r) : "No fault tag details.", r ? "ok" : "warn"); } catch (er) { msg("d-msg", "Couldn't make the tags: " + esc(er.message), "err"); } } };
+  $("h-items").addEventListener("change", e => { const card = e.target.closest(".item"); if (!card) return; HAND.received[card.dataset.k] = e.target.checked; renderHandItems(); });
+  $("h-all").onclick = () => { const all = !HAND.list.every(i => HAND.received[i.k]); HAND.list.forEach(i => HAND.received[i.k] = all); renderHandItems(); };
   document.querySelectorAll("[data-clear]").forEach(b => b.onclick = () => PADS[b.dataset.clear[0]].clear());
-  $("h-photo").onchange = $("h-photo-g").onchange = async e => { const fs = [...e.target.files]; e.target.value = ""; for (const f of fs) { if (HAND.photos.length >= 4) { msg("h-msg", "Up to 4 photos.", "warn"); break; } try { HAND.photos.push(await imageToB64(f, 1600, 0.8)); } catch (er) { msg("h-msg", esc(er.message), "err"); } } renderThumbs(); };
+  $("h-photo").onchange = async e => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; if (HAND.photos.length >= 4) return msg("h-msg", "Up to 4 photos.", "warn"); try { HAND.photos.push(await imageToB64(f, 1600, 0.8)); renderThumbs(); } catch (er) { msg("h-msg", esc(er.message), "err"); } };
   $("h-thumbs").onclick = e => { const i = e.target.dataset.pdel; if (i != null) { HAND.photos.splice(Number(i), 1); renderThumbs(); } };
   $("h-go").onclick = submitHandover;
   $("g-code").addEventListener("change", pinVis); $("r-code").addEventListener("change", pinVis);
@@ -14544,4 +14568,19 @@ init();
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 </script>
 
+<script>
+/* Home button back to the BCX Field Apps landing page. Shown only when this app was opened from the landing page,
+   so the separate app (and Store Visit for managers) look exactly as before. */
+(() => {
+  try { if (/[?&]hub=1\b/.test(location.search)) sessionStorage.setItem("bcx-hub", "1"); if (!sessionStorage.getItem("bcx-hub")) return; } catch (e) { return; }
+  const w = document.querySelector("header.top .wrap"); if (!w) return;
+  const st = document.createElement("style");
+  st.textContent = `.bcx-home { display: inline-grid; place-items: center; width: 38px; height: 38px; color: var(--accent, #D22432); text-decoration: none;
+    border: 1px solid var(--line, #DED8D3); border-radius: 9px; background: var(--surface, #fff); flex: none; }
+    .bcx-home svg { width: 20px; height: 20px; }`;
+  document.head.append(st);
+  const a = document.createElement("a"); a.className = "bcx-home"; a.href = "../"; a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg>'; a.title = "Home"; a.setAttribute("aria-label", "Back to BCX Field Apps");
+  w.prepend(a);
+})();
+</script>
 </body></html>
