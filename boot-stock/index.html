@@ -1,0 +1,329 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<title>My Boot Stock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* My Boot Stock: an engineer's own boot stock aging, from the Item Ledger Entries.
+   Rules (Gerald's boot aging): working-boot maint stock (BI) may stay 30 days, older is overdue;
+   faulty-boot stock is aged 0-2 / 3-7 / 8+ days and should be returned; project stock (TR/TS) is shown for information. */
+:root { --bg:#F3F1EF; --surface:#FFFFFF; --sunk:#ECE8E5; --ink:#1D1A1A; --muted:#6E6662; --line:#DED8D3; --accent:#D2231B;
+  --good:#1F7A4D; --good-soft:#E1F1E8; --poor:#B4261D; --poor-soft:#F8E2DF; --warn:#8A5A00; --warn-soft:#F7ECD4; --info:#2D5B8A; --info-soft:#E2ECF6;
+  --display:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif; --body:"Barlow","Segoe UI",Roboto,Arial,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; }
+@media (prefers-color-scheme: dark) { :root { --bg:#151314; --surface:#1F1C1D; --sunk:#2A2627; --ink:#F2EEEC; --muted:#A79F9B; --line:#3A3436; --accent:#F0453B;
+  --good:#5BC98F; --good-soft:#17352A; --poor:#FF7B70; --poor-soft:#3D1D1B; --warn:#E8B45A; --warn-soft:#3A2E15; --info:#8DB8E8; --info-soft:#1B2A3A; color-scheme: dark } }
+* { box-sizing: border-box; } [hidden] { display: none !important; }
+html { padding-top: env(safe-area-inset-top,0px); padding-bottom: env(safe-area-inset-bottom,0px); }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.45 var(--body); }
+.wrap { max-width: 640px; margin: 0 auto; padding: 0 16px; }
+header.top { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; align-items: center; gap: 10px; padding-block: 10px; }
+.logo { height: 28px; width: auto; background: #fff; border-radius: 4px; padding: 2px 3px; }
+.mark { display: grid; gap: 3px; } .mark b { font: 700 20px/1 var(--display); } .mark small { font: 500 11px/1 var(--body); color: var(--muted); }
+main { padding-block: 16px 40px; display: grid; gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 12px; }
+h2 { margin: 0; font: 700 19px/1.15 var(--display); display: flex; gap: 8px; align-items: baseline; } h2 .aside { margin-left: auto; font: 500 13px/1 var(--body); color: var(--muted); }
+.btn { font: 600 15px/1 var(--body); min-height: 42px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.btn.small { min-height: 34px; padding: 7px 10px; font-size: 13px; } .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+select, input[type=search] { font: 400 16px/1.2 var(--body); padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--sunk); color: var(--ink); width: 100%; }
+.small { font-size: 13px; color: var(--muted); }
+.msg { font-size: 14px; } .msg.ok { color: var(--good); } .msg.err { color: var(--poor); } .msg.warn { color: var(--warn); }
+.tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.tile { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 2px; background: var(--surface); }
+.tile .n { font: 700 30px/1 var(--display); } .tile .l { font-size: 13px; color: var(--muted); } .tile .s { font-size: 12.5px; }
+.tile.bad { border-color: var(--poor); background: var(--poor-soft); } .tile.bad .n { color: var(--poor); }
+.tile.ok .n { color: var(--good); } .tile.warn { border-color: var(--warn); background: var(--warn-soft); } .tile.warn .n { color: var(--warn); }
+.bars { display: grid; gap: 7px; }
+.bar { display: grid; grid-template-columns: 74px 1fr 34px; gap: 8px; align-items: center; font-size: 13.5px; }
+.bar .t { display: block; height: 16px; background: var(--sunk); border-radius: 4px; overflow: hidden; } .bar .f { display: block; height: 100%; border-radius: 4px; background: var(--good); }
+.bar .f.warn { background: #D9A23A; } .bar .f.bad { background: var(--poor); } .bar .c { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-wrap: wrap; }
+.seg button { font: 600 14px/1 var(--body); padding: 9px 11px; border: 0; background: var(--surface); color: var(--ink); border-right: 1px solid var(--line); cursor: pointer; }
+.seg button:last-child { border-right: 0; } .seg button[aria-pressed=true] { background: var(--ink); color: var(--surface); }
+.list { display: grid; gap: 8px; }
+.it { border: 1px solid var(--line); border-left: 4px solid var(--good); border-radius: 8px; padding: 10px 12px; display: grid; gap: 3px; }
+.it.bad { border-left-color: var(--poor); } .it.warn { border-left-color: #D9A23A; } .it.info { border-left-color: var(--info); }
+.it .h { display: flex; gap: 8px; align-items: baseline; } .it .d { font-weight: 600; } .it .age { margin-left: auto; font: 700 15px/1 var(--display); white-space: nowrap; }
+.it.bad .age { color: var(--poor); } .it.warn .age { color: var(--warn); }
+.it .m { font: 500 12.5px/1.4 var(--mono); color: var(--muted); }
+.chip { font: 600 11px/1 var(--body); text-transform: uppercase; letter-spacing: .04em; padding: 4px 6px; border-radius: 5px; background: var(--sunk); color: var(--muted); white-space: nowrap; }
+.chip.bad { background: var(--poor-soft); color: var(--poor); } .chip.info { background: var(--info-soft); color: var(--info); }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; } th, td { text-align: left; padding: 7px 4px; border-bottom: 1px solid var(--line); }
+th { font: 600 12px/1.2 var(--body); color: var(--muted); text-transform: uppercase; letter-spacing: .03em; } td.n { text-align: right; font-variant-numeric: tabular-nums; }
+tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
+.empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+#gate { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: grid; place-items: center; padding: 20px; }
+#gate .box { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 12px; text-align: center; }
+.bcx-home { display: inline-grid; place-items: center; width: 38px; height: 38px; color: var(--accent); text-decoration: none; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); flex: none; }
+.bcx-home svg { width: 20px; height: 20px; }
+.foot { text-align: center; font-size: 12px; color: var(--muted); }
+</style></head><body>
+<div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">My Boot Stock</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
+<header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
+  <img class="logo" src="data:image/jpeg;base64,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" alt="BCX" width="61" height="28"><div class="mark"><b>My Boot Stock</b><small>Developed by Gerald Pakree · v1.0</small></div></div></header>
+<main class="wrap" id="app" hidden>
+  <section class="card">
+    <div class="row"><span id="who" style="flex:1"></span></div>
+    <div id="eng-wrap" hidden><select id="eng"></select></div>
+    <div class="small" id="led-info"></div>
+    <div class="row"><button class="btn primary" id="led-latest" style="flex:1">Get the latest ledger</button><label class="btn">Import my own copy<input type="file" id="led-file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></label></div>
+    <div class="msg" id="led-msg"></div>
+  </section>
+  <section class="card" id="team" hidden>
+    <h2>Team summary <span class="aside">tap a name</span></h2>
+    <div style="overflow-x:auto"><table><thead><tr><th>Engineer</th><th class="n">Working</th><th class="n">Over 30d</th><th class="n">Faulty</th><th class="n">8+d</th><th class="n">Oldest</th></tr></thead><tbody id="team-b"></tbody></table></div>
+  </section>
+  <div id="mine" hidden style="display:grid;gap:14px">
+    <section class="card">
+      <h2 id="sum-h">Summary</h2>
+      <div class="tiles" id="tiles"></div>
+      <div class="small" id="sum-note"></div>
+    </section>
+    <section class="card">
+      <h2>Working boot aging <span class="aside">max 30 days</span></h2>
+      <div class="bars" id="bars-w"></div>
+    </section>
+    <section class="card">
+      <h2>Faulty boot aging <span class="aside">return these</span></h2>
+      <div class="bars" id="bars-f"></div>
+    </section>
+    <section class="card">
+      <h2>Details <span class="aside" id="det-n"></span></h2>
+      <div class="seg" id="det-view" role="group" aria-label="Show">
+        <button data-v="action" aria-pressed="true">Needs action</button><button data-v="working" aria-pressed="false">Working</button><button data-v="faulty" aria-pressed="false">Faulty</button><button data-v="projects" aria-pressed="false">Projects</button><button data-v="all" aria-pressed="false">All</button></div>
+      <input type="search" id="q" placeholder="Search: item, serial, tag, BI, SO, customer" autocomplete="off" spellcheck="false">
+      <div class="list" id="det"></div>
+    </section>
+  </div>
+  <div class="foot">My Boot Stock v1.0 · Developed by Gerald Pakree<br>Working-boot maint stock (BI) may stay 30 days. Faulty stock should go back: 0-2 days fine, 3-7 days due, 8+ days late.</div>
+</main>
+<script>
+/* Minimal offline .xlsx reader: first worksheet -> array of rows (arrays of cell values).
+   Uses the browser's DecompressionStream for zip entries; dates stay as Excel serial numbers. */
+const XLSX_MINI = (() => {
+  const dec = new TextDecoder();
+  async function unzip(buf) {
+    const u8 = new Uint8Array(buf), dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+    let e = u8.length - 22;
+    while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+    if (e < 0) throw new Error("not-zip");
+    const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true);
+    const files = {};
+    for (let i = 0; i < n; i++) {
+      if (dv.getUint32(p, true) !== 0x02014b50) break;
+      const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true);
+      const nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lho = dv.getUint32(p + 42, true);
+      files[dec.decode(u8.subarray(p + 46, p + 46 + nl))] = {method, csize, lho};
+      p += 46 + nl + xl + cl;
+    }
+    async function text(name) {
+      const f = files[name]; if (!f) return null;
+      const start = f.lho + 30 + dv.getUint16(f.lho + 26, true) + dv.getUint16(f.lho + 28, true);
+      const data = u8.subarray(start, start + f.csize);
+      if (f.method === 0) return dec.decode(data);
+      const stream = new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+      return await new Response(stream).text();
+    }
+    return {files, text};
+  }
+  const xml = s => new DOMParser().parseFromString(s, "application/xml");
+  const all = (node, tag) => Array.from(node.getElementsByTagNameNS("*", tag));
+  function colIndex(ref) { let n = 0; for (const ch of ref.replace(/\d+/g, "")) n = n * 26 + (ch.charCodeAt(0) - 64); return n - 1; }
+
+  async function read(file) {
+    const z = await unzip(await file.arrayBuffer());
+    const wb = xml(await z.text("xl/workbook.xml"));
+    const first = all(wb, "sheet")[0];
+    const rid = first.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id") || first.getAttribute("r:id");
+    let path = "xl/worksheets/sheet1.xml";
+    const relsTxt = await z.text("xl/_rels/workbook.xml.rels");
+    if (relsTxt) {
+      const rel = all(xml(relsTxt), "Relationship").find(r => r.getAttribute("Id") === rid);
+      if (rel) { const t = rel.getAttribute("Target"); path = t.startsWith("/") ? t.slice(1) : "xl/" + t.replace(/^\.\//, ""); }
+    }
+    const sst = [];
+    const ssTxt = await z.text("xl/sharedStrings.xml");
+    if (ssTxt) all(xml(ssTxt), "si").forEach(si => sst.push(all(si, "t").map(t => t.textContent).join("")));
+    const sheet = xml(await z.text(path));
+    const rows = [];
+    all(sheet, "row").forEach(r => {
+      const row = [];
+      all(r, "c").forEach((c, k) => {
+        const ref = c.getAttribute("r"), idx = ref ? colIndex(ref) : k, t = c.getAttribute("t");
+        const v = all(c, "v")[0];
+        let val = null;
+        if (t === "s") val = v ? sst[+v.textContent] : "";
+        else if (t === "inlineStr") val = all(c, "t").map(x => x.textContent).join("");
+        else if (t === "str" || t === "e") val = v ? v.textContent : "";
+        else if (t === "b") val = v ? v.textContent === "1" : null;
+        else val = v ? (v.textContent === "" ? "" : Number(v.textContent)) : null;
+        row[idx] = val;
+      });
+      rows.push(row);
+    });
+    return rows;
+  }
+  const serialToDate = n => new Date(Math.round((n - 25569) * 86400000));
+  return {read, serialToDate};
+})();
+if (typeof module !== "undefined") module.exports = XLSX_MINI;
+
+
+</script>
+<script>
+const RES_DEFAULT = [["ARSMAH", "Arshad Mahomed", "148156", "TARSMAH", "FARSMAH"], ["ARVRAJ", "Arvin Rajcoomar", "149032", "TARVRAJ", "FARVRAJ"], ["BENFYN", "Bevan C Fynn", "152072", "TBENFYN", "FBENFYN"], ["BRAHIR", "Branden Harilal", "148249", "TBRAHIR", "FBRAHIR"], ["CALJON", "Caleb Jonah", "150263", "TCALJON", "FCALJON"], ["CLIMTH", "Clifford Bonga Mthiyane", "148224", "TCLIMTH", "FCLIMTH"], ["DALSTA", "Dale Eric Stadler", "148711", "TDALSTA", "FDALSTA"], ["DAMMUN", "Damien Munien", "154458", "TDAMMUN", "FDAMMUN"], ["DEVBUG", "Deven Bugwandeen", "148351", "TDEVBUG", "FDEVBUG"], ["DHINAI", "Dhilend Raj Naidu", "152921", "TDHINAI", "FDHINAI"], ["EUGCHE", "Eugene Chetty", "148204", "TEUGCHE", "FEUGCHE"], ["GERPAK", "Gerald Pakree", "148154", "TGERPAK", "FGERPAK"], ["GOPRAJ", "Gopaul Erald Rajendran", "148980", "TGOPRAJ", "FGOPRAJ"], ["JAHKHA", "Jahmeel Khan", "150978", "TJAHKHA", "FJAHKHA"], ["JERPAK", "Jeremy Christopher Pakree", "148748", "TJERPAK", "FJERPAK"], ["KEESTA", "Keegan Stapelfeldt", "148346", "TKEESTA", "FKEESTA"], ["KYLDAV", "Kylan David", "998025", "TKYLDAV", "FKYLDAV"], ["MAHYUS", "Mahomed Faheem Yusuf", "148362", "TMAHYUS", "FMAHYUS"], ["MAHPER", "Mahomed S Peroo", "152017", "TMAHPER", "FMAHPER"], ["MITSOO", "Mithesh Soomaroo", "153985", "TMITSOO", "FMITSOO"], ["MLUNZI", "Mlungisi Nzimande", "995154", "TMLUNZI", "FMLUNZI"], ["SAIKHA", "Mohammed Saif Khan", "153708", "TSAIKHA", "FSAIKHA"], ["MOHEBR", "Mohammed Z Ebrahim", "149013", "TMOHEBR", "FMOHEBR"], ["NADKHA", "Nadeem Khan", "151408", "TNADKHA", "FNADKHA"], ["NAEMAN", "Naeson Manikkam", "148350", "TNAEMAN", "FNAEMAN"], ["NELGOV", "Nelanthran Govinden", "148729", "TNELGOV", "FNELGOV"], ["NISNAI", "Nishay Naidoo", "998026", "TNISNAI", "FNISNAI"], ["NIVMAH", "Nivendra Maharaj", "148771", "TNIVMAH", "FNIVMAH"], ["PHENGW", "Phelelani Ndumiso Ngwane", "148388", "TPHENGW", "FPHENGW"], ["RAJNAI", "Raj Naidoo", "145998", "TRAJNAI", "FRAJNAI"], ["RIVMUR", "Rivasen B Muruvan", "148997", "TRIVMUR", "FRIVMUR"], ["RONHAR", "Ronesh Harilall", "148275", "TRONHAR", "FRONHAR"], ["SHAEBR", "Shaahid Ebrahim", "150189", "TSHAEBR", "FSHAEBR"], ["SIPNGE", "Siphesihle Ngeleka", "154054", "TSIPNGE", "FSIPNGE"], ["SIYKHU", "Siyabonga Khumalo", "154032", "TSIYKHU", "FSIYKHU"], ["SUGMAR", "Sugandren Mari", "148209", "TSUGMAR", "FSUGMAR"], ["SULISA", "Suleyman Isaacs", "998148", "TSULISA", "FSULISA"], ["UWACAS", "Uwais Syed Cassim", "155138", "TUWACAS", "FUWACAS"], ["UZAMAH", "Uzair Mahomed", "148813", "TUZAMAH", "FUZAMAH"], ["VENPIL", "Venay Pillay", "148142", "TVENPIL", "FVENPIL"], ["VERRAG", "Veron Raghoo", "148228", "TVERRAG", "FVERRAG"], ["VINJAC", "Vincent Jaku", "148352", "TVINJAC", "FVINJAC"], ["WASKHA", "Waseem Khan", "151827", "TWASKHA", "FWASKHA"], ["ZIABOB", "Zia Bobat", "154377", "TZIABOB", "FZIABOB"], ["ZUBKHA", "Zubair Khan", "149008", "TZUBKHA", "FZUBKHA"]];
+const VER = "1.0", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const WORK_MAX = 30;                      // working (maint) stock: older than this is overdue
+const FBANDS = [[0, 2, "0-2 days", ""], [3, 7, "3-7 days", "warn"], [8, 1e9, "8+ days", "bad"]];
+const WBANDS = [[0, 7, "0-7 days", ""], [8, 14, "8-14 days", ""], [15, 30, "15-30 days", "warn"], [31, 60, "31-60 days", "bad"], [61, 1e9, "60+ days", "bad"]];
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
+const api = () => ls.get("ct-api") || DEFAULT_API;
+const title = s => String(s || "").toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+const ddmm = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ""); return m ? `${m[3]}/${m[2]}/${m[1]}` : String(iso || ""); };
+let SESS = null, VIEW = "action", ENG = "";
+
+function valid(s) { if (!s || !s.token || !s.user) return false; try { return Number(atob(s.token.replace(/-/g, "+").replace(/_/g, "/")).split("|")[1]) > Date.now(); } catch (e) { return false; } }
+const staff = () => SESS && (SESS.user.role === "ADMIN" || SESS.user.role === "STORES");
+function nameOf(code) { const u = ((SESS && SESS.users) || []).find(x => x.code === code); const r = RES_DEFAULT.find(x => x[0] === code); return u ? u.name : r ? title(r[1]) : code; }
+
+// newest ledger on the phone (any app may have loaded it)
+function ledger() { return ["brl-ledger", "ft-ledger", "ct-ledger"].map(ls.get).filter(L => L && L.rows).sort((a, b) => (b.importedAt || 0) - (a.importedAt || 0))[0] || null; }
+const dayMs = 864e5;
+function ageDays(iso, asOf) { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ""); if (!m) return null; return Math.max(0, Math.round((asOf - Date.UTC(+m[1], m[2] - 1, +m[3])) / dayMs)); }
+const docType = doc => (String(doc).match(/^[A-Za-z]+/) || [""])[0].toUpperCase();
+
+// Every open line in an engineer's boots. Working boot = T<code>, faulty boot = F<code>.
+function stockOf(code, L) {
+  const now = new Date(), asOf = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const out = [];
+  (L ? L.rows : []).forEach(x => {
+    const [date, doc, so, job, item, desc, serial, tag, loc, qty, ship] = x;
+    const l = String(loc || "").toUpperCase(); if (l.slice(1) !== code || !/^[TF]/.test(l)) return;
+    if (Number(qty) <= 0) return;
+    const t = docType(doc), boot = l[0] === "F" ? "faulty" : "working";
+    const kind = boot === "faulty" ? "faulty" : (t === "TR" || t === "TS") ? "projects" : "working";
+    const days = ageDays(date, asOf);
+    const band = kind === "faulty" ? FBANDS.find(b => days >= b[0] && days <= b[1]) : WBANDS.find(b => days >= b[0] && days <= b[1]);
+    const overdue = kind === "working" && t === "BI" && days > WORK_MAX, late = kind === "faulty" && days >= 8;
+    out.push({date, doc, t, so, item, desc: String(desc || "").trim(), serial, tag, qty: Number(qty) || 1, ship, kind, days, band, overdue, late, due: kind === "faulty" && days >= 3 && days < 8});
+  });
+  return out.sort((a, b) => (b.days || 0) - (a.days || 0));
+}
+function summary(items) {
+  const w = items.filter(i => i.kind === "working"), f = items.filter(i => i.kind === "faulty"), p = items.filter(i => i.kind === "projects");
+  return {w, f, p, overdue: w.filter(i => i.overdue), late: f.filter(i => i.late), due: f.filter(i => i.due),
+    oldestW: w.reduce((a, i) => Math.max(a, i.days || 0), 0), oldestF: f.reduce((a, i) => Math.max(a, i.days || 0), 0)};
+}
+
+function render() {
+  SESS = ls.get("ct-session");
+  if (!valid(SESS)) { $("gate").hidden = false; $("app").hidden = true; return; }
+  $("gate").hidden = true; $("app").hidden = false;
+  const L = ledger();
+  $("led-info").innerHTML = L ? `Ledger <b>${esc(L.date || "")}</b> · ${esc(L.file || "")}${L.importedAt ? " · loaded " + new Date(L.importedAt).toLocaleString("en-ZA", {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"}) : ""}` : "<b>No ledger on this phone yet.</b> Get the latest one, or import your own copy.";
+  if (staff()) {
+    $("who").innerHTML = `Logged in as <b>${esc(SESS.user.name)}</b> · ${SESS.user.role === "ADMIN" ? "Admin" : "Stores"}`;
+    $("eng-wrap").hidden = false;
+    const sel = $("eng"), codes = engineersOn(L);
+    sel.innerHTML = '<option value="">Whole team</option>' + codes.map(c => `<option value="${esc(c)}">${esc(nameOf(c))} (${esc(c)})</option>`).join("");
+    sel.value = codes.includes(ENG) ? ENG : ""; ENG = sel.value;
+  } else { ENG = SESS.user.code; $("who").innerHTML = `<b>${esc(SESS.user.name)}</b> (${esc(SESS.user.code)})`; $("eng-wrap").hidden = true; }
+  $("team").hidden = !(staff() && !ENG && L);
+  $("mine").hidden = !(L && ENG);
+  if (!L) return;
+  if (staff() && !ENG) renderTeam(L); else renderMine(L);
+}
+function engineersOn(L) {
+  const set = new Set(); (L ? L.rows : []).forEach(x => { const l = String(x[8] || "").toUpperCase(); if (/^[TF]/.test(l) && Number(x[9]) > 0) set.add(l.slice(1)); });
+  const known = RES_DEFAULT.map(r => r[0]); return [...set].filter(c => known.includes(c) || ((SESS.users || []).some(u => u.code === c))).sort((a, b) => nameOf(a).localeCompare(nameOf(b)));
+}
+function renderTeam(L) {
+  const rows = engineersOn(L).map(c => ({c, s: summary(stockOf(c, L))})).sort((a, b) => (b.s.overdue.length + b.s.late.length) - (a.s.overdue.length + a.s.late.length) || b.s.oldestW - a.s.oldestW);
+  const red = n => n ? `<span class="red">${n}</span>` : "0";
+  $("team-b").innerHTML = rows.map(({c, s}) => `<tr class="click" data-eng="${esc(c)}"><td>${esc(nameOf(c).split(" ").filter((w, i, a) => i === 0 || i === a.length - 1).join(" "))}</td><td class="n">${s.w.length}</td><td class="n">${red(s.overdue.length)}</td><td class="n">${s.f.length}</td><td class="n">${red(s.late.length)}</td><td class="n">${Math.max(s.oldestW, s.oldestF)}d</td></tr>`).join("")
+    || '<tr><td colspan="6" class="empty">No boot stock on this ledger.</td></tr>';
+}
+function bars(el, items, bands) {
+  const max = Math.max(1, ...bands.map(b => items.filter(i => i.band === b).length));
+  el.innerHTML = bands.map(b => { const n = items.filter(i => i.band === b).length;
+    return `<div class="bar"><span>${b[2]}</span><span class="t"><span class="f ${b[3]}" style="width:${n ? Math.max(3, n / max * 100) : 0}%"></span></span><span class="c">${n}</span></div>`; }).join("");
+}
+function renderMine(L) {
+  const items = stockOf(ENG, L), s = summary(items);
+  window.__ITEMS = items;
+  $("sum-h").textContent = (staff() ? nameOf(ENG) : "Your boot") + ` · ${L.date || ""}`;
+  const t = (cls, n, l, sub) => `<div class="tile ${cls}"><span class="n">${n}</span><span class="l">${l}</span>${sub ? `<span class="s">${sub}</span>` : ""}</div>`;
+  $("tiles").innerHTML =
+    t(s.overdue.length ? "bad" : "ok", s.overdue.length, "Working stock overdue", "BI items older than 30 days") +
+    t(s.late.length ? "bad" : s.due.length ? "warn" : "ok", s.late.length, "Faulty 8+ days", s.due.length ? `${s.due.length} more at 3-7 days` : "return faulty stock") +
+    t("", s.w.length, "Working boot items", s.w.length ? `oldest ${s.oldestW} days` : "") +
+    t("", s.f.length, "Faulty boot items", s.f.length ? `oldest ${s.oldestF} days` : "") ;
+  $("sum-note").innerHTML = (s.p.length ? `Plus ${s.p.length} project item${s.p.length === 1 ? "" : "s"} (TR/TS), shown for information. ` : "")
+    + (s.overdue.length || s.late.length ? `<b style="color:var(--poor)">${s.overdue.length + s.late.length} item${s.overdue.length + s.late.length === 1 ? " is" : "s are"} overdue</b>${s.due.length ? ` and ${s.due.length} should go back soon` : ""}: see <b>Needs action</b> below.` : s.due.length ? `${s.due.length} faulty item${s.due.length === 1 ? "" : "s"} should go back soon.` : `<span style="color:var(--good)">Nothing overdue. Well done.</span>`);
+  bars($("bars-w"), s.w.filter(i => i.t === "BI" || true), WBANDS); bars($("bars-f"), s.f, FBANDS);
+  renderDetails();
+}
+function renderDetails() {
+  const items = window.__ITEMS || [], q = $("q").value.trim().toLowerCase();
+  const pick = i => VIEW === "all" ? true : VIEW === "action" ? (i.overdue || i.late || i.due) : i.kind === VIEW;
+  const list = items.filter(i => pick(i) && (!q || q.split(/\s+/).every(w => [i.desc, i.item, i.serial, i.tag, i.doc, i.so, i.ship].join(" ").toLowerCase().includes(w))));
+  $("det-n").textContent = `${list.length} item${list.length === 1 ? "" : "s"}`;
+  $("det").innerHTML = list.map(i => {
+    const cls = i.overdue || i.late ? "bad" : i.due || (i.band && i.band[3] === "warn") ? "warn" : i.kind === "projects" ? "info" : "";
+    const why = i.overdue ? `<span class="chip bad">Overdue</span>` : i.late ? `<span class="chip bad">Return now</span>` : i.due ? `<span class="chip">Return soon</span>` : "";
+    return `<div class="it ${cls}"><div class="h"><span class="d">${esc(i.desc || i.item)}</span>${why}<span class="age">${i.days == null ? "?" : i.days + "d"}</span></div>
+      <div class="m">${esc(i.item)}${i.serial ? " · S/N " + esc(i.serial) : ""}${i.tag ? " · " + esc(i.tag) : ""}${i.qty > 1 ? " · qty " + i.qty : ""}</div>
+      <div class="m">${esc(i.doc)} · ${esc(ddmm(i.date))} · <span class="chip ${i.kind === "projects" ? "info" : ""}">${i.kind === "faulty" ? "Faulty boot" : i.kind === "projects" ? "Project" : "Working boot"}</span>${i.so ? " · " + esc(i.so) : ""}</div>
+      ${i.ship ? `<div class="small">${esc(i.ship)}</div>` : ""}</div>`;
+  }).join("") || `<div class="empty">${VIEW === "action" && !q ? "Nothing needs action." : "Nothing to show."}</div>`;
+}
+
+// ---- ledger: latest office copy (Drive) or own import ----
+function ledMsg(t, k) { const m = $("led-msg"); m.innerHTML = t; m.className = "msg" + (k ? " " + k : ""); }
+async function importFile(file) {
+  let rows;
+  try { rows = await XLSX_MINI.read(file); } catch (e) { return ledMsg("That file couldn't be read. Import the .xlsx exactly as exported from Nav.", "err"); }
+  const h = (rows[0] || []).map(v => String(v || "").trim()), col = n => h.indexOf(n);
+  const need = ["Posting Date", "Document No.", "Service Order No.", "Job No.", "Item No.", "Description", "Serial No.", "Tag No.", "Location Code", "Remaining Quantity", "Ship-To Name"];
+  const ix = need.map(col);
+  if (ix[4] < 0 || ix[5] < 0 || ix[8] < 0) return ledMsg("This doesn't look like an Item Ledger Entries export.", "err");
+  let maxD = 0;
+  const data = rows.slice(1).filter(r => r[ix[8]]).map(r => {
+    const v = ix.map(i => i < 0 || r[i] == null ? "" : r[i]); let d = v[0];
+    if (typeof d === "number") { maxD = Math.max(maxD, d); d = XLSX_MINI.serialToDate(d).toISOString().slice(0, 10); }
+    v[0] = String(d); for (let i = 1; i < v.length; i++) if (i !== 9) v[i] = String(v[i]).trim(); v[9] = Number(v[9]) || 0; return v;
+  });
+  const m = /(\d{4})-(\d{2})-(\d{2})T/.exec(file.name);
+  const L = {date: m ? `${m[3]}/${m[2]}/${m[1]}` : (maxD ? ddmm(XLSX_MINI.serialToDate(maxD).toISOString()) : ""), file: file.name, rows: data, importedAt: Date.now()};
+  ["ft-ledger", "ct-ledger", "ft-skip"].forEach(ls.del);
+  if (!ls.set("brl-ledger", L)) return ledMsg("This phone is out of storage space, so the ledger couldn't be saved.", "err");
+  ledMsg(`Ledger loaded: ${data.length} lines. All the apps will use it.`, "ok"); render();
+}
+$("led-file").addEventListener("change", e => { const f = e.target.files[0]; e.target.value = ""; if (f) importFile(f); });
+$("led-latest").addEventListener("click", async () => {
+  const b = $("led-latest"), have = ledger(); b.disabled = true; ledMsg("Getting the latest ledger...");
+  try {
+    const r = await fetch(api(), {method: "POST", body: JSON.stringify({action: "latestLedger", token: SESS && SESS.token, have: have && have.file}), redirect: "follow"});
+    const j = await r.json();
+    if (!j.ok) throw new Error(/^LOGIN:/.test(j.error || "") ? "Please log in again on the BCX Field Apps page." : /Unknown action/i.test(j.error || "") ? "The office ledger needs the Google script updated to v2.8. Import your own copy instead." : j.error);
+    if (!j.name) return ledMsg("There's no office ledger yet. Import your own copy instead.", "err");
+    if (j.same) return ledMsg("You already have the latest ledger.", "ok");
+    const bin = atob(j.b64), bytes = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    await importFile(new File([bytes], j.name));
+  } catch (e) { ledMsg(e instanceof TypeError ? "No signal. Try again when you have signal, or import your own copy." : esc(e.message), "err"); }
+  finally { b.disabled = false; }
+});
+$("eng").addEventListener("change", e => { ENG = e.target.value; render(); window.scrollTo(0, 0); });
+$("team-b").addEventListener("click", e => { const tr = e.target.closest("[data-eng]"); if (tr) { ENG = tr.dataset.eng; render(); window.scrollTo(0, 0); } });
+$("det-view").addEventListener("click", e => { const v = e.target.dataset.v; if (!v) return; VIEW = v; document.querySelectorAll("#det-view button").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === v)); renderDetails(); });
+$("q").addEventListener("input", renderDetails);
+window.addEventListener("pageshow", render); window.addEventListener("storage", render);
+render();
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+</script></body></html>
