@@ -107,7 +107,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
   <div class="msg" id="lmsg"></div>
   <div class="list" id="list"><div class="empty">Loading...</div></div>
   <div class="row" style="justify-content:space-between"><button class="btn small" id="reload">Refresh</button><button class="btn small" id="csv">Download the list (CSV)</button></div>
-  <div class="foot">Manage users v1.1 · Developed by Gerald Pakree<br>The same logins work in all the BCX field apps.</div>
+  <div class="foot">Manage users v1.2 · Developed by Gerald Pakree<br>The same logins work in all the BCX field apps.</div>
 </main>
 
 <main class="wrap" id="v-edit" hidden>
@@ -140,7 +140,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
 </main>
 
 <script>
-const VER = "1.1", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "1.2", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const APP_URL = "https://geraldceb.github.io/";
 const ROLE = {ENG: "Engineer", STORES: "Stores", ADMIN: "Admin"};
 const $ = id => document.getElementById(id);
@@ -263,4 +263,28 @@ SESS = ls.get("ct-session");
 if (!valid(SESS) || SESS.user.role !== "ADMIN") $("gate").hidden = false;
 else { show("v-list"); load(); }
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
-</script></body></html>
+</script><script>window.BCX_BACK = {can: () => !document.getElementById("v-edit").hidden, go: () => document.getElementById("back").click()};</script>
+<script>
+/* Back button (all apps): one screen back inside the app; on the app's first screen, back to the BCX Field Apps page.
+   Each app can say what "back" means for it in window.BCX_BACK = {can(), go()}.
+   An app opened on its own (Store Visit for managers) only shows it when there's a screen to go back to. */
+(() => {
+  const ALWAYS = true;
+  let hub = ALWAYS; try { hub = hub || /[?&]hub=1\b/.test(location.search) || !!sessionStorage.getItem("bcx-hub"); } catch (e) {}
+  const w = document.querySelector("header.top .wrap"); if (!w) return;
+  const st = document.createElement("style");
+  st.textContent = `.bcx-back { display: inline-grid; place-items: center; width: 38px; height: 38px; padding: 0;
+    color: var(--accent, #D22432); background: var(--surface, #fff); border: 1px solid var(--line, #DED8D3); border-radius: 9px; flex: none; cursor: pointer; }
+    .bcx-back svg { width: 22px; height: 22px; } .bcx-back[hidden] { display: none; }`;
+  document.head.append(st);
+  const b = document.createElement("button"); b.type = "button"; b.className = "bcx-back"; b.setAttribute("aria-label", "Back one screen");
+  b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>'; b.title = "Back";
+  w.prepend(b);
+  const inner = () => { try { return !!(window.BCX_BACK && window.BCX_BACK.can()); } catch (e) { return false; } };
+  const upd = () => { b.hidden = !(inner() || hub); };
+  b.onclick = () => { if (inner()) window.BCX_BACK.go(); else location.href = "../"; setTimeout(upd, 60); };
+  ["click", "change", "popstate"].forEach(ev => window.addEventListener(ev, () => setTimeout(upd, 0), true));
+  setInterval(upd, 800); upd();
+})();
+</script>
+</body></html>
