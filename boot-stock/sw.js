@@ -1,5 +1,5 @@
 // Offline support for My Boot Stock. The version changes whenever the app changes.
-const CACHE = "boot-stock-v1-3-20261113c";
+const CACHE = "boot-stock-v1-4-20261113";
 const EXCLUDE = []; // other apps in sub-folders of this site keep their own offline copy
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 const BASE = new URL("./", self.registration.scope).pathname;

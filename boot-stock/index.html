@@ -99,7 +99,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
       <div class="list" id="det"></div>
     </section>
   </div>
-  <div class="foot">My Boot Stock v1.3 · Developed by Gerald Pakree<br>Working-boot maint stock (BI) may stay 30 days. Faulty stock should go back: 0-2 days fine, 3-7 days due, 8+ days late.</div>
+  <div class="foot">My Boot Stock v1.4 · Developed by Gerald Pakree<br>Working-boot maint stock (BI) may stay 30 days. Faulty stock should go back: 0-2 days fine, 3-7 days due, 8+ days late.</div>
 </main>
 <script>
 /* Minimal offline .xlsx reader: first worksheet -> array of rows (arrays of cell values).
@@ -176,7 +176,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 </script>
 <script>
 const RES_DEFAULT = [["ARSMAH", "Arshad Mahomed", "148156", "TARSMAH", "FARSMAH"], ["ARVRAJ", "Arvin Rajcoomar", "149032", "TARVRAJ", "FARVRAJ"], ["BENFYN", "Bevan C Fynn", "152072", "TBENFYN", "FBENFYN"], ["BRAHIR", "Branden Harilal", "148249", "TBRAHIR", "FBRAHIR"], ["CALJON", "Caleb Jonah", "150263", "TCALJON", "FCALJON"], ["CLIMTH", "Clifford Bonga Mthiyane", "148224", "TCLIMTH", "FCLIMTH"], ["DALSTA", "Dale Eric Stadler", "148711", "TDALSTA", "FDALSTA"], ["DAMMUN", "Damien Munien", "154458", "TDAMMUN", "FDAMMUN"], ["DEVBUG", "Deven Bugwandeen", "148351", "TDEVBUG", "FDEVBUG"], ["DHINAI", "Dhilend Raj Naidu", "152921", "TDHINAI", "FDHINAI"], ["EUGCHE", "Eugene Chetty", "148204", "TEUGCHE", "FEUGCHE"], ["GERPAK", "Gerald Pakree", "148154", "TGERPAK", "FGERPAK"], ["GOPRAJ", "Gopaul Erald Rajendran", "148980", "TGOPRAJ", "FGOPRAJ"], ["JAHKHA", "Jahmeel Khan", "150978", "TJAHKHA", "FJAHKHA"], ["JERPAK", "Jeremy Christopher Pakree", "148748", "TJERPAK", "FJERPAK"], ["KEESTA", "Keegan Stapelfeldt", "148346", "TKEESTA", "FKEESTA"], ["KYLDAV", "Kylan David", "998025", "TKYLDAV", "FKYLDAV"], ["MAHYUS", "Mahomed Faheem Yusuf", "148362", "TMAHYUS", "FMAHYUS"], ["MAHPER", "Mahomed S Peroo", "152017", "TMAHPER", "FMAHPER"], ["MITSOO", "Mithesh Soomaroo", "153985", "TMITSOO", "FMITSOO"], ["MLUNZI", "Mlungisi Nzimande", "995154", "TMLUNZI", "FMLUNZI"], ["SAIKHA", "Mohammed Saif Khan", "153708", "TSAIKHA", "FSAIKHA"], ["MOHEBR", "Mohammed Z Ebrahim", "149013", "TMOHEBR", "FMOHEBR"], ["NADKHA", "Nadeem Khan", "151408", "TNADKHA", "FNADKHA"], ["NAEMAN", "Naeson Manikkam", "148350", "TNAEMAN", "FNAEMAN"], ["NELGOV", "Nelanthran Govinden", "148729", "TNELGOV", "FNELGOV"], ["NISNAI", "Nishay Naidoo", "998026", "TNISNAI", "FNISNAI"], ["NIVMAH", "Nivendra Maharaj", "148771", "TNIVMAH", "FNIVMAH"], ["PHENGW", "Phelelani Ndumiso Ngwane", "148388", "TPHENGW", "FPHENGW"], ["RAJNAI", "Raj Naidoo", "145998", "TRAJNAI", "FRAJNAI"], ["RIVMUR", "Rivasen B Muruvan", "148997", "TRIVMUR", "FRIVMUR"], ["RONHAR", "Ronesh Harilall", "148275", "TRONHAR", "FRONHAR"], ["SHAEBR", "Shaahid Ebrahim", "150189", "TSHAEBR", "FSHAEBR"], ["SIPNGE", "Siphesihle Ngeleka", "154054", "TSIPNGE", "FSIPNGE"], ["SIYKHU", "Siyabonga Khumalo", "154032", "TSIYKHU", "FSIYKHU"], ["SUGMAR", "Sugandren Mari", "148209", "TSUGMAR", "FSUGMAR"], ["SULISA", "Suleyman Isaacs", "998148", "TSULISA", "FSULISA"], ["UWACAS", "Uwais Syed Cassim", "155138", "TUWACAS", "FUWACAS"], ["UZAMAH", "Uzair Mahomed", "148813", "TUZAMAH", "FUZAMAH"], ["VENPIL", "Venay Pillay", "148142", "TVENPIL", "FVENPIL"], ["VERRAG", "Veron Raghoo", "148228", "TVERRAG", "FVERRAG"], ["VINJAC", "Vincent Jaku", "148352", "TVINJAC", "FVINJAC"], ["WASKHA", "Waseem Khan", "151827", "TWASKHA", "FWASKHA"], ["ZIABOB", "Zia Bobat", "154377", "TZIABOB", "FZIABOB"], ["ZUBKHA", "Zubair Khan", "149008", "TZUBKHA", "FZUBKHA"]];
-const VER = "1.3", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "1.4", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const WORK_MAX = 30;                      // working (maint) stock: older than this is overdue
 const FBANDS = [[0, 2, "0-2 days", ""], [3, 7, "3-7 days", "warn"], [8, 1e9, "8+ days", "bad"]];
 const WBANDS = [[0, 7, "0-7 days", ""], [8, 14, "8-14 days", ""], [15, 30, "15-30 days", "warn"], [31, 60, "31-60 days", "bad"], [61, 1e9, "60+ days", "bad"]];
@@ -215,6 +215,7 @@ function stockOf(code, L) {
   });
   return out.sort((a, b) => (b.days || 0) - (a.days || 0));
 }
+const Q = a => a.reduce((n, i) => n + (Number(i.qty) || 1), 0);   // v1.4: counts add up quantities, not ledger lines
 function summary(items) {
   const w = items.filter(i => i.kind === "working"), f = items.filter(i => i.kind === "faulty"), p = items.filter(i => i.kind === "projects");
   return {w, f, p, overdue: w.filter(i => i.overdue), late: f.filter(i => i.late), due: f.filter(i => i.due),
@@ -244,14 +245,14 @@ function engineersOn(L) {
   const known = RES_DEFAULT.map(r => r[0]); return [...set].filter(c => known.includes(c) || ((SESS.users || []).some(u => u.code === c))).sort((a, b) => nameOf(a).localeCompare(nameOf(b)));
 }
 function renderTeam(L) {
-  const rows = engineersOn(L).map(c => ({c, s: summary(stockOf(c, L))})).sort((a, b) => (b.s.overdue.length + b.s.late.length) - (a.s.overdue.length + a.s.late.length) || b.s.oldestW - a.s.oldestW);
+  const rows = engineersOn(L).map(c => ({c, s: summary(stockOf(c, L))})).sort((a, b) => (b.Q(s.overdue) + b.Q(s.late)) - (a.Q(s.overdue) + a.Q(s.late)) || b.s.oldestW - a.s.oldestW);
   const red = n => n ? `<span class="red">${n}</span>` : "0";
-  $("team-b").innerHTML = rows.map(({c, s}) => `<tr class="click" data-eng="${esc(c)}"><td>${esc(nameOf(c).split(" ").filter((w, i, a) => i === 0 || i === a.length - 1).join(" "))}</td><td class="n">${s.w.length}</td><td class="n">${red(s.overdue.length)}</td><td class="n">${s.f.length}</td><td class="n">${red(s.late.length)}</td><td class="n">${Math.max(s.oldestW, s.oldestF)}d</td></tr>`).join("")
+  $("team-b").innerHTML = rows.map(({c, s}) => `<tr class="click" data-eng="${esc(c)}"><td>${esc(nameOf(c).split(" ").filter((w, i, a) => i === 0 || i === a.length - 1).join(" "))}</td><td class="n">${Q(s.w)}</td><td class="n">${red(Q(s.overdue))}</td><td class="n">${Q(s.f)}</td><td class="n">${red(Q(s.late))}</td><td class="n">${Math.max(s.oldestW, s.oldestF)}d</td></tr>`).join("")
     || '<tr><td colspan="6" class="empty">No boot stock on this ledger.</td></tr>';
 }
 function bars(el, items, bands) {
-  const max = Math.max(1, ...bands.map(b => items.filter(i => i.band === b).length));
-  el.innerHTML = bands.map(b => { const n = items.filter(i => i.band === b).length;
+  const max = Math.max(1, ...bands.map(b => Q(items.filter(i => i.band === b))));
+  el.innerHTML = bands.map(b => { const n = Q(items.filter(i => i.band === b));
     return `<div class="bar"><span>${b[2]}</span><span class="t"><span class="f ${b[3]}" style="width:${n ? Math.max(3, n / max * 100) : 0}%"></span></span><span class="c">${n}</span></div>`; }).join("");
 }
 function renderMine(L) {
@@ -260,12 +261,12 @@ function renderMine(L) {
   $("sum-h").textContent = (staff() ? nameOf(ENG) : "Your boot") + ` · ${L.date || ""}`;
   const t = (cls, n, l, sub) => `<div class="tile ${cls}"><span class="n">${n}</span><span class="l">${l}</span>${sub ? `<span class="s">${sub}</span>` : ""}</div>`;
   $("tiles").innerHTML =
-    t(s.overdue.length ? "bad" : "ok", s.overdue.length, "Working stock overdue", "BI items older than 30 days") +
-    t(s.late.length ? "bad" : s.due.length ? "warn" : "ok", s.late.length, "Faulty 8+ days", s.due.length ? `${s.due.length} more at 3-7 days` : "return faulty stock") +
-    t("", s.w.length, "Working boot items", s.w.length ? `oldest ${s.oldestW} days` : "") +
-    t("", s.f.length, "Faulty boot items", s.f.length ? `oldest ${s.oldestF} days` : "") ;
-  $("sum-note").innerHTML = (s.p.length ? `Plus ${s.p.length} project item${s.p.length === 1 ? "" : "s"} (TR/TS), shown for information. ` : "")
-    + (s.overdue.length || s.late.length ? `<b style="color:var(--poor)">${s.overdue.length + s.late.length} item${s.overdue.length + s.late.length === 1 ? " is" : "s are"} overdue</b>${s.due.length ? ` and ${s.due.length} should go back soon` : ""}: see <b>Needs action</b> below.` : s.due.length ? `${s.due.length} faulty item${s.due.length === 1 ? "" : "s"} should go back soon.` : `<span style="color:var(--good)">Nothing overdue. Well done.</span>`);
+    t(Q(s.overdue) ? "bad" : "ok", Q(s.overdue), "Working stock overdue", "BI items older than 30 days") +
+    t(Q(s.late) ? "bad" : Q(s.due) ? "warn" : "ok", Q(s.late), "Faulty 8+ days", Q(s.due) ? `${Q(s.due)} more at 3-7 days` : "return faulty stock") +
+    t("", Q(s.w), "Working boot items", Q(s.w) ? `oldest ${s.oldestW} days` : "") +
+    t("", Q(s.f), "Faulty boot items", Q(s.f) ? `oldest ${s.oldestF} days` : "") ;
+  $("sum-note").innerHTML = (Q(s.p) ? `Plus ${Q(s.p)} project item${Q(s.p) === 1 ? "" : "s"} (TR/TS), shown for information. ` : "")
+    + (Q(s.overdue) || Q(s.late) ? `<b style="color:var(--poor)">${Q(s.overdue) + Q(s.late)} item${Q(s.overdue) + Q(s.late) === 1 ? " is" : "s are"} overdue</b>${Q(s.due) ? ` and ${Q(s.due)} should go back soon` : ""}: see <b>Needs action</b> below.` : Q(s.due) ? `${Q(s.due)} faulty item${Q(s.due) === 1 ? "" : "s"} should go back soon.` : `<span style="color:var(--good)">Nothing overdue. Well done.</span>`);
   bars($("bars-w"), s.w.filter(i => i.t === "BI" || true), WBANDS); bars($("bars-f"), s.f, FBANDS);
   renderDetails();
 }
@@ -273,7 +274,7 @@ function renderDetails() {
   const items = window.__ITEMS || [], q = $("q").value.trim().toLowerCase();
   const pick = i => VIEW === "all" ? true : VIEW === "action" ? (i.overdue || i.late || i.due) : i.kind === VIEW;
   const list = items.filter(i => pick(i) && (!q || q.split(/\s+/).every(w => [i.desc, i.item, i.serial, i.tag, i.doc, i.so, i.ship].join(" ").toLowerCase().includes(w))));
-  $("det-n").textContent = `${list.length} item${list.length === 1 ? "" : "s"}`;
+  $("det-n").textContent = `${Q(list)} item${Q(list) === 1 ? "" : "s"}`;
   $("det").innerHTML = list.map(i => {
     const cls = i.overdue || i.late ? "bad" : i.due || (i.band && i.band[3] === "warn") ? "warn" : i.kind === "projects" ? "info" : "";
     const why = i.overdue ? `<span class="chip bad">Overdue</span>` : i.late ? `<span class="chip bad">Return now</span>` : i.due ? `<span class="chip">Return soon</span>` : "";
