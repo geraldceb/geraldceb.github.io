@@ -13531,7 +13531,7 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "4.2";
+const APP_VERSION = "4.3";
 const DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const SITE = "https://geraldceb.github.io/custody/";
 const RES_DEFAULT = [["ARSMAH", "Arshad Mahomed", "148156", "TARSMAH", "FARSMAH"], ["ARVRAJ", "Arvin Rajcoomar", "149032", "TARVRAJ", "FARVRAJ"], ["BENFYN", "Bevan C Fynn", "152072", "TBENFYN", "FBENFYN"], ["BRAHIR", "Branden Harilal", "148249", "TBRAHIR", "FBRAHIR"], ["CALJON", "Caleb Jonah", "150263", "TCALJON", "FCALJON"], ["CLIMTH", "Clifford Bonga Mthiyane", "148224", "TCLIMTH", "FCLIMTH"], ["DALSTA", "Dale Eric Stadler", "148711", "TDALSTA", "FDALSTA"], ["DAMMUN", "Damien Munien", "154458", "TDAMMUN", "FDAMMUN"], ["DEVBUG", "Deven Bugwandeen", "148351", "TDEVBUG", "FDEVBUG"], ["DHINAI", "Dhilend Raj Naidu", "152921", "TDHINAI", "FDHINAI"], ["EUGCHE", "Eugene Chetty", "148204", "TEUGCHE", "FEUGCHE"], ["GERPAK", "Gerald Pakree", "148154", "TGERPAK", "FGERPAK"], ["GOPRAJ", "Gopaul Erald Rajendran", "148980", "TGOPRAJ", "FGOPRAJ"], ["JAHKHA", "Jahmeel Khan", "150978", "TJAHKHA", "FJAHKHA"], ["JERPAK", "Jeremy Christopher Pakree", "148748", "TJERPAK", "FJERPAK"], ["KEESTA", "Keegan Stapelfeldt", "148346", "TKEESTA", "FKEESTA"], ["KYLDAV", "Kylan David", "998025", "TKYLDAV", "FKYLDAV"], ["MAHYUS", "Mahomed Faheem Yusuf", "148362", "TMAHYUS", "FMAHYUS"], ["MAHPER", "Mahomed S Peroo", "152017", "TMAHPER", "FMAHPER"], ["MITSOO", "Mithesh Soomaroo", "153985", "TMITSOO", "FMITSOO"], ["MLUNZI", "Mlungisi Nzimande", "995154", "TMLUNZI", "FMLUNZI"], ["SAIKHA", "Mohammed Saif Khan", "153708", "TSAIKHA", "FSAIKHA"], ["MOHEBR", "Mohammed Z Ebrahim", "149013", "TMOHEBR", "FMOHEBR"], ["NADKHA", "Nadeem Khan", "151408", "TNADKHA", "FNADKHA"], ["NAEMAN", "Naeson Manikkam", "148350", "TNAEMAN", "FNAEMAN"], ["NELGOV", "Nelanthran Govinden", "148729", "TNELGOV", "FNELGOV"], ["NISNAI", "Nishay Naidoo", "998026", "TNISNAI", "FNISNAI"], ["NIVMAH", "Nivendra Maharaj", "148771", "TNIVMAH", "FNIVMAH"], ["PHENGW", "Phelelani Ndumiso Ngwane", "148388", "TPHENGW", "FPHENGW"], ["RAJNAI", "Raj Naidoo", "145998", "TRAJNAI", "FRAJNAI"], ["RIVMUR", "Rivasen B Muruvan", "148997", "TRIVMUR", "FRIVMUR"], ["RONHAR", "Ronesh Harilall", "148275", "TRONHAR", "FRONHAR"], ["SHAEBR", "Shaahid Ebrahim", "150189", "TSHAEBR", "FSHAEBR"], ["SIPNGE", "Siphesihle Ngeleka", "154054", "TSIPNGE", "FSIPNGE"], ["SIYKHU", "Siyabonga Khumalo", "154032", "TSIYKHU", "FSIYKHU"], ["SUGMAR", "Sugandren Mari", "148209", "TSUGMAR", "FSUGMAR"], ["SULISA", "Suleyman Isaacs", "998148", "TSULISA", "FSULISA"], ["UWACAS", "Uwais Syed Cassim", "155138", "TUWACAS", "FUWACAS"], ["UZAMAH", "Uzair Mahomed", "148813", "TUZAMAH", "FUZAMAH"], ["VENPIL", "Venay Pillay", "148142", "TVENPIL", "FVENPIL"], ["VERRAG", "Veron Raghoo", "148228", "TVERRAG", "FVERRAG"], ["VINJAC", "Vincent Jaku", "148352", "TVINJAC", "FVINJAC"], ["WASKHA", "Waseem Khan", "151827", "TWASKHA", "FWASKHA"], ["ZIABOB", "Zia Bobat", "154377", "TZIABOB", "FZIABOB"], ["ZUBKHA", "Zubair Khan", "149008", "TZUBKHA", "FZUBKHA"]];
@@ -13582,9 +13582,9 @@ function show(v, push) {
     else history.pushState({v}, "", location.pathname + location.search); }
 }
 // v4.1: a back press on a handover with signatures or photos asks first
-function handWork() { return current === "v-hand" && HAND && ((PADS.g && !PADS.g.empty()) || (PADS.r && !PADS.r.empty()) || (HAND.photos || []).length); }
+function handWork() { if (current === "v-hand" && HAND) handSave(); return current === "v-hand" && HAND && ((PADS.g && !PADS.g.empty()) || (PADS.r && !PADS.r.empty())); }
 window.addEventListener("popstate", e => {
-  if (handWork() && !confirm("Leave this handover? The signatures and photos on it will be lost.")) { history.pushState({v: "v-hand"}, "", location.pathname + location.search); return; }
+  if (handWork() && !confirm("Leave this handover? The ticks, photos and note are kept, but both people will need to sign again.")) { history.pushState({v: "v-hand"}, "", location.pathname + location.search); return; }
   const v = e.state && e.state.v; if (!SESSION) show("v-login", false); else if (v && v !== "v-done" && v !== "v-hand") show(v, false); else goHome(false); });
 function renderWho() { const w = $("who"); if (w) w.innerHTML = SESSION ? `Logged in as <b>${esc(me().name)}</b> (${esc(me().code)})` : ""; }
 
@@ -14423,6 +14423,40 @@ function handReset() {
   $("h-thumbs").innerHTML = ""; msg("h-msg", ""); $("h-note-req").hidden = true;
   show("v-hand");
   PADS.g.resize(); PADS.r.resize(); PADS.g.clear(); PADS.r.clear();
+  handRestore();
+}
+/* ---------- the handover screen is kept too (v4.3) ----------
+   Leaving a handover (Back, the phone's back button, the app closing) keeps the ticks, photos, note, reasons and who receives.
+   Coming back to the same handover puts them back. Signatures and PINs are never kept: both people sign at the moment of handover. */
+let handTimer = null;
+function handKey() {
+  if (!HAND) return "";
+  if (HAND.multi) return "multi:" + HAND.groups.map(g => g.trail.ref + "@" + g.trail.hops).join(",");
+  if (!HAND.isNew) return "trail:" + HAND.trail.ref + "@" + HAND.trail.hops;
+  return "new:" + HAND.trail.type + ":" + (HAND.trail.navDoc || "") + ":" + (HAND.trail.bookedTo || "") + ":" + HAND.list.map(i => i.itemNo + "/" + (i.serial || "")).join(",");
+}
+function handSave() {
+  clearTimeout(handTimer); if (!HAND || current !== "v-hand") return;
+  const d = {key: handKey(), at: Date.now(), received: HAND.received, why: HAND.why, note: $("h-note").value, photos: HAND.photos, r: $("r-code").value,
+    absent: $("g-absent").checked, reason: $("g-reason").value};
+  if (!ls.set("ct-hand-draft", d)) ls.set("ct-hand-draft", Object.assign(d, {photos: [], photosLost: HAND.photos.length}));   // phone full: keep the rest
+  HAND.saved = d;
+}
+const handSoon = () => { clearTimeout(handTimer); handTimer = setTimeout(handSave, 300); };
+function handDel() { clearTimeout(handTimer); ls.del("ct-hand-draft"); }
+function handRestore() {
+  const d = ls.get("ct-hand-draft", null);
+  if (!d || d.key !== handKey() || Date.now() - d.at > 3 * 864e5) return;
+  const keys = new Set(HAND.list.map(i => i.k));
+  Object.keys(d.received || {}).forEach(k => { if (keys.has(k)) HAND.received[k] = !!d.received[k]; });
+  HAND.why = Object.assign({}, d.why || {}); HAND.photos = (d.photos || []).slice(0, 6);
+  $("h-note").value = d.note || ""; $("g-reason").value = d.reason || "";
+  if (d.r && [...$("r-code").options].some(o => o.value === d.r)) $("r-code").value = d.r;
+  if (d.absent && !$("g-absent-wrap").hidden) $("g-absent").checked = true;
+  pinVis(); renderHandItems(); renderThumbs();
+  const n = HAND.list.filter(i => HAND.received[i.k]).length;
+  msg("h-msg", `Carried on where you left off: ${n} item${n === 1 ? "" : "s"} ticked${HAND.photos.length ? `, ${HAND.photos.length} photo${HAND.photos.length === 1 ? "" : "s"}` : ""}${d.note ? ", the note" : ""} kept.`
+    + (d.photosLost ? ` The ${d.photosLost} photo${d.photosLost === 1 ? "" : "s"} couldn't be kept (phone storage full): take ${d.photosLost === 1 ? "it" : "them"} again.` : "") + " Both people sign again.", "ok");
 }
 // several trails, all with the same person, to one receiver: one PIN check, both sign once
 function startHandoverMany(groups) {
@@ -14554,7 +14588,7 @@ async function handoverManyApi(payload) {
 }
 let MULTI = [];
 async function finishMany(results, photos) {
-  MULTI = [];
+  MULTI = []; if (current === "v-hand") handDel();
   // save a "send this PDF" entry for every trail first, so nothing is lost if the app closes while the PDFs are made
   const pend = results.filter(r => !r.duplicate).map(r => queueAdd({kind: "pdf", ref: r.ref, hop: r.hop, label: `${r.ref} hop ${r.hop} PDF`, notBefore: Date.now() + 300000}));
   const ph = await Promise.all(results.map(r => photosForHop(r.ref, r.hop, photos)));
@@ -14622,7 +14656,7 @@ async function sendPdf(ref, hop, bytes, replace) {
   }
 }
 async function finishHop(res) {
-  if (HAND && HAND.fromRet) draftDel("ct-draft-ret");
+  handDel(); if (HAND && HAND.fromRet) draftDel("ct-draft-ret");
   const bytes = await makePdf(res, res.hop, false, {attachPhotos: await photosForHop(res.ref, res.hop, HAND && HAND.photos)});
   LAST = {res, bytes, name: `${res.ref} hop ${res.hop}.pdf`};
   showDone(res);
@@ -14655,7 +14689,7 @@ function showDone(res) {
   show("v-done");
 }
 function showQueued(payload) {
-  if (HAND && HAND.fromRet) draftDel("ct-draft-ret");
+  handDel(); if (HAND && HAND.fromRet) draftDel("ct-draft-ret");
   LAST = null; $("d-multi").hidden = true; $("d-single").hidden = false;
   $("d-title").textContent = "Saved on this phone";
   $("d-sub").innerHTML = "No signal. The handover will be sent and the PINs checked as soon as there is signal. The signed PDF is made then.";
@@ -14973,9 +15007,11 @@ function init() {
   document.querySelectorAll("[data-clear]").forEach(b => b.onclick = () => PADS[b.dataset.clear[0]].clear());
   const addPhotos = async e => { const fs = [...e.target.files]; e.target.value = "";
     for (const f of fs) { if (HAND.photos.length >= 6) { msg("h-msg", "Up to 6 photos.", "warn"); break; }
-      try { HAND.photos.push(await imageToB64(f, 1600, 0.8)); renderThumbs(); msg("h-msg", ""); } catch (er) { msg("h-msg", esc(er.message), "err"); } } };
+      try { HAND.photos.push(await imageToB64(f, 1600, 0.8)); renderThumbs(); msg("h-msg", ""); handSave(); } catch (er) { msg("h-msg", esc(er.message), "err"); } } };
   $("h-photo").onchange = addPhotos; $("h-photo-g").onchange = addPhotos;
-  $("h-thumbs").onclick = e => { const i = e.target.dataset.pdel; if (i != null) { HAND.photos.splice(Number(i), 1); renderThumbs(); } };
+  $("h-thumbs").onclick = e => { const i = e.target.dataset.pdel; if (i != null) { HAND.photos.splice(Number(i), 1); renderThumbs(); handSoon(); } };
+  ["input", "change", "click"].forEach(ev => $("v-hand").addEventListener(ev, handSoon));
+  document.addEventListener("visibilitychange", () => { if (document.hidden) handSave(); });
   $("h-go").onclick = submitHandover;
   $("g-code").addEventListener("change", pinVis); $("r-code").addEventListener("change", pinVis); $("g-absent").addEventListener("change", pinVis);
   // done
