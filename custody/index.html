@@ -9,7 +9,7 @@
 <title>BCX Spares Custody</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap" media="print" onload="this.media=\'all\'">
 <style>
 :root {
   --bg: #F3F1EF; --surface: #FFFFFF; --sunk: #ECE8E5; --ink: #1D1A1A; --muted: #6E6662; --line: #DED8D3;
@@ -217,11 +217,11 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
   <section class="card" id="o-finish" hidden>
     <h2><span class="n">3</span> Collect</h2>
     <p class="hint">No signatures here: Stores' booking-out paperwork is signed as usual.</p>
-    <div class="field"><span class="lbl">Take pic of signed delivery note (optional)</span>
+    <div class="field"><span class="lbl">Photo of the items or signed delivery note (required, at least 1)</span>
       <div class="thumbs" id="o-thumbs"></div>
       <div class="row" style="flex-wrap:nowrap"><label class="import" style="min-height:46px;flex:1">Take pic<input type="file" id="o-paper" accept="image/*" capture="environment"></label>
       <label class="import" style="min-height:46px;flex:1">From gallery<input type="file" id="o-paper-g" accept="image/*" multiple></label></div>
-      <div class="small">Kept as a picture behind the document. It isn't read.</div></div>
+      <div class="small">Kept as a picture behind the document. It isn't read. A pic of the signed BI counts too.</div></div>
     <div class="small" id="o-sum"></div>
     <button class="btn primary block" id="o-go">Collect from the office</button>
     <div class="msg" id="o-check"></div>
@@ -281,9 +281,30 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
     <dl class="kv" id="tv-kv"></dl>
     <button class="btn primary block" id="tv-hand">Hand over these items</button>
     <button class="btn block" id="tv-tags" hidden>Print fault tags</button>
+    <div id="tv-cancelled" class="warnbox" hidden></div>
     <div class="msg" id="tv-msg"></div>
+    <button class="btn block" id="tv-cancel" hidden style="color:var(--poor);border-color:var(--poor)">Cancel this trail (Admin)</button>
+    <div id="tv-cancelbox" class="warnbox" hidden>
+      <b>Cancel this trail?</b>
+      <div class="small">For duplicates or trails started by mistake. It stays in the log marked CANCELLED, and its items are freed so they can go on another trail. This can't be undone.</div>
+      <input id="x-reason" placeholder="Reason, e.g. Duplicate of CT-DBN-..." autocomplete="off">
+      <div class="row"><button class="btn primary" id="x-go">Cancel the trail</button><button class="btn" id="x-no">Keep it</button></div>
+      <div class="msg" id="x-msg"></div>
+    </div>
   </section>
-  <section class="card"><h2>Items</h2><div class="list" id="tv-items"></div></section>
+  <section class="card"><h2>Items</h2><div class="list" id="tv-items"></div>
+    <div id="tv-found" hidden class="warnbox">
+      <b id="fd-title">Found it</b>
+      <div class="field"><span class="lbl">Where was it found?</span><input id="fd-note" placeholder="e.g. was still in the car" autocomplete="off"></div>
+      <div class="field"><span class="lbl">Who had it?</span><select id="fd-from"></select></div>
+      <div id="fd-other" hidden>
+        <div class="small" id="fd-otxt"></div>
+        <input type="password" id="fd-pin" inputmode="numeric" maxlength="8" placeholder="Their PIN" autocomplete="off"><div class="small" id="fd-me" hidden>Logged in on this phone, so no PIN needed. Just sign.</div>
+        <div class="sigwrap"><canvas id="f-sig"></canvas><div class="ph">They sign here</div><button class="btn small clr" data-clear="f-sig">Clear</button></div>
+      </div>
+      <div class="row"><button class="btn primary" id="fd-go">Put it back on the trail</button><button class="btn" id="fd-no">Cancel</button></div>
+      <div class="msg" id="fd-msg"></div>
+    </div></section>
   <section class="card"><h2>Custody trail</h2><div class="list" id="tv-hops"></div>
     <div id="tv-confirm" hidden class="warnbox">
       <b id="c-title">Confirm this handover</b>
@@ -319,9 +340,10 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
       <div class="sigwrap"><canvas id="r-sig"></canvas><div class="ph">Sign here</div><button class="btn small clr" data-clear="r-sig">Clear</button></div>
     </div>
     <div class="field"><label class="lbl" for="h-note">Note <span id="h-note-req" hidden>(required: some items not received)</span></label><textarea id="h-note" rows="2" placeholder="Optional"></textarea></div>
-    <div class="field"><span class="lbl">Photos (optional)</span>
+    <div class="field"><span class="lbl">Photos of the items (at least 1, up to 6)</span>
       <div class="thumbs" id="h-thumbs"></div>
-      <label class="import" style="min-height:46px">Add photo<input type="file" id="h-photo" accept="image/*" capture="environment"></label></div>
+      <div class="row" style="flex-wrap:nowrap"><label class="import" style="min-height:46px;flex:1">Take photo<input type="file" id="h-photo" accept="image/*" capture="environment"></label>
+      <label class="import" style="min-height:46px;flex:1">From gallery<input type="file" id="h-photo-g" accept="image/*" multiple></label></div></div>
     <button class="btn primary block" id="h-go">Confirm handover</button>
     <div class="msg" id="h-msg"></div>
   </section>
@@ -13017,6 +13039,11 @@ const CTPDF = (() => {
       hline(M, W - M, y - 5);
     });
     y -= 18; need(20); right(`Total items: ${o.items.length}` + (live.length !== o.items.length ? `   Missing: ${o.items.length - live.length}` : ""), W - M, y, 9, FB);
+    o.items.filter(i => i.found).forEach(i => { let line = ""; y -= 2;
+      for (const w of clean(`Item ${i.line} ${i.description || i.itemNo}: ${i.found}`).split(" ")) {
+        if (line && FI.widthOfTextAtSize(line + " " + w, 8.5) > W - 2 * M) { need(14); y -= 12; text(line, M, y, 8.5, FI, GREEN); line = ""; }
+        line = line ? line + " " + w : w; }
+      if (line) { need(14); y -= 12; text(line, M, y, 8.5, FI, GREEN); } });
     y -= 28;
 
     // ---- custody trail ----
@@ -13504,7 +13531,7 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "3.9";
+const APP_VERSION = "4.0";
 const DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const SITE = "https://geraldceb.github.io/custody/";
 const RES_DEFAULT = [["ARSMAH", "Arshad Mahomed", "148156", "TARSMAH", "FARSMAH"], ["ARVRAJ", "Arvin Rajcoomar", "149032", "TARVRAJ", "FARVRAJ"], ["BENFYN", "Bevan C Fynn", "152072", "TBENFYN", "FBENFYN"], ["BRAHIR", "Branden Harilal", "148249", "TBRAHIR", "FBRAHIR"], ["CALJON", "Caleb Jonah", "150263", "TCALJON", "FCALJON"], ["CLIMTH", "Clifford Bonga Mthiyane", "148224", "TCLIMTH", "FCLIMTH"], ["DALSTA", "Dale Eric Stadler", "148711", "TDALSTA", "FDALSTA"], ["DAMMUN", "Damien Munien", "154458", "TDAMMUN", "FDAMMUN"], ["DEVBUG", "Deven Bugwandeen", "148351", "TDEVBUG", "FDEVBUG"], ["DHINAI", "Dhilend Raj Naidu", "152921", "TDHINAI", "FDHINAI"], ["EUGCHE", "Eugene Chetty", "148204", "TEUGCHE", "FEUGCHE"], ["GERPAK", "Gerald Pakree", "148154", "TGERPAK", "FGERPAK"], ["GOPRAJ", "Gopaul Erald Rajendran", "148980", "TGOPRAJ", "FGOPRAJ"], ["JAHKHA", "Jahmeel Khan", "150978", "TJAHKHA", "FJAHKHA"], ["JERPAK", "Jeremy Christopher Pakree", "148748", "TJERPAK", "FJERPAK"], ["KEESTA", "Keegan Stapelfeldt", "148346", "TKEESTA", "FKEESTA"], ["KYLDAV", "Kylan David", "998025", "TKYLDAV", "FKYLDAV"], ["MAHYUS", "Mahomed Faheem Yusuf", "148362", "TMAHYUS", "FMAHYUS"], ["MAHPER", "Mahomed S Peroo", "152017", "TMAHPER", "FMAHPER"], ["MITSOO", "Mithesh Soomaroo", "153985", "TMITSOO", "FMITSOO"], ["MLUNZI", "Mlungisi Nzimande", "995154", "TMLUNZI", "FMLUNZI"], ["SAIKHA", "Mohammed Saif Khan", "153708", "TSAIKHA", "FSAIKHA"], ["MOHEBR", "Mohammed Z Ebrahim", "149013", "TMOHEBR", "FMOHEBR"], ["NADKHA", "Nadeem Khan", "151408", "TNADKHA", "FNADKHA"], ["NAEMAN", "Naeson Manikkam", "148350", "TNAEMAN", "FNAEMAN"], ["NELGOV", "Nelanthran Govinden", "148729", "TNELGOV", "FNELGOV"], ["NISNAI", "Nishay Naidoo", "998026", "TNISNAI", "FNISNAI"], ["NIVMAH", "Nivendra Maharaj", "148771", "TNIVMAH", "FNIVMAH"], ["PHENGW", "Phelelani Ndumiso Ngwane", "148388", "TPHENGW", "FPHENGW"], ["RAJNAI", "Raj Naidoo", "145998", "TRAJNAI", "FRAJNAI"], ["RIVMUR", "Rivasen B Muruvan", "148997", "TRIVMUR", "FRIVMUR"], ["RONHAR", "Ronesh Harilall", "148275", "TRONHAR", "FRONHAR"], ["SHAEBR", "Shaahid Ebrahim", "150189", "TSHAEBR", "FSHAEBR"], ["SIPNGE", "Siphesihle Ngeleka", "154054", "TSIPNGE", "FSIPNGE"], ["SIYKHU", "Siyabonga Khumalo", "154032", "TSIYKHU", "FSIYKHU"], ["SUGMAR", "Sugandren Mari", "148209", "TSUGMAR", "FSUGMAR"], ["SULISA", "Suleyman Isaacs", "998148", "TSULISA", "FSULISA"], ["UWACAS", "Uwais Syed Cassim", "155138", "TUWACAS", "FUWACAS"], ["UZAMAH", "Uzair Mahomed", "148813", "TUZAMAH", "FUZAMAH"], ["VENPIL", "Venay Pillay", "148142", "TVENPIL", "FVENPIL"], ["VERRAG", "Veron Raghoo", "148228", "TVERRAG", "FVERRAG"], ["VINJAC", "Vincent Jaku", "148352", "TVINJAC", "FVINJAC"], ["WASKHA", "Waseem Khan", "151827", "TWASKHA", "FWASKHA"], ["ZIABOB", "Zia Bobat", "154377", "TZIABOB", "FZIABOB"], ["ZUBKHA", "Zubair Khan", "149008", "TZUBKHA", "FZUBKHA"]];
@@ -13575,6 +13602,37 @@ function afterLogin() {
   processQueue();
 }
 
+/* ---------- already on a trail? (v4.0) ----------
+   Kept on the phone so the check works with no signal. The script sends the list with Open trails
+   (trails started in the last 60 days that aren't cancelled). Trails started on this phone are added straight away,
+   even when they're still waiting to send. Key = TYPE|DOC|ITEM|SERIAL, the same as the script's itemKey_. */
+const keyOf = (type, doc, item, serial) => { doc = String(doc || "").trim().toUpperCase(); if (!doc || /^LEDGER /.test(doc)) return "";
+  return [type, doc, String(item || "").trim().toUpperCase(), String(serial || "").trim().toUpperCase() || "-"].join("|"); };
+const TK = () => { const t = ls.get("ct-taken", null) || {}; t.m = t.m || {}; t.local = t.local || {}; return t; };
+const stamp = () => { const d = new Date(), p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}/${p(d.getMonth() + 1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+function takenFromServer(list) {
+  const t = TK(), qids = new Set(Q().map(x => x.id)); t.m = {}; t.at = Date.now();
+  (list || []).forEach(([k, ref, who, at, n]) => t.m[k] = {ref, who, at, n: Number(n) || 1});
+  Object.keys(t.local).forEach(k => { const x = t.local[k]; if (t.m[k] || (x.qid ? !qids.has(x.qid) : Date.now() - x.t > 864e5)) delete t.local[k]; });
+  ls.set("ct-taken", t);
+}
+function takenAdd(type, items, defDoc, info) {
+  const t = TK();
+  (items || []).forEach(i => { const k = keyOf(type, i.doc || defDoc, i.itemNo, i.serial); if (!k) return;
+    const x = t.local[k] && t.local[k].ref === (info.ref || "") ? t.local[k] : (t.local[k] = {ref: info.ref || "", who: info.who || "", at: stamp(), n: 0, t: Date.now(), qid: info.qid || ""});
+    x.n += Number(i.qty) || 1; });
+  ls.set("ct-taken", t);
+}
+// after the script saved a new trail: its items (with their documents) are now taken
+function takenFromRes(res) { if (res && res.trail && res.items) takenAdd(res.trail.type, res.items, res.trail.type === "OUT" ? res.trail.navDoc : "", {ref: res.ref || res.trail.ref, who: res.trail.currentHolderName}); }
+function takenDropRef(ref) { const t = TK(); [t.m, t.local].forEach(o => Object.keys(o).forEach(k => { if (o[k].ref === ref) delete o[k]; })); ls.set("ct-taken", t); }
+function takenGet(k) {
+  if (!k) return null; const t = TK(), x = t.local[k];
+  if (x && (x.ref || !x.qid || Q().some(q => q.id === x.qid))) return x;
+  return t.m[k] || null;
+}
+const onTxt = x => x.ref ? `${x.ref} (with ${x.who || "?"}, ${x.at})` : `a trail on this phone still waiting to send (${x.at})`;
+
 /* ---------- home ---------- */
 function adminPins() {
   $("s-admin").hidden = !(SESSION && me().role === "ADMIN");
@@ -13586,10 +13644,10 @@ async function loadTrails() {
   try {
     const withDone = $("t-done").checked || !!searchQ();
     const j = await api("myTrails", {includeDone: withDone});
-    TRAILS_DONE = withDone;
+    TRAILS_DONE = withDone; if (j.taken) takenFromServer(j.taken);
     if (users().length === 0 || (Date.now() - (SESSION.at || 0)) > 6 * 3600e3) refreshUsers();
     TRAILS = j.trails;
-    if (PICK) { PICK.refs = PICK.refs.filter(r => TRAILS.some(t => t.ref === r && t.status !== "COMPLETE" && t.currentHolder === PICK.holder)); if (!PICK.refs.length) PICK.holder = ""; }
+    if (PICK) { PICK.refs = PICK.refs.filter(r => TRAILS.some(t => t.ref === r && !closed(t) && t.currentHolder === PICK.holder)); if (!PICK.refs.length) PICK.holder = ""; }
     renderTrailList();
   } catch (e) { box.innerHTML = `<div class="empty">${e instanceof Offline ? "No connection. Pull down or tap Refresh when you have signal." : esc(e.message)}</div>`; }
 }
@@ -13601,7 +13659,7 @@ let TRAILS_DONE = false, searchTimer = null;
 const searchQ = () => ($("t-search") ? $("t-search").value : "").trim();
 function matches(t, q) {
   if (!q) return true;
-  const hay = [t.ref, t.type === "OUT" ? "outbound office collect" : "return", t.status === "COMPLETE" ? "complete completed closed" : t.hops === 0 ? "prepared open" : "open",
+  const hay = [t.ref, t.type === "OUT" ? "outbound office collect" : "return", t.status === "CANCELLED" ? "cancelled closed" : t.status === "COMPLETE" ? "complete completed closed" : t.hops === 0 ? "prepared open" : "open",
     t.bookedTo, t.bookedToName, t.currentHolder, t.currentHolderName, t.createdBy, t.navDoc, t.created, t.lastHopAt, t.completedAt, t.find,
     t.unconfirmed ? "unconfirmed not signed without custody" : ""].join(" ").toLowerCase();
   return q.toLowerCase().split(/\s+/).every(w => hay.includes(w));
@@ -13609,6 +13667,47 @@ function matches(t, q) {
 function onSearch() {
   if (searchQ() && !TRAILS_DONE) { clearTimeout(searchTimer); searchTimer = setTimeout(loadTrails, 350); renderTrailList(); }
   else renderTrailList();
+}
+
+/* ---------- Found it (v4.0): a missing item turns up ----------
+   The person holding the trail (or the Admin) records it. If someone else had it, that person enters their own PIN and signs. */
+let FOUND = null;
+function openFound(line) {
+  const t = TRAIL.trail, it = TRAIL.items.find(i => i.line === line); if (!it) return;
+  FOUND = {line};
+  $("fd-title").textContent = `Found: ${it.description || it.itemNo}${it.serial ? " (S/N " + it.serial + ")" : ""}`;
+  $("fd-note").value = ""; $("fd-pin").value = ""; msg("fd-msg", "");
+  userOptions($("fd-from"), u => u.code !== t.currentHolder, "", `Nobody else: it was with ${t.currentHolderName}`);
+  foundVis(); $("tv-found").hidden = false; $("tv-found").scrollIntoView({behavior: "smooth", block: "center"});
+}
+function foundVis() {
+  const f = $("fd-from").value; $("fd-other").hidden = !f;
+  if (f) { $("fd-otxt").textContent = `${userName(f)} hands it back: ${f === me().code ? "sign below." : "they enter their own PIN and sign below."}`;
+    $("fd-pin").hidden = f === me().code; $("fd-me").hidden = f !== me().code; PADS.f.resize(); PADS.f.clear(); }
+}
+async function submitFound() {
+  const t = TRAIL.trail, note = $("fd-note").value.trim(), f = $("fd-from").value, pin = $("fd-pin").value.trim();
+  if (!note) return msg("fd-msg", "Say where it was found.", "err");
+  if (f && f !== me().code && !pin) return msg("fd-msg", `${esc(userName(f))} must enter their PIN.`, "err");
+  if (f && PADS.f.empty()) return msg("fd-msg", `${esc(userName(f))} must sign.`, "err");
+  const payload = {ref: t.ref, line: FOUND.line, note, from: f ? {code: f, pin, sig: PADS.f.png()} : null};
+  $("fd-go").disabled = true; msg("fd-msg", '<span class="spinner"></span> Saving...');
+  try { const res = await api("foundItem", payload); FOUND = null; await afterConfirm(res, res.trail.hops, "tv-msg", "Found: it's back on the trail"); }
+  catch (e) {
+    if (e instanceof Offline) { queueAdd({kind: "found", payload, label: `${t.ref}: item ${FOUND.line} found`}); FOUND = null; $("tv-found").hidden = true;
+      msg("tv-msg", "No signal. Saved on this phone: it's sent (and the PIN checked) as soon as there is signal.", "warn"); }
+    else msg("fd-msg", /Unknown action/i.test(e.message) ? "This needs the Google script updated to v2.11." : esc(e.message), "err");
+  } finally { $("fd-go").disabled = false; }
+}
+async function submitCancel() {
+  const t = TRAIL.trail, reason = $("x-reason").value.trim();
+  if (!reason) return msg("x-msg", "Give a reason, for example: Duplicate of CT-DBN-...", "err");
+  $("x-go").disabled = true; msg("x-msg", '<span class="spinner"></span> Cancelling...');
+  try { const res = await api("cancelTrail", {ref: t.ref, reason}); takenDropRef(t.ref); TRAIL = {trail: res.trail, items: res.items, hops: res.hops}; renderTrail(); msg("tv-msg", "Trail cancelled. Its items can go on another trail now.", "ok"); }
+  catch (e) {
+    if (e instanceof Offline) { queueAdd({kind: "cancel", payload: {ref: t.ref, reason}, label: `Cancel ${t.ref}`}); $("tv-cancelbox").hidden = true; msg("tv-msg", "No signal. The cancel is saved on this phone and sent when there is signal.", "warn"); }
+    else msg("x-msg", /Unknown action/i.test(e.message) ? "This needs the Google script updated to v2.11." : esc(e.message), "err");
+  } finally { $("x-go").disabled = false; }
 }
 
 /* ---------- collected without custody: confirm later (v3.4) ---------- */
@@ -13621,11 +13720,12 @@ function openConfirm(hop) {
   $("tv-confirm").hidden = false; msg("c-msg", "");
   PADS.c.resize(); PADS.c.clear(); $("tv-confirm").scrollIntoView({behavior: "smooth", block: "center"});
 }
-async function afterConfirm(res, hop, where) {
+async function afterConfirm(res, hop, where, word) {
+  word = word || "Confirmed";
   TRAIL = {trail: res.trail, items: res.items, hops: res.hops}; renderTrail();
   const {bytes} = await rebuildPdf(TRAIL, hop);
   const err = await sendPdf(TRAIL.trail.ref, hop, bytes, true);
-  msg(where, err ? `Confirmed. The updated PDF isn't in the log yet (${esc(err)}); it will be tried again.` : "Confirmed. The updated PDF is saved to the log and emailed.", err ? "warn" : "ok");
+  msg(where, err ? `${word}. The updated PDF isn't in the log yet (${esc(err)}); it will be tried again.` : `${word}. The updated PDF is saved to the log and emailed.`, err ? "warn" : "ok");
 }
 async function confirmHop() {
   if (!CONF) return;
@@ -13645,27 +13745,29 @@ async function approveHop(hop, btn) {
 
 /* ---------- several trails at once (v3.0) ---------- */
 let TRAILS = [], PICK = null;   // PICK = {refs: [], holder: code} while choosing trails
-const pickable = t => t.status !== "COMPLETE" && (!PICK || !PICK.refs.length || t.currentHolder === PICK.holder);
+const closed = t => t.status === "COMPLETE" || t.status === "CANCELLED";
+const pickable = t => !closed(t) && (!PICK || !PICK.refs.length || t.currentHolder === PICK.holder);
 function setPick(on) {
   PICK = on ? {refs: [], holder: ""} : null;
   $("t-multi").textContent = on ? "Cancel" : "Select several"; $("t-multi-hint").hidden = !on;
   msg("t-multi-msg", ""); renderTrailList();
 }
+function statusChip(t) { return t.status === "CANCELLED" ? '<span class="chip bad">Cancelled</span>' : `<span class="chip ${t.status === "COMPLETE" ? "ok" : "open"}">${t.status === "COMPLETE" ? "Complete" : t.hops === 0 ? "Prepared" : "Open"}</span>`; }
 function renderTrailList() {
   const box = $("t-list");
   const q = searchQ();
-  const list = TRAILS.filter(t => (PICK ? t.status !== "COMPLETE" : (q || $("t-done").checked || t.status !== "COMPLETE" || t.waitingForMe)) && matches(t, q));
+  const list = TRAILS.filter(t => (PICK ? !closed(t) : (q || $("t-done").checked || !closed(t) || t.waitingForMe)) && matches(t, q));
   $("t-count").textContent = q ? `${list.length} found${list.length >= 400 ? " (showing the latest 400)" : ""}` : "";
   box.innerHTML = list.length ? list.map(t => {
       const picked = PICK && PICK.refs.includes(t.ref);
-      const cls = (t.status === "COMPLETE" ? "done" : t.shortItems ? "short" : "") + (picked ? " pick" : "") + (PICK && !picked && !pickable(t) ? " off" : "");
+      const cls = (closed(t) ? "done" : t.shortItems ? "short" : "") + (picked ? " pick" : "") + (PICK && !picked && !pickable(t) ? " off" : "");
       return `<button class="trow ${cls}" data-ref="${esc(t.ref)}"><span class="r1">${PICK ? `<span class="tick">${picked ? "&#10003;" : ""}</span>` : ""}<span class="ref">${esc(t.ref)}</span>
-        <span class="chip ${t.status === "COMPLETE" ? "ok" : "open"}">${t.status === "COMPLETE" ? "Complete" : t.hops === 0 ? "Prepared" : "Open"}</span>
+        ${statusChip(t)}
         <span class="chip">${t.type === "OUT" ? "Outbound" : "Return"}</span>${t.shortItems ? `<span class="chip bad">${t.shortItems} missing</span>` : ""}${t.waitingForMe ? '<span class="chip bad">Confirm: you</span>' : t.unconfirmed ? '<span class="chip bad">Not signed by giver</span>' : ""}</span>
         <span class="r2">${t.type === "OUT" ? "For " + esc(t.bookedToName || t.bookedTo) : "From " + esc(t.bookedToName || t.bookedTo)} · ${t.items} item${t.items === 1 ? "" : "s"} · now with <b>${esc(t.currentHolderName)}</b><br>${esc(t.lastHopAt)}${t.navDoc ? " · " + esc(t.navDoc) : ""}</span></button>`;
     }).join("") : `<div class="empty">${q ? "Nothing matches “" + esc(q) + "”." + ($("t-done").checked || TRAILS_DONE ? "" : " Searching completed trails too...") : "No open trails."}</div>`;
   $("t-multi").textContent = PICK ? "Cancel" : "Select several"; $("t-multi-hint").hidden = !PICK;
-  $("t-multi").hidden = !PICK && TRAILS.filter(t => t.status !== "COMPLETE").length < 2;
+  $("t-multi").hidden = !PICK && TRAILS.filter(t => !closed(t)).length < 2;
   const go = $("t-multi-go"); go.hidden = !PICK || !PICK.refs.length;
   if (PICK && PICK.refs.length) $("t-multi-next").textContent = `Hand over ${PICK.refs.length} trail${PICK.refs.length === 1 ? "" : "s"} from ${userName(PICK.holder)}`;
 }
@@ -13673,7 +13775,7 @@ function togglePick(ref) {
   const t = TRAILS.find(x => x.ref === ref); if (!t) return;
   const i = PICK.refs.indexOf(ref);
   if (i >= 0) PICK.refs.splice(i, 1);
-  else if (!pickable(t)) return msg("t-multi-msg", t.status === "COMPLETE" ? "That trail is complete." : `${esc(t.ref)} is with ${esc(t.currentHolderName)}. Only trails with ${esc(userName(PICK.holder))} can go together.`, "warn");
+  else if (!pickable(t)) return msg("t-multi-msg", closed(t) ? "That trail is closed." : `${esc(t.ref)} is with ${esc(t.currentHolderName)}. Only trails with ${esc(userName(PICK.holder))} can go together.`, "warn");
   else if (PICK.refs.length >= 15) return msg("t-multi-msg", "Up to 15 trails at a time.", "warn");
   else { PICK.refs.push(ref); PICK.holder = t.currentHolder; }
   if (!PICK.refs.length) PICK.holder = "";
@@ -13688,7 +13790,7 @@ async function pickNext() {
     catch (e) { if (!/Unknown action/i.test(e.message)) throw e;   // Google script older than v2.4
       j = {trails: []}; for (const ref of PICK.refs) { const t = await api("trail", {ref}); j.trails.push({trail: t.trail, items: t.items}); } }
     const bad = j.trails.find(x => !x.trail); if (bad) throw new Error(bad.ref + ": " + bad.error);
-    const gone = j.trails.find(x => x.trail.status === "COMPLETE" || x.trail.currentHolder !== PICK.holder);
+    const gone = j.trails.find(x => closed(x.trail) || x.trail.currentHolder !== PICK.holder);
     if (gone) throw new Error(`${gone.trail.ref} has changed since this list loaded (now with ${gone.trail.currentHolderName}). Tap Refresh.`);
     msg("t-multi-msg", ""); startHandoverMany(j.trails);
   } catch (e) { msg("t-multi-msg", e instanceof Offline ? "Loading the trails needs signal." : esc(e.message), "err"); }
@@ -13756,7 +13858,7 @@ function ledgerLinesForDoc(doc) {
   const L = loadLedger(); if (!L || !doc) return [];
   return L.rows.filter(r => String(r[1]).toUpperCase() === doc.toUpperCase());
 }
-function fromLedgerRow(r) { const [date, doc, so, job, item, desc, serial, tag, loc, qty] = r; return {itemNo: item, description: desc, serial, tag, so, qty: Math.abs(Number(qty)) || 1, condition: "Working"}; }
+function fromLedgerRow(r) { const [date, doc, so, job, item, desc, serial, tag, loc, qty] = r; return {doc, itemNo: item, description: desc, serial, tag, so, qty: Math.abs(Number(qty)) || 1, condition: "Working"}; }
 const issueCount = () => OUT.issues.reduce((a, i) => a + i.items.filter(x => x.description || x.itemNo || x.serial).length, 0);
 function showRaw(text) { OUT.raw = text || ""; $("o-raw").textContent = OUT.raw.trim() || "(no text found)"; $("o-rawbox").hidden = false; }
 
@@ -13894,6 +13996,13 @@ function ledgerIssuesFor(code) {
   const issues = Object.values(by).sort((a, b) => String(b.date).localeCompare(String(a.date)) || b.navDoc.localeCompare(a.navDoc));
   return {L, r, issues};
 }
+// which of an issue's ledger lines are already on a trail (counted, so 2 of the same item without serials work out)
+function issueTaken(iss) {
+  const used = {}, free = [], on = [];
+  iss.rows.forEach(x => { const k = keyOf("OUT", x[1], x[4], x[6]), t = takenGet(k);
+    if (t && (used[k] || 0) < t.n) { used[k] = (used[k] || 0) + 1; on.push(t); } else free.push(x); });
+  return {free, on, refs: [...new Set(on.map(onTxt))]};
+}
 function renderLedgerPick() {
   const L = loadLedger(), code = $("o-led-eng").value;
   $("o-led-info").innerHTML = L ? `Ledger <b>${esc(L.date || L.file)}</b> on this phone. Documents (BI, project TR/TS and others) only show once Nav has posted them and you have a new copy of the ledger.` : "No ledger on this phone yet. Import this week's Item Ledger Entries.";
@@ -13905,9 +14014,10 @@ function renderLedgerPick() {
   const recent = issues.filter(i => String(i.date) >= cut), older = issues.length - recent.length;
   const added = new Set(OUT.issues.map(i => i.navDoc).filter(Boolean));
   const when = d => { const t = isoDay(today), y = isoDay(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1)); return d === t ? "today" : d === y ? "yesterday" : ddmmyyyy(d + "T"); };
-  box.innerHTML = recent.map(i => `<button class="trow ${added.has(i.navDoc) ? "done" : ""}" data-lbi="${esc(i.navDoc)}">
-      <span class="r1"><span class="ref">${esc(i.navDoc)}</span><span class="chip ${i.kind === "Boot issue" ? "" : "open"}">${esc(i.kind)}</span>${added.has(i.navDoc) ? '<span class="chip ok">Added</span>' : ""}</span>
-      <span class="r2">${i.rows.length} item${i.rows.length === 1 ? "" : "s"} · posted ${esc(when(String(i.date)))} · ${esc(i.rows.slice(0, 2).map(x => x[5]).join(", "))}${i.rows.length > 2 ? "..." : ""}</span></button>`).join("")
+  box.innerHTML = recent.map(i => { const tk = issueTaken(i), full = !tk.free.length;
+      return `<button class="trow ${added.has(i.navDoc) || full ? "done" : ""}" data-lbi="${esc(i.navDoc)}"${full ? ' style="opacity:.6"' : ""}>
+      <span class="r1"><span class="ref">${esc(i.navDoc)}</span><span class="chip ${i.kind === "Boot issue" ? "" : "open"}">${esc(i.kind)}</span>${added.has(i.navDoc) ? '<span class="chip ok">Added</span>' : full ? '<span class="chip bad">Collected</span>' : tk.on.length ? `<span class="chip bad">${tk.on.length} already collected</span>` : ""}</span>
+      <span class="r2">${i.rows.length} item${i.rows.length === 1 ? "" : "s"} · posted ${esc(when(String(i.date)))} · ${esc(i.rows.slice(0, 2).map(x => x[5]).join(", "))}${i.rows.length > 2 ? "..." : ""}${tk.on.length ? `<br><b>${full ? "Already collected" : "Some already collected"}: on ${esc(tk.refs.join("; "))}</b>` : ""}</span></button>`; }).join("")
     + (recent.length ? "" : `<div class="empty">Nothing booked to ${esc(title(r[1]))}'s working boot ${LEDPICK.days === 2 ? "today or yesterday" : `in the last ${LEDPICK.days} days`} on this ledger.</div>`)
     + (LEDPICK.days !== 2 ? '<button class="btn small" data-lmore>Show only today and yesterday</button>' : older ? `<button class="btn small" data-lmore>Show older issues (${older})</button>` : "")
     + (recent.length ? '<div class="small">Tap each issue you are taking. Tap again to remove it.</div>' : "");
@@ -13916,11 +14026,14 @@ function pickLedgerIssue(doc) {
   const code = $("o-led-eng").value, k = OUT.issues.findIndex(i => i.navDoc === doc);
   if (k >= 0) { OUT.issues.splice(k, 1); if (!OUT.issues.length) { $("o-review").hidden = $("o-finish").hidden = true; } else renderOut(true); return renderLedgerPick(); }
   const iss = ledgerIssuesFor(code).issues.find(i => i.navDoc === doc); if (!iss) return;
+  const tk = issueTaken(iss);
+  if (!tk.free.length) return msg("o-msg", `${esc(doc)} is already collected: on ${esc(tk.refs.join("; "))}. Open that trail from Open trails instead. If it's a mistake, the Admin can cancel it.`, "warn");
   if (OUT.issues.length === 1 && !OUT.issues[0].navDoc && !OUT.issues[0].items.some(x => x.description || x.itemNo || x.serial)) OUT.issues = [];
   OUT.issues.push(Object.assign(blankIssue(), {navDoc: doc, posted: ddmmyyyy(String(iss.date) + "T"), bookedTo: code, printedCount: iss.rows.length, source: "ledger",
-    items: iss.rows.map(x => Object.assign(fromLedgerRow(x), {fromBI: true}))}));
+    items: tk.free.map(x => Object.assign(fromLedgerRow(x), {fromBI: true}))}));
   // (fromBI = came from the ledger, whatever the document type)
-  msg("o-msg", `Added ${esc(doc)} for ${esc(userName(code))} from the ledger (${iss.rows.length} item${iss.rows.length === 1 ? "" : "s"}).` + (OUT.issues.length > 1 ? `<br><b>${OUT.issues.length} issues, ${issueCount()} items in total.</b>` : ""), "ok");
+  msg("o-msg", `Added ${esc(doc)} for ${esc(userName(code))} from the ledger (${tk.free.length} item${tk.free.length === 1 ? "" : "s"}).`
+    + (tk.on.length ? `<br><b>${tk.on.length} of its items ${tk.on.length === 1 ? "is" : "are"} already on ${esc(tk.refs.join("; "))}, so ${tk.on.length === 1 ? "it was" : "they were"} left out.</b>` : "") + (OUT.issues.length > 1 ? `<br><b>${OUT.issues.length} issues, ${issueCount()} items in total.</b>` : ""), "ok");
   renderOut(true); renderLedgerPick();
 }
 
@@ -14026,6 +14139,7 @@ async function collectAll() {
     if (!iss.items.length) { renderOut(); return err(lab + "add at least one item."); }
     if (!iss.bookedTo) { renderOut(); return err(lab + "choose who the stock is booked to."); }
     if (iss.items.some(i => !i.description && !i.itemNo)) { renderOut(); return err(lab + "every item needs a description or item number."); }
+    if (!OUT.photos.length && !(iss.photos || []).length) { renderOut(true); $("o-thumbs").scrollIntoView({block: "center"}); return err(`${iss.navDoc || lab || "Each issue"}: take at least one photo (the items or the signed delivery note).`); }
     if ((iss.removed || []).length && !(iss.photos || []).length) { renderOut(true); const box = document.querySelector(`[data-iss="${k}"] [data-ipic]`); if (box) box.closest(".msg").scrollIntoView({block: "center"}); return err(`${iss.navDoc || lab || "An issue"}: you're not taking every item, so take a pic of the signed BI showing them struck off.`); }
   }
   $("o-go").disabled = true; msg("o-check", '<span class="spinner"></span> Saving...');
@@ -14040,13 +14154,14 @@ async function collectAll() {
         trail: {navDoc: iss.navDoc.toUpperCase(), navPosted: iss.posted, bookedTo: iss.bookedTo, bookedToName: userName(iss.bookedTo) || iss.bookedTo,
           items: iss.items.map((it, i) => Object.assign({line: i + 1}, it))}};
       try {
-        const res = await api("collect", payload);
+        const res = await api("collect", payload); takenFromRes(res);
         const bytes = await makePdf(res, 1, false, {attachPdf: sub, attachPhotos: pics});
         iss.done = {res, bytes, name: `${res.ref} collected.pdf`};
         uploadQuiet(res.ref, 1, bytes);
       } catch (e) {
         if (!(e instanceof Offline)) throw e;
-        queueAdd({kind: "collect", payload, label: `Collection ${iss.navDoc || ""} for ${userName(iss.bookedTo) || iss.bookedTo}`});
+        const qid = queueAdd({kind: "collect", payload, label: `Collection ${iss.navDoc || ""} for ${userName(iss.bookedTo) || iss.bookedTo}`});
+        takenAdd("OUT", payload.trail.items, payload.trail.navDoc, {who: me().name, qid});
         iss.done = {queued: true, iss};
       }
       COLLECTED.push(iss.done);
@@ -14115,10 +14230,10 @@ function buildRetItems() {
     const base = kind[0] + ":" + (serial ? "S" + serial : doc + "|" + item); seen[base] = (seen[base] || 0) + 1;
     const parts = String(ship || "").split(" - ");
     RET.items.push({key: base + (seen[base] > 1 ? "#" + seen[base] : ""), kind, proj: kind === "working" && (type === "TR" || type === "TS"), other: kind === "working" && type !== "BI" && type !== "TR" && type !== "TS" ? type : "", itemNo: item, description: String(desc).trim(), serial, tag, so, doc, qty: Math.abs(Number(qty)) || 1,
-      cust: (parts[0] || "").trim(), loc: parts.slice(1).join(" - ").trim()});
+      cust: (parts[0] || "").trim(), loc: parts.slice(1).join(" - ").trim(), on: takenGet(keyOf("RET", doc, item, serial))});
   });
   RET.items.sort((a, b) => a.description.localeCompare(b.description));
-  RET.items.forEach(it => { if (RET.sel[it.key] == null) RET.sel[it.key] = false; if (!RET.cond[it.key]) RET.cond[it.key] = it.kind === "faulty" ? "Faulty" : "Working";
+  RET.items.forEach(it => { if (RET.sel[it.key] == null || (it.on && it.serial)) RET.sel[it.key] = false; if (!RET.cond[it.key]) RET.cond[it.key] = it.kind === "faulty" ? "Faulty" : "Working";
     if (!RET.t[it.key]) RET.t[it.key] = {call: it.so || "", cust: it.cust, loc: it.loc, fault: "", acc: "", urgent: "", copies: it.serial ? 1 : it.qty}; });
   $("r-pick").hidden = false;
   const nf = RET.items.filter(i => i.kind === "faulty").length, nw = RET.items.length - nf;
@@ -14133,9 +14248,10 @@ function renderRetItems() {
   const list = RET.items.filter(it => retView === "sel" ? RET.sel[it.key] : it.kind === retView && hit(it));
   const inView = RET.items.filter(it => retView !== "sel" && it.kind === retView), hidden = q && retView !== "sel" ? inView.filter(it => RET.sel[it.key] && !hit(it)).length : 0;
   $("r-items").innerHTML = list.map(it => {
-    const c = RET.cond[it.key], on = RET.sel[it.key];
-    return `<div class="item ${on ? (c === "RTC" ? "rtc" : "sel") : ""}" data-key="${esc(it.key)}">
-      <label class="ih"><input type="checkbox" data-act="sel" ${on ? "checked" : ""}><span><span class="desc">${esc(it.description)}</span>${it.proj ? ' <span class="chip open">Project</span>' : it.other ? ` <span class="chip">${esc(it.other)}</span>` : ""}<br>
+    const c = RET.cond[it.key], on = RET.sel[it.key], blocked = it.on && it.serial;
+    return `<div class="item ${on ? (c === "RTC" ? "rtc" : "sel") : ""}" data-key="${esc(it.key)}"${blocked ? ' style="opacity:.6"' : ""}>
+      ${it.on ? `<div class="small" style="color:var(--poor);font-weight:600">${blocked ? "Already on a return: " : "Check first, some may already be on "}${esc(onTxt(it.on))}</div>` : ""}
+      <label class="ih"><input type="checkbox" data-act="sel" ${on ? "checked" : ""}${blocked ? " disabled" : ""}><span><span class="desc">${esc(it.description)}</span>${it.proj ? ' <span class="chip open">Project</span>' : it.other ? ` <span class="chip">${esc(it.other)}</span>` : ""}<br>
       <span class="meta">${esc(it.itemNo)} · S/N ${esc(it.serial || "-")} · Tag ${esc(it.tag || "-")}${it.so ? " · " + esc(it.so) : ""}</span></span></label>
       ${on ? `<div class="seg" role="group" aria-label="Condition">${["Faulty", "Working", "RTC"].map(x => `<button data-act="cond" data-c="${x}" class="${x === "RTC" ? "rtc" : ""}" aria-pressed="${x === c}">${x}</button>`).join("")}</div>` : ""}
       ${on && RET.tags ? tagForm(it, RET.t[it.key], c) : ""}
@@ -14143,7 +14259,7 @@ function renderRetItems() {
   }).join("") || `<div class="empty">${retView === "sel" ? "Nothing ticked yet." : q && inView.length ? `Nothing in the ${retView} boot matches “${esc(RET.q)}”.` : `Nothing in the ${retView} boot on this ledger.`}</div>`;
   const n = RET.items.filter(i => RET.sel[i.key]).length + RET.extra.length;
   $("r-items").insertAdjacentHTML("afterbegin", (hidden ? `<div class="small" style="color:var(--warn)">${hidden} ticked item${hidden === 1 ? " is" : "s are"} hidden by the search. Tap <b>Selected</b> to see everything you've ticked.</div>` : "")
-    + (retView === "faulty" && list.length > 1 ? `<div class="row"><button class="btn small" data-act="allfaulty">${list.every(it => RET.sel[it.key]) ? "Untick all shown" : "Tick all shown"}</button></div>` : ""));
+    + (retView === "faulty" && list.length > 1 ? `<div class="row"><button class="btn small" data-act="allfaulty">${list.filter(it => !(it.on && it.serial)).every(it => RET.sel[it.key]) ? "Untick all shown" : "Tick all shown"}</button></div>` : ""));
   $("r-count").textContent = `${n} selected`;
   $("r-next").textContent = n ? `Next: sign the handover (${n} item${n === 1 ? "" : "s"})` : "Next: sign the handover";
 }
@@ -14191,7 +14307,7 @@ async function saveTags(items, engineer) {
   return {name, tags: tags.length, pages: out.pages, rtc: out.rtc, overflow: out.overflow};
 }
 function retChosen() {
-  const chosen = RET.items.filter(i => RET.sel[i.key]).map(i => Object.assign({itemNo: i.itemNo, description: i.description, serial: i.serial, tag: i.tag, so: i.so, qty: i.qty, condition: RET.cond[i.key]},
+  const chosen = RET.items.filter(i => RET.sel[i.key]).map(i => Object.assign({doc: i.doc, itemNo: i.itemNo, description: i.description, serial: i.serial, tag: i.tag, so: i.so, qty: i.qty, condition: RET.cond[i.key]},
       RET.tags ? tagFields(RET.t[i.key], RET.cond[i.key]) : {}))
     .concat(RET.extra.filter(i => i.description || i.itemNo || i.serial).map(i => Object.assign({}, i, RET.tags ? tagFields({call: i.so, cust: i.cust, loc: i.loc, fault: i.fault, acc: i.acc, urgent: i.urgent, copies: i.qty}, i.condition) : {})));
   if (!chosen.length) { msg("r-check", "Tick at least one item.", "err"); return null; }
@@ -14210,7 +14326,7 @@ async function retPrepare() {
   const trail = retChosen(); if (!trail) return;
   const btn = $("r-prep"); btn.disabled = true; msg("r-check", '<span class="spinner"></span> Preparing...');
   try {
-    const res = await api("prepare", {clientId: RET.prepId || (RET.prepId = uid()), trail}); draftDel("ct-draft-ret");
+    const res = await api("prepare", {clientId: RET.prepId || (RET.prepId = uid()), trail}); draftDel("ct-draft-ret"); takenFromRes(res);
     msg("r-check", "");
     TRAIL = {trail: res.trail, items: res.items, hops: res.hops}; renderTrail();
     msg("tv-msg", RET.tags ? "Prepared. Tap <b>Print fault tags</b> and tag the items. When you meet the next person, open this trail from <b>Open trails</b> and tap <b>Hand over these items</b>."
@@ -14262,9 +14378,14 @@ async function importLedger(file) {
  * HANDOVER
  * ==================================================================== */
 let HAND = null;
+const GONE = /^(Missing|Removed|Cancelled)/;   // not handed over any more
+// v4.0: on the first handover of a return, an unticked item is simply left off (it stays in the boot); faulty ones need a reason
+function trailOf(it) { return HAND.multi ? (HAND.groups.find(g => g.trail.ref === it.ref) || {}).trail : HAND.trail; }
+function canLeave(it) { const t = trailOf(it); return !!t && t.type === "RET" && (HAND.isNew || Number(t.hops) === 0); }
+const needWhy = it => /faulty|rtc/i.test(it.condition || "");
 function startHandover(h) {
-  HAND = Object.assign({photos: [], received: {}}, h);
-  const items = (h.isNew ? h.trail.items : h.items.filter(i => !/^Missing/.test(i.status || ""))).map(i => Object.assign({}, i, {k: String(i.line)}));
+  HAND = Object.assign({photos: [], received: {}, why: {}}, h);
+  const items = (h.isNew ? h.trail.items : h.items.filter(i => !GONE.test(i.status || ""))).map(i => Object.assign({}, i, {k: String(i.line)}));
   HAND.list = items;
   items.forEach(i => HAND.received[i.k] = false);
   $("h-ref").textContent = h.isNew ? "new trail" : h.trail.ref;
@@ -14299,9 +14420,9 @@ function handReset() {
 // several trails, all with the same person, to one receiver: one PIN check, both sign once
 function startHandoverMany(groups) {
   const holder = groups[0].trail.currentHolder, holderName = groups[0].trail.currentHolderName;
-  HAND = {multi: true, groups, photos: [], received: {}, clientIds: {}, trail: groups[0].trail};
+  HAND = {multi: true, groups, photos: [], received: {}, why: {}, clientIds: {}, trail: groups[0].trail};
   HAND.list = [];
-  groups.forEach(g => g.items.filter(i => !/^Missing/.test(i.status || "")).forEach(i => HAND.list.push(Object.assign({}, i, {ref: g.trail.ref, k: g.trail.ref + "|" + i.line}))));
+  groups.forEach(g => g.items.filter(i => !GONE.test(i.status || "")).forEach(i => HAND.list.push(Object.assign({}, i, {ref: g.trail.ref, k: g.trail.ref + "|" + i.line}))));
   HAND.list.forEach(i => HAND.received[i.k] = false);
   $("h-ref").textContent = groups.length + " trails";
   $("h-sum").innerHTML = `<b>${groups.length} trails</b> · ${HAND.list.length} items · now with <b>${esc(holderName)}</b>. One signature each covers them all; every trail still gets its own PDF.`;
@@ -14329,16 +14450,19 @@ function pinVis() {
   if (!absent && current === "v-hand" && PADS.g.empty()) PADS.g.resize();
 }
 function renderHandItems() {
-  let lastRef = null;
+  let lastRef = null; const partial = HAND.list.some(i => HAND.received[i.k]);
   $("h-items").innerHTML = HAND.list.map(it => {
     const on = HAND.received[it.k];
     const head = HAND.multi && it.ref !== lastRef ? (lastRef = it.ref, `<div class="grp">${esc(it.ref)} <span class="chip">${((n) => n + (n === 1 ? " item" : " items"))(HAND.list.filter(x => x.ref === it.ref).length)}</span></div>`) : "";
+    const left = !on && partial && canLeave(it), owner = (trailOf(it) || {}).bookedToName || "the engineer";
     return head + `<div class="item ${on ? (it.condition === "RTC" ? "rtc" : "sel") : ""}" data-k="${esc(it.k)}"><label class="ih"><input type="checkbox" ${on ? "checked" : ""}>
       <span><span class="desc">${esc(it.description || it.itemNo)}</span> ${it.condition ? `<span class="chip ${it.condition === "RTC" ? "rtc" : it.condition === "Faulty" ? "open" : ""}">${esc(it.condition)}</span>` : ""}<br>
-      <span class="meta">${esc(it.itemNo)} · S/N ${esc(it.serial || "-")} · Tag ${esc(it.tag || "-")}${it.so ? " · " + esc(it.so) : ""}${it.qty > 1 ? " · Qty " + it.qty : ""}</span></span></label></div>`;
+      <span class="meta">${esc(it.itemNo)} · S/N ${esc(it.serial || "-")} · Tag ${esc(it.tag || "-")}${it.so ? " · " + esc(it.so) : ""}${it.qty > 1 ? " · Qty " + it.qty : ""}</span></span></label>
+      ${left ? `<div class="small" style="margin-top:6px"><b>Left off this return.</b> It comes off the trail and stays in ${esc(owner)}'s boot.${needWhy(it) ? "" : " Working stock, so no reason needed."}</div>
+        ${needWhy(it) ? `<input data-why="${esc(it.k)}" value="${esc(HAND.why[it.k] || "")}" placeholder="Why isn't this faulty item being returned? (required)" autocomplete="off" style="margin-top:6px">` : ""}` : ""}</div>`;
   }).join("");
-  const short = HAND.list.some(i => !HAND.received[i.k]);
-  $("h-note-req").hidden = !short || !HAND.list.some(i => HAND.received[i.k]);
+  const short = HAND.list.some(i => !HAND.received[i.k] && !canLeave(i));
+  $("h-note-req").hidden = !short || !partial;
 }
 async function submitHandover() {
   const g = $("g-code").value, r = $("r-code").value, gp = $("g-pin").value.trim(), rp = $("r-pin").value.trim(), note = $("h-note").value.trim();
@@ -14349,19 +14473,29 @@ async function submitHandover() {
   if (g === r) return err("The two people must be different.");
   if (g !== me().code && r !== me().code) return err(`You (${me().code}) are logged in on this phone, so you must be one of the two people.`);
   if (!received.length) return err("The receiver must tick the items they physically received.");
-  if (received.length < HAND.list.length && !note) return err("Some items aren't ticked. Add a note saying why.");
+  const left = HAND.list.filter(i => !HAND.received[i.k] && canLeave(i));
+  if (HAND.list.some(i => !HAND.received[i.k] && !canLeave(i)) && !note) return err("Some items aren't ticked. Add a note saying why.");
+  const noWhy = left.find(i => needWhy(i) && !String(HAND.why[i.k] || "").trim());
+  if (noWhy) { const box = document.querySelector(`[data-why="${CSS.escape(noWhy.k)}"]`); if (box) { box.focus(); box.scrollIntoView({block: "center"}); }
+    return err(`${esc(noWhy.description || noWhy.itemNo)} is faulty stock: say why it isn't being returned.`); }
+  if (!HAND.photos.length) { $("h-thumbs").scrollIntoView({block: "center"}); return err("Take at least one photo of the items being handed over."); }
+  HAND.notBrought = left.map(i => ({line: i.line, reason: String(HAND.why[i.k] || "").trim(), ref: i.ref}));
   if ($("g-absent").checked && !HAND.multi) return submitTakeover(g, received, note);
   if ((g !== me().code && !gp) || (r !== me().code && !rp)) return err(`${g !== me().code && !gp ? userName(g) : userName(r)} must enter their PIN.`);
   if (PADS.g.empty() || PADS.r.empty()) return err("Both people must sign.");
   if (HAND.multi) return submitMany(g, r, gp, rp, note);
   const payload = {clientId: HAND.clientId || (HAND.clientId = uid()), ref: HAND.isNew ? null : HAND.trail.ref, trail: HAND.isNew ? HAND.trail : null,
-    giver: {code: g, pin: gp, sig: PADS.g.png()}, receiver: {code: r, pin: rp, sig: PADS.r.png()}, received, note, photos: HAND.photos, printout: HAND.printout || ""};
+    giver: {code: g, pin: gp, sig: PADS.g.png()}, receiver: {code: r, pin: rp, sig: PADS.r.png()}, received, note, photos: HAND.photos, printout: HAND.printout || "",
+    notBrought: HAND.notBrought.map(({line, reason}) => ({line, reason}))};
   $("h-go").disabled = true; msg("h-msg", '<span class="spinner"></span> Checking PINs and saving...');
   try {
     const res = await api("handover", payload);
+    if (HAND.isNew) takenFromRes(res);
     await finishHop(res);
   } catch (e) {
-    if (e instanceof Offline) { queueAdd({kind: "handover", payload, label: HAND.isNew ? "New " + (HAND.trail.type === "OUT" ? "outbound" : "return") + " trail" : HAND.trail.ref}); showQueued(payload); }
+    if (e instanceof Offline) { const qid = queueAdd({kind: "handover", payload, label: HAND.isNew ? "New " + (HAND.trail.type === "OUT" ? "outbound" : "return") + " trail" : HAND.trail.ref});
+      if (HAND.isNew) takenAdd(HAND.trail.type, HAND.trail.items.filter(i => received.includes(i.line)), HAND.trail.type === "OUT" ? HAND.trail.navDoc : "", {who: userName(r), qid});
+      showQueued(payload); }
     else err(esc(e.message));
   } finally { $("h-go").disabled = false; }
 }
@@ -14372,11 +14506,13 @@ async function submitTakeover(g, received, note) {
   if (!reason) return err(`Say why ${esc(userName(g))} can't sign (for example: not on site).`);
   if (PADS.r.empty()) return err("Sign to confirm you have the items.");
   const payload = {clientId: HAND.clientId || (HAND.clientId = uid()), ref: HAND.isNew ? null : HAND.trail.ref, trail: HAND.isNew ? HAND.trail : null,
-    from: g, reason, sig: PADS.r.png(), received, note, photos: HAND.photos};
+    from: g, reason, sig: PADS.r.png(), received, note, photos: HAND.photos, notBrought: HAND.notBrought.map(({line, reason}) => ({line, reason}))};
   $("h-go").disabled = true; msg("h-msg", '<span class="spinner"></span> Saving...');
-  try { await finishHop(await api("takeover", payload)); }
+  try { const res = await api("takeover", payload); if (HAND.isNew) takenFromRes(res); await finishHop(res); }
   catch (e) {
-    if (e instanceof Offline) { queueAdd({kind: "takeover", payload, label: (HAND.isNew ? "New return" : HAND.trail.ref) + " (collected from " + userName(g) + ")"}); showQueued(payload); }
+    if (e instanceof Offline) { const qid = queueAdd({kind: "takeover", payload, label: (HAND.isNew ? "New return" : HAND.trail.ref) + " (collected from " + userName(g) + ")"});
+      if (HAND.isNew) takenAdd("RET", HAND.trail.items.filter(i => received.includes(i.line)), "", {who: me().name, qid});
+      showQueued(payload); }
     else err(/Unknown action/i.test(e.message) ? "This needs the Google script updated to v2.7. Ask Gerald, or get " + esc(userName(g)) + " to sign." : esc(e.message));
   } finally { $("h-go").disabled = false; }
 }
@@ -14387,7 +14523,8 @@ async function submitMany(g, r, gp, rp, note) {
   if (empty) return err(`Nothing is ticked for ${esc(empty.trail.ref)}. Tick its items, or go back and untick that trail.`);
   const payload = {giver: {code: g, pin: gp, sig: PADS.g.png()}, receiver: {code: r, pin: rp, sig: PADS.r.png()}, note, photos: HAND.photos,
     trails: HAND.groups.map(gr => ({ref: gr.trail.ref, clientId: HAND.clientIds[gr.trail.ref] || (HAND.clientIds[gr.trail.ref] = uid()),
-      received: HAND.list.filter(i => i.ref === gr.trail.ref && HAND.received[i.k]).map(i => i.line)}))};
+      received: HAND.list.filter(i => i.ref === gr.trail.ref && HAND.received[i.k]).map(i => i.line),
+      notBrought: HAND.notBrought.filter(x => x.ref === gr.trail.ref).map(({line, reason}) => ({line, reason}))}))};
   $("h-go").disabled = true; msg("h-msg", `<span class="spinner"></span> Checking PINs and saving ${payload.trails.length} trails...`);
   try {
     const res = await handoverManyApi(payload);
@@ -14543,7 +14680,7 @@ function renderQueue() {
   const q = Q(), b = $("queue-banner"); $("s-q").textContent = q.length;
   if (!q.length) { b.hidden = true; return; }
   b.hidden = false;
-  b.innerHTML = `<b>${q.length} waiting to send</b>` + q.map(x => `<div class="row" style="justify-content:space-between"><span>${esc(x.label)}${x.error ? `<br><b style="color:var(--poor)">${esc(x.error)}</b>` : ""}</span>
+  b.innerHTML = `<b>${q.length} waiting to send</b>` + q.map(x => `<div class="row" style="justify-content:space-between"><span>${esc(x.label)}${x.error ? `<br><b style="color:var(--poor)">${/^DUPLICATE: /.test(x.error) ? "Not saved, it's a duplicate: " + esc(x.error.slice(11)) + " Discard this one." : esc(x.error)}</b>` : ""}</span>
     ${x.error ? `<button class="btn small" data-qdel="${x.id}">Discard</button>` : ""}</div>`).join("") + `<div><button class="btn small" id="q-retry">Send now</button></div>`;
 }
 let qBusy = false;
@@ -14555,6 +14692,7 @@ async function processQueue() {
       try {
         if (x.kind === "handover") {
           const res = await api("handover", x.payload);
+          if (x.payload.trail) takenFromRes(res);
           queueDel(x.id);
           const bytes = await makePdf(res, res.hop, false, {attachPhotos: await photosForHop(res.ref, res.hop, x.payload.photos)});
           await sendPdf(res.ref, res.hop, bytes);
@@ -14562,6 +14700,7 @@ async function processQueue() {
           if (current === "v-home" || current === "v-done") { showDone(res); msg("d-msg", "Sent: this handover was saved earlier with no signal.", "ok"); }
         } else if (x.kind === "takeover") {
           const res = await api("takeover", x.payload);
+          if (x.payload.trail) takenFromRes(res);
           queueDel(x.id);
           const bytes = await makePdf(res, res.hop, false, {attachPhotos: await photosForHop(res.ref, res.hop, x.payload.photos)});
           await sendPdf(res.ref, res.hop, bytes);
@@ -14575,10 +14714,17 @@ async function processQueue() {
             await sendPdf(r1.ref, r1.hop, bytes); }
         } else if (x.kind === "collect") {
           const res = await api("collect", x.payload);
+          takenFromRes(res);
           queueDel(x.id);
           const sub = x.payload.navPdf ? CTPDF.b64ToBytes(x.payload.navPdf) : null;
           const bytes = await makePdf(res, 1, false, {attachPdf: sub, attachPhotos: x.payload.photos || []});
           await sendPdf(res.ref, 1, bytes);
+        } else if (x.kind === "found") {
+          const res = await api("foundItem", x.payload);
+          queueDel(x.id); queueAdd({kind: "pdf", ref: res.ref || res.trail.ref, hop: res.trail.hops, replace: true, label: `${res.trail.ref} hop ${res.trail.hops} PDF (found item)`});
+        } else if (x.kind === "cancel") {
+          await api("cancelTrail", x.payload); takenDropRef(x.payload.ref);
+          queueDel(x.id);
         } else if (x.kind === "pdf") {
           const t = await api("trail", {ref: x.ref});
           const h = (t.hops || []).find(y => y.hop === x.hop);
@@ -14606,23 +14752,30 @@ async function openTrail(ref) {
 function renderTrail() {
   const {trail: t, items, hops} = TRAIL;
   $("tv-ref").textContent = t.ref;
-  $("tv-status").innerHTML = `<span class="chip ${t.status === "COMPLETE" ? "ok" : "open"}">${t.status === "COMPLETE" ? "Complete" : t.hops === 0 ? "Prepared" : "Open"}</span>`;
+  $("tv-status").innerHTML = statusChip(t);
   $("tv-kv").innerHTML = [["Type", t.type === "OUT" ? "Outbound (office to engineer)" : "Return (to stores)"], [t.type === "OUT" ? "Booked to" : "From boot of", `${t.bookedToName} (${t.bookedTo})`],
     ["Nav document", t.navDoc || "-"], ["Now with", `${t.currentHolderName} (${t.currentHolder})`], ["Started", `${t.created} by ${t.createdBy}`], ["Items", `${t.items}${t.shortItems ? ` (${t.shortItems} missing)` : ""}`]]
     .map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
-  const canHand = t.status !== "COMPLETE";
+  const canHand = !closed(t);
   $("tv-hand").hidden = !canHand;
   $("tv-tags").hidden = !(t.type === "RET" && hasTags(items));
+  const canFind = !closed(t) && (t.currentHolder === me().code || me().role === "ADMIN");
   $("tv-items").innerHTML = items.map(it => {
     const miss = /^Missing/.test(it.status);
     return `<div class="item ${miss ? "miss" : it.condition === "RTC" ? "rtc" : "sel"}"><div><span class="desc">${esc(it.description || it.itemNo)}</span> <span class="chip ${it.condition === "RTC" ? "rtc" : ""}">${esc(it.condition)}</span>
-      <br><span class="meta">${esc(it.itemNo)} · S/N ${esc(it.serial || "-")} · Tag ${esc(it.tag || "-")}${it.so ? " · " + esc(it.so) : ""}</span><br><span class="small" style="${miss ? "color:var(--poor);font-weight:600" : ""}">${esc(it.status)}</span></div></div>`;
+      <br><span class="meta">${esc(it.itemNo)} · S/N ${esc(it.serial || "-")} · Tag ${esc(it.tag || "-")}${it.so ? " · " + esc(it.so) : ""}</span><br><span class="small" style="${miss ? "color:var(--poor);font-weight:600" : ""}">${esc(it.status)}</span>
+      ${it.found ? `<br><span class="small" style="color:var(--good)">${esc(it.found.replace(/^.*?; found/, "Found"))}</span>` : ""}
+      ${miss && canFind ? `<div class="row" style="margin-top:6px"><button class="btn small primary" data-found="${it.line}">Found it</button></div>` : ""}</div></div>`;
   }).join("");
+  $("tv-found").hidden = true; $("tv-cancelbox").hidden = true;
+  $("tv-cancelled").hidden = t.status !== "CANCELLED";
+  $("tv-cancelled").innerHTML = t.status === "CANCELLED" ? `<b>Cancelled.</b> ${esc(t.cancelled || "")}` : "";
+  $("tv-cancel").hidden = !(me().role === "ADMIN" && !closed(t));
   $("tv-hops").innerHTML = (t.hops === 0 ? `<div class="empty">Prepared by ${esc(t.createdBy)} on ${esc(t.created)}. Not handed over yet.</div>` : "") + hops.map(h => `<div class="hop"><span class="no">${h.hop}</span><div><b>${esc(h.giver.name)}</b> to <b>${esc(h.receiver.name)}</b><br><span class="small">${esc(h.at)} · ${h.itemsReceived} item${h.itemsReceived === 1 ? "" : "s"}${h.short ? ` · <b style="color:var(--poor)">not received: ${esc(h.short)}</b>` : ""}${h.note ? "<br>Note: " + esc(h.note) : ""}</span>
     ${h.confirmed === "NO" ? `<br><span class="unconf">Not signed by ${esc(h.giver.name)}: collected without custody.</span>${h.giver.code === me().code ? ` <button class="btn small primary" data-confirm="${h.hop}">Confirm and sign</button>` : me().role === "ADMIN" ? ` <button class="btn small" data-approve="${h.hop}">Approve as Admin</button>` : ' <span class="small">Waiting for them to confirm.</span>'}`
       : h.confirmed ? `<br><span class="small" style="color:var(--good)">${esc(h.confirmed)}</span>` : ""}
     ${h.sigReceiver ? `<br><img alt="Signature" src="data:image/png;base64,${h.sigReceiver}">` : ""}<div class="row" style="margin-top:6px"><button class="btn small" data-pdf="${h.hop}">PDF</button>${h.pdf ? "" : `<button class="btn small primary" data-resend="${h.hop}">Send to log</button>`}<span class="small mono">${esc(h.verification)}</span></div>${h.pdf ? "" : '<span class="small" style="color:var(--poor)">This PDF is not in the log yet.</span>'}</div></div>`).join("") || (t.hops === 0 ? "" : '<div class="empty">No handovers yet.</div>');
-  msg("tv-msg", t.status !== "COMPLETE" && t.currentHolder !== me().code ? `To receive these items, ${esc(t.currentHolderName)} hands them over to you here, on either phone.` : "");
+  msg("tv-msg", !closed(t) && t.currentHolder !== me().code ? `To receive these items, ${esc(t.currentHolderName)} hands them over to you here, on either phone.` : "");
   show("v-trail");
 }
 
@@ -14689,7 +14842,11 @@ function renderThumbs() { $("h-thumbs").innerHTML = HAND.photos.map((p, i) => `<
 function init() {
   fillCodes(); renderWho();
   $("s-ver").textContent = APP_VERSION; document.querySelectorAll(".mark .ver").forEach(x => x.textContent = APP_VERSION);
-  PADS.g = SigPad($("g-sig")); PADS.r = SigPad($("r-sig")); PADS.c = SigPad($("c-sig"));
+  PADS.g = SigPad($("g-sig")); PADS.r = SigPad($("r-sig")); PADS.c = SigPad($("c-sig")); PADS.f = SigPad($("f-sig"));
+  $("tv-items").addEventListener("click", e => { const l = e.target.dataset.found; if (l != null) openFound(Number(l)); });
+  $("fd-from").onchange = foundVis; $("fd-go").onclick = submitFound; $("fd-no").onclick = () => { $("tv-found").hidden = true; FOUND = null; };
+  $("tv-cancel").onclick = () => { $("tv-cancelbox").hidden = false; $("x-reason").value = ""; msg("x-msg", ""); $("x-reason").focus(); };
+  $("x-no").onclick = () => { $("tv-cancelbox").hidden = true; }; $("x-go").onclick = submitCancel;
   $("c-go").onclick = confirmHop; $("c-cancel").onclick = () => { $("tv-confirm").hidden = true; CONF = null; };
   window.addEventListener("resize", () => { if (current === "v-hand") { /* keep ink; only resize when empty */ if (PADS.g.empty()) PADS.g.resize(); if (PADS.r.empty()) PADS.r.resize(); } });
   $("l-go").onclick = doLogin; $("l-pin").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
@@ -14764,7 +14921,7 @@ function init() {
   $("r-items").addEventListener("click", e => {
     if (e.target.dataset.act === "allfaulty") {
       const q = RET.q.toLowerCase(), shown = RET.items.filter(it => it.kind === "faulty" && (!q || [it.description, it.serial, it.so, it.itemNo, it.tag, it.doc].join(" ").toLowerCase().includes(q)));
-      const on = !shown.every(it => RET.sel[it.key]); shown.forEach(it => RET.sel[it.key] = on); renderRetItems(); return;
+      const ok = shown.filter(it => !(it.on && it.serial)), on = !ok.every(it => RET.sel[it.key]); ok.forEach(it => RET.sel[it.key] = on); renderRetItems(); return;
     }
     const card = e.target.closest(".item"); if (!card) return; const k = card.dataset.key;
     if (e.target.dataset.tfUrgent) { RET.t[k].urgent = e.target.dataset.tfUrgent; renderRetItems(); return; }
@@ -14803,10 +14960,14 @@ function init() {
     finally { btn.disabled = false; }
   };
   // handover
-  $("h-items").addEventListener("change", e => { const card = e.target.closest(".item"); if (!card) return; HAND.received[card.dataset.k] = e.target.checked; renderHandItems(); });
+  $("h-items").addEventListener("change", e => { if (e.target.type !== "checkbox") return; const card = e.target.closest(".item"); if (!card) return; HAND.received[card.dataset.k] = e.target.checked; renderHandItems(); });
+  $("h-items").addEventListener("input", e => { const k = e.target.dataset.why; if (k != null) HAND.why[k] = e.target.value; });
   $("h-all").onclick = () => { const all = !HAND.list.every(i => HAND.received[i.k]); HAND.list.forEach(i => HAND.received[i.k] = all); renderHandItems(); };
   document.querySelectorAll("[data-clear]").forEach(b => b.onclick = () => PADS[b.dataset.clear[0]].clear());
-  $("h-photo").onchange = async e => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; if (HAND.photos.length >= 4) return msg("h-msg", "Up to 4 photos.", "warn"); try { HAND.photos.push(await imageToB64(f, 1600, 0.8)); renderThumbs(); } catch (er) { msg("h-msg", esc(er.message), "err"); } };
+  const addPhotos = async e => { const fs = [...e.target.files]; e.target.value = "";
+    for (const f of fs) { if (HAND.photos.length >= 6) { msg("h-msg", "Up to 6 photos.", "warn"); break; }
+      try { HAND.photos.push(await imageToB64(f, 1600, 0.8)); renderThumbs(); msg("h-msg", ""); } catch (er) { msg("h-msg", esc(er.message), "err"); } } };
+  $("h-photo").onchange = addPhotos; $("h-photo-g").onchange = addPhotos;
   $("h-thumbs").onclick = e => { const i = e.target.dataset.pdel; if (i != null) { HAND.photos.splice(Number(i), 1); renderThumbs(); } };
   $("h-go").onclick = submitHandover;
   $("g-code").addEventListener("change", pinVis); $("r-code").addEventListener("change", pinVis); $("g-absent").addEventListener("change", pinVis);

@@ -4,7 +4,7 @@
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <title>Manage users</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap" media="print" onload="this.media=\'all\'">
 <style>
 /* My Boot Stock: an engineer's own boot stock aging, from the Item Ledger Entries.
    Rules (Gerald's boot aging): working-boot maint stock (BI) may stay 30 days, older is overdue;
@@ -107,7 +107,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
   <div class="msg" id="lmsg"></div>
   <div class="list" id="list"><div class="empty">Loading...</div></div>
   <div class="row" style="justify-content:space-between"><button class="btn small" id="reload">Refresh</button><button class="btn small" id="csv">Download the list (CSV)</button></div>
-  <div class="foot">Manage users v1.0 · Developed by Gerald Pakree<br>The same logins work in all the BCX field apps.</div>
+  <div class="foot">Manage users v1.1 · Developed by Gerald Pakree<br>The same logins work in all the BCX field apps.</div>
 </main>
 
 <main class="wrap" id="v-edit" hidden>
@@ -140,7 +140,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
 </main>
 
 <script>
-const VER = "1.0", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "1.1", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const APP_URL = "https://geraldceb.github.io/";
 const ROLE = {ENG: "Engineer", STORES: "Stores", ADMIN: "Admin"};
 const $ = id => document.getElementById(id);

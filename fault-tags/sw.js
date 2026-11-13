@@ -1,5 +1,5 @@
 // Offline support for BCX Fault Tags. The version changes whenever the app changes.
-const CACHE = "fault-tags-v2-3-20261112";
+const CACHE = "fault-tags-v2-4-20261113";
 const EXCLUDE = []; // other apps in sub-folders of this site keep their own offline copy
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 const BASE = new URL("./", self.registration.scope).pathname;
@@ -12,11 +12,17 @@ self.addEventListener("fetch", e => {
   if (req.mode === "navigate") {
     const p = new URL(req.url).pathname;
     if (p !== BASE && p !== BASE + "index.html") return;
-    // Use the site only when it answers properly; otherwise (offline, site gone, error page) keep the saved copy.
-    e.respondWith(fetch(req).then(r => {
+    // Fresh copy if the site answers within 3 seconds; otherwise open the saved copy straight away (weak signal must
+    // never leave the app stuck on the logo). The download carries on in the background and is saved for next time.
+    const net = fetch(req).then(r => {
       if (!r.ok) throw new Error("bad response");
       const c = r.clone(); caches.open(CACHE).then(k => k.put("./index.html", c)); return r;
-    }).catch(() => caches.match("./index.html").then(hit => hit || fetch(req))));
+    });
+    e.waitUntil(net.catch(() => {}));
+    e.respondWith(caches.match("./index.html").then(saved => {
+      if (!saved) return net.catch(() => fetch(req));
+      return Promise.race([net, new Promise((_, no) => setTimeout(() => no(new Error("slow")), 3000))]).catch(() => saved);
+    }));
     return;
   }
   e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(r => {

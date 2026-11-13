@@ -8,7 +8,7 @@
 <title>BCX Field Apps</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap" media="print" onload="this.media=\'all\'">
 <style>
 /* BCX Field Apps landing: one login (shared with every app), one ledger import, then a tile per app. */
 :root {
@@ -71,7 +71,7 @@ h2 { margin: 0; font: 700 19px/1.15 var(--display); }
     <label>PIN<input id="l-pin" name="bcx-pin-x" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></label>
     <button id="l-go" type="submit">Log in</button>
     <div class="m" id="l-msg"></div>
-    <div class="dev">BCX Field Apps v1.3 · Developed by Gerald Pakree</div>
+    <div class="dev">BCX Field Apps v1.4 · Developed by Gerald Pakree</div>
   </form>
 </div>
 
@@ -94,7 +94,7 @@ h2 { margin: 0; font: 700 19px/1.15 var(--display); }
     <a class="tile" href="store-visit/?hub=1"><span class="ic">SV</span><div><b>Store Visit</b><span>Site visit report</span></div><span class="go">&#8250;</span></a>
     <a class="tile" id="t-users" href="users/" hidden><span class="ic">MU</span><div><b>Manage users</b><span>Admin: logins, PINs, roles, lock-outs</span></div><span class="go">&#8250;</span></a>
   </nav>
-  <div class="foot">BCX Field Apps v1.3 · Developed by Gerald Pakree</div>
+  <div class="foot">BCX Field Apps v1.4 · Developed by Gerald Pakree</div>
 </main>
 
 <script>
@@ -173,11 +173,11 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Field Apps landing v1.3
+/* BCX Field Apps landing v1.4
    - Login: same Google script and same saved login ("ct-session") as every app, so logging in here logs you into all of them.
    - Ledger: imported once here and saved where all the apps read it ("brl-ledger"; Fault Tags and Custody read that too).
      Older per-app copies are cleared so every app uses this one. */
-const VER = "1.3", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "1.4", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = {
