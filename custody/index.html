@@ -13531,7 +13531,7 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "4.3";
+const APP_VERSION = "4.4";
 const DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const SITE = "https://geraldceb.github.io/custody/";
 const RES_DEFAULT = [["ARSMAH", "Arshad Mahomed", "148156", "TARSMAH", "FARSMAH"], ["ARVRAJ", "Arvin Rajcoomar", "149032", "TARVRAJ", "FARVRAJ"], ["BENFYN", "Bevan C Fynn", "152072", "TBENFYN", "FBENFYN"], ["BRAHIR", "Branden Harilal", "148249", "TBRAHIR", "FBRAHIR"], ["CALJON", "Caleb Jonah", "150263", "TCALJON", "FCALJON"], ["CLIMTH", "Clifford Bonga Mthiyane", "148224", "TCLIMTH", "FCLIMTH"], ["DALSTA", "Dale Eric Stadler", "148711", "TDALSTA", "FDALSTA"], ["DAMMUN", "Damien Munien", "154458", "TDAMMUN", "FDAMMUN"], ["DEVBUG", "Deven Bugwandeen", "148351", "TDEVBUG", "FDEVBUG"], ["DHINAI", "Dhilend Raj Naidu", "152921", "TDHINAI", "FDHINAI"], ["EUGCHE", "Eugene Chetty", "148204", "TEUGCHE", "FEUGCHE"], ["GERPAK", "Gerald Pakree", "148154", "TGERPAK", "FGERPAK"], ["GOPRAJ", "Gopaul Erald Rajendran", "148980", "TGOPRAJ", "FGOPRAJ"], ["JAHKHA", "Jahmeel Khan", "150978", "TJAHKHA", "FJAHKHA"], ["JERPAK", "Jeremy Christopher Pakree", "148748", "TJERPAK", "FJERPAK"], ["KEESTA", "Keegan Stapelfeldt", "148346", "TKEESTA", "FKEESTA"], ["KYLDAV", "Kylan David", "998025", "TKYLDAV", "FKYLDAV"], ["MAHYUS", "Mahomed Faheem Yusuf", "148362", "TMAHYUS", "FMAHYUS"], ["MAHPER", "Mahomed S Peroo", "152017", "TMAHPER", "FMAHPER"], ["MITSOO", "Mithesh Soomaroo", "153985", "TMITSOO", "FMITSOO"], ["MLUNZI", "Mlungisi Nzimande", "995154", "TMLUNZI", "FMLUNZI"], ["SAIKHA", "Mohammed Saif Khan", "153708", "TSAIKHA", "FSAIKHA"], ["MOHEBR", "Mohammed Z Ebrahim", "149013", "TMOHEBR", "FMOHEBR"], ["NADKHA", "Nadeem Khan", "151408", "TNADKHA", "FNADKHA"], ["NAEMAN", "Naeson Manikkam", "148350", "TNAEMAN", "FNAEMAN"], ["NELGOV", "Nelanthran Govinden", "148729", "TNELGOV", "FNELGOV"], ["NISNAI", "Nishay Naidoo", "998026", "TNISNAI", "FNISNAI"], ["NIVMAH", "Nivendra Maharaj", "148771", "TNIVMAH", "FNIVMAH"], ["PHENGW", "Phelelani Ndumiso Ngwane", "148388", "TPHENGW", "FPHENGW"], ["RAJNAI", "Raj Naidoo", "145998", "TRAJNAI", "FRAJNAI"], ["RIVMUR", "Rivasen B Muruvan", "148997", "TRIVMUR", "FRIVMUR"], ["RONHAR", "Ronesh Harilall", "148275", "TRONHAR", "FRONHAR"], ["SHAEBR", "Shaahid Ebrahim", "150189", "TSHAEBR", "FSHAEBR"], ["SIPNGE", "Siphesihle Ngeleka", "154054", "TSIPNGE", "FSIPNGE"], ["SIYKHU", "Siyabonga Khumalo", "154032", "TSIYKHU", "FSIYKHU"], ["SUGMAR", "Sugandren Mari", "148209", "TSUGMAR", "FSUGMAR"], ["SULISA", "Suleyman Isaacs", "998148", "TSULISA", "FSULISA"], ["UWACAS", "Uwais Syed Cassim", "155138", "TUWACAS", "FUWACAS"], ["UZAMAH", "Uzair Mahomed", "148813", "TUZAMAH", "FUZAMAH"], ["VENPIL", "Venay Pillay", "148142", "TVENPIL", "FVENPIL"], ["VERRAG", "Veron Raghoo", "148228", "TVERRAG", "FVERRAG"], ["VINJAC", "Vincent Jaku", "148352", "TVINJAC", "FVINJAC"], ["WASKHA", "Waseem Khan", "151827", "TWASKHA", "FWASKHA"], ["ZIABOB", "Zia Bobat", "154377", "TZIABOB", "FZIABOB"], ["ZUBKHA", "Zubair Khan", "149008", "TZUBKHA", "FZUBKHA"]];
@@ -13554,6 +13554,31 @@ const API = () => ls.get("ct-api", "") || (DEFAULT_API.startsWith("http") ? DEFA
 const me = () => SESSION && SESSION.user;
 const users = () => (SESSION && SESSION.users) || [];
 const userName = code => { const u = users().find(x => x.code === code); if (u) return u.name; const r = (typeof RES_DEFAULT !== "undefined" ? RES_DEFAULT : []).find(x => x[0] === code); return r ? title(r[1]) : code; };
+
+/* ---------- PIN check on this phone (v4.4, script v2.12+) ----------
+   The script sends a slow, salted hash of each PIN with the people list (never the PIN). A PIN typed here is checked against it
+   instantly, so the handover can show Done straight away and go to Google in the background. The script still checks the real PIN
+   when it arrives; that check is the one that counts. 5 wrong tries for someone on this phone and their PIN goes back to the script. */
+const b64bytes = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function pinHere(code, pin) {   // true, false, or null when this phone can't check it
+  const u = users().find(x => x.code === code);
+  if (!u || !u.pv || !window.crypto || !crypto.subtle) return null;
+  const fails = ls.get("ct-pinfails", {}) || {}; if ((fails[code] || 0) >= 5) return null;
+  try {
+    const [salt, h] = u.pv.split("$");
+    const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(String(pin).trim()), "PBKDF2", false, ["deriveBits"]);
+    const bits = new Uint8Array(await crypto.subtle.deriveBits({name: "PBKDF2", hash: "SHA-256", salt: b64bytes(salt), iterations: (SESSION && SESSION.pinIter) || 10000}, key, 256));
+    const ok = btoa(String.fromCharCode(...bits)) === h;
+    if (ok) delete fails[code]; else fails[code] = (fails[code] || 0) + 1; ls.set("ct-pinfails", fails);
+    return ok;
+  } catch (e) { return null; }
+}
+// every PIN needed here: true = all fine, null = ask the script as before; a wrong one shows the error and returns false
+async function pinsHere(list, err) {
+  let all = true;
+  for (const [code, pin] of list) { const ok = await pinHere(code, pin); if (ok === false) { err(`${esc(userName(code))}: wrong PIN.`); return false; } if (ok !== true) all = null; }
+  return all;
+}
 
 /* ---------- server ---------- */
 class Offline extends Error {}
@@ -13596,7 +13621,7 @@ async function doLogin() {
   $("l-go").disabled = true; msg("l-msg", '<span class="spinner"></span> Checking...');
   try {
     const j = await api("login", {code, pin});
-    SESSION = {token: j.token, user: j.user, users: j.users, at: Date.now()}; ls.set("ct-session", SESSION);
+    SESSION = {token: j.token, user: j.user, users: j.users, pinIter: j.pinIter, at: Date.now()}; ls.set("ct-session", SESSION);
     $("l-pin").value = ""; msg("l-msg", ""); renderWho(); afterLogin();
   } catch (e) { msg("l-msg", esc(e.message), "err"); }
   finally { $("l-go").disabled = false; }
@@ -13652,7 +13677,7 @@ async function loadTrails() {
     const withDone = $("t-done").checked || !!searchQ();
     const j = await api("myTrails", {includeDone: withDone});
     TRAILS_DONE = withDone; if (j.taken) takenFromServer(j.taken);
-    if (users().length === 0 || (Date.now() - (SESSION.at || 0)) > 6 * 3600e3) refreshUsers();
+    if (users().length === 0 || !users().some(u => u.pv) || (Date.now() - (SESSION.at || 0)) > 3600e3) refreshUsers();   // v4.4: hourly, and straight away if the PIN checks are missing
     TRAILS = j.trails;
     if (PICK) { PICK.refs = PICK.refs.filter(r => TRAILS.some(t => t.ref === r && !closed(t) && t.currentHolder === PICK.holder)); if (!PICK.refs.length) PICK.holder = ""; }
     renderTrailList();
@@ -13803,7 +13828,7 @@ async function pickNext() {
   } catch (e) { msg("t-multi-msg", e instanceof Offline ? "Loading the trails needs signal." : esc(e.message), "err"); }
   finally { btn.disabled = false; }
 }
-async function refreshUsers() { try { const j = await api("users"); SESSION.users = j.users; SESSION.at = Date.now(); ls.set("ct-session", SESSION); } catch (e) {} }
+async function refreshUsers() { try { const j = await api("users"); SESSION.users = j.users; if (j.pinIter) SESSION.pinIter = j.pinIter; SESSION.at = Date.now(); ls.set("ct-session", SESSION); } catch (e) {} }
 
 /* ---------- user pickers ---------- */
 function userOptions(sel, filter, value, placeholder) {
@@ -14524,19 +14549,24 @@ async function submitHandover() {
   if ($("g-absent").checked && !HAND.multi) return submitTakeover(g, received, note);
   if ((g !== me().code && !gp) || (r !== me().code && !rp)) return err(`${g !== me().code && !gp ? userName(g) : userName(r)} must enter their PIN.`);
   if (PADS.g.empty() || PADS.r.empty()) return err("Both people must sign.");
-  if (HAND.multi) return submitMany(g, r, gp, rp, note);
+  $("h-go").disabled = true;
+  const fast = await pinsHere([[g, gp], [r, rp]].filter(([c]) => c !== me().code), err); $("h-go").disabled = false;
+  if (fast === false) return;
+  if (HAND.multi) return submitMany(g, r, gp, rp, note, fast);
   const payload = {clientId: HAND.clientId || (HAND.clientId = uid()), ref: HAND.isNew ? null : HAND.trail.ref, trail: HAND.isNew ? HAND.trail : null,
     giver: {code: g, pin: gp, sig: PADS.g.png()}, receiver: {code: r, pin: rp, sig: PADS.r.png()}, received, note, photos: HAND.photos, printout: HAND.printout || "",
     notBrought: HAND.notBrought.map(({line, reason}) => ({line, reason}))};
+  const later = quick => { const qid = queueAdd({kind: "handover", payload, fast: quick, label: HAND.isNew ? "New " + (HAND.trail.type === "OUT" ? "outbound" : "return") + " trail" : HAND.trail.ref});
+    if (HAND.isNew) takenAdd(HAND.trail.type, HAND.trail.items.filter(i => received.includes(i.line)), HAND.trail.type === "OUT" ? HAND.trail.navDoc : "", {who: userName(r), qid});
+    showQueued(payload, quick, qid); };
+  if (fast) return later(true);   // PINs checked on this phone: done now, saved to the log in the background
   $("h-go").disabled = true; msg("h-msg", '<span class="spinner"></span> Checking PINs and saving...');
   try {
     const res = await api("handover", payload);
     if (HAND.isNew) takenFromRes(res);
     await finishHop(res);
   } catch (e) {
-    if (e instanceof Offline) { const qid = queueAdd({kind: "handover", payload, label: HAND.isNew ? "New " + (HAND.trail.type === "OUT" ? "outbound" : "return") + " trail" : HAND.trail.ref});
-      if (HAND.isNew) takenAdd(HAND.trail.type, HAND.trail.items.filter(i => received.includes(i.line)), HAND.trail.type === "OUT" ? HAND.trail.navDoc : "", {who: userName(r), qid});
-      showQueued(payload); }
+    if (e instanceof Offline) later(false);
     else err(esc(e.message));
   } finally { $("h-go").disabled = false; }
 }
@@ -14548,6 +14578,10 @@ async function submitTakeover(g, received, note) {
   if (PADS.r.empty()) return err("Sign to confirm you have the items.");
   const payload = {clientId: HAND.clientId || (HAND.clientId = uid()), ref: HAND.isNew ? null : HAND.trail.ref, trail: HAND.isNew ? HAND.trail : null,
     from: g, reason, sig: PADS.r.png(), received, note, photos: HAND.photos, notBrought: HAND.notBrought.map(({line, reason}) => ({line, reason}))};
+  // v4.4: no PINs to check, so it's done now and saved to the log in the background
+  { const qid = queueAdd({kind: "takeover", payload, fast: true, label: (HAND.isNew ? "New return" : HAND.trail.ref) + " (collected from " + userName(g) + ")"});
+    if (HAND.isNew) takenAdd("RET", HAND.trail.items.filter(i => received.includes(i.line)), "", {who: me().name, qid});
+    return showQueued(payload, true, qid); }
   $("h-go").disabled = true; msg("h-msg", '<span class="spinner"></span> Saving...');
   try { const res = await api("takeover", payload); if (HAND.isNew) takenFromRes(res); await finishHop(res); }
   catch (e) {
@@ -14558,7 +14592,7 @@ async function submitTakeover(g, received, note) {
   } finally { $("h-go").disabled = false; }
 }
 
-async function submitMany(g, r, gp, rp, note) {
+async function submitMany(g, r, gp, rp, note, fast) {
   const err = t => msg("h-msg", t, "err");
   const empty = HAND.groups.find(gr => !HAND.list.some(i => i.ref === gr.trail.ref && HAND.received[i.k]));
   if (empty) return err(`Nothing is ticked for ${esc(empty.trail.ref)}. Tick its items, or go back and untick that trail.`);
@@ -14566,6 +14600,7 @@ async function submitMany(g, r, gp, rp, note) {
     trails: HAND.groups.map(gr => ({ref: gr.trail.ref, clientId: HAND.clientIds[gr.trail.ref] || (HAND.clientIds[gr.trail.ref] = uid()),
       received: HAND.list.filter(i => i.ref === gr.trail.ref && HAND.received[i.k]).map(i => i.line),
       notBrought: HAND.notBrought.filter(x => x.ref === gr.trail.ref).map(({line, reason}) => ({line, reason}))}))};
+  if (fast) { PICK = null; const qid = queueAdd({kind: "handoverMany", payload, fast: true, label: payload.trails.length + " trails: " + payload.trails.map(t => t.ref).join(", ")}); return showQueued(payload, true, qid); }
   $("h-go").disabled = true; msg("h-msg", `<span class="spinner"></span> Checking PINs and saving ${payload.trails.length} trails...`);
   try {
     const res = await handoverManyApi(payload);
@@ -14688,15 +14723,27 @@ function showDone(res) {
   $("d-tags").hidden = !(res.trail.type === "RET" && hasTags(res.items));
   show("v-done");
 }
-function showQueued(payload) {
+function showQueued(payload, fast, qid) {
   handDel(); if (HAND && HAND.fromRet) draftDel("ct-draft-ret");
   LAST = null; $("d-multi").hidden = true; $("d-single").hidden = false;
+  $("d-qr-wrap").hidden = true; $("d-pdf").disabled = $("d-share").disabled = true;
+  if (fast) {
+    $("d-title").textContent = "Handover done";
+    $("d-sub").innerHTML = "Signed. " + (payload.from ? "" : "PIN checked on this phone. ") + "You can both go: it's saving to the custody log now, and the QR code and PDF show here when it's in.";
+    msg("d-msg", '<span class="spinner"></span> Saving to the custody log...');
+    show("v-done"); FASTQ = qid; processQueue();
+    // no signal: say so, it goes later
+    const t0 = Date.now(), watch = () => { if (FASTQ !== qid || current !== "v-done") return; const it = Q().find(x => x.id === qid); if (!it) return;
+      if (it.offlineAt) { msg("d-msg", "No signal right now. It's saved on this phone and goes to the log automatically when there's signal.", "warn"); return; }
+      if (!it.error && Date.now() - t0 < 120000) setTimeout(watch, 1000); };
+    setTimeout(watch, 1500); return;
+  }
   $("d-title").textContent = "Saved on this phone";
   $("d-sub").innerHTML = "No signal. The handover will be sent and the PINs checked as soon as there is signal. The signed PDF is made then.";
-  $("d-qr-wrap").hidden = true; $("d-pdf").disabled = $("d-share").disabled = true;
   msg("d-msg", "Keep the app open or open it again later to send it.", "warn");
   show("v-done");
 }
+let FASTQ = null;   // the fast handover the done screen is showing
 function drawQR(canvas, text) {
   const q = qrcode(0, "M"); q.addData(text); q.make();
   const n = q.getModuleCount(), cell = 8, pad = 4 * cell; canvas.width = canvas.height = n * cell + pad * 2;
@@ -14725,6 +14772,15 @@ function renderQueue() {
     ${x.error ? `<button class="btn small" data-qdel="${x.id}">Discard</button>` : ""}</div>`).join("") + `<div><button class="btn small" id="q-retry">Send now</button></div>`;
 }
 let qBusy = false;
+// a handover from the queue is in: make its PDF, show it if the done screen is waiting for it, then send the PDF
+async function afterQueued(x, res, pend, oldMsg) {
+  const bytes = await makePdf(res, res.hop, false, {attachPhotos: await photosForHop(res.ref, res.hop, x.payload.photos)});
+  const mine = x.fast ? FASTQ === x.id && current === "v-done" : (current === "v-home" || current === "v-done");
+  if (mine) { LAST = {res, bytes, name: `${res.ref} hop ${res.hop}.pdf`}; showDone(res); msg("d-msg", x.fast ? '<span class="spinner"></span> Saved to the custody log. Sending the PDF...' : oldMsg, x.fast ? "" : "ok"); }
+  const err = await sendPdf(res.ref, res.hop, bytes);
+  if (!err) queueDel(pend);
+  if (mine && x.fast && current === "v-done") msg("d-msg", err ? "Saved to the custody log. The PDF goes later (" + esc(err) + ")." : "Saved to the custody log, PDF emailed.", err ? "warn" : "ok");
+}
 async function processQueue() {
   if (qBusy || !SESSION || !Q().length) return; qBusy = true;
   try {
@@ -14734,23 +14790,19 @@ async function processQueue() {
         if (x.kind === "handover") {
           const res = await api("handover", x.payload);
           if (x.payload.trail) takenFromRes(res);
+          const pend = queueAdd({kind: "pdf", ref: res.ref, hop: res.hop, label: `${res.ref} hop ${res.hop} PDF`, notBefore: Date.now() + 300000});
           queueDel(x.id);
-          const bytes = await makePdf(res, res.hop, false, {attachPhotos: await photosForHop(res.ref, res.hop, x.payload.photos)});
-          await sendPdf(res.ref, res.hop, bytes);
-          LAST = {res, bytes, name: `${res.ref} hop ${res.hop}.pdf`};
-          if (current === "v-home" || current === "v-done") { showDone(res); msg("d-msg", "Sent: this handover was saved earlier with no signal.", "ok"); }
+          await afterQueued(x, res, pend, "Sent: this handover was saved earlier with no signal.");
         } else if (x.kind === "takeover") {
           const res = await api("takeover", x.payload);
           if (x.payload.trail) takenFromRes(res);
+          const pend = queueAdd({kind: "pdf", ref: res.ref, hop: res.hop, label: `${res.ref} hop ${res.hop} PDF`, notBefore: Date.now() + 300000});
           queueDel(x.id);
-          const bytes = await makePdf(res, res.hop, false, {attachPhotos: await photosForHop(res.ref, res.hop, x.payload.photos)});
-          await sendPdf(res.ref, res.hop, bytes);
-          LAST = {res, bytes, name: `${res.ref} hop ${res.hop}.pdf`};
-          if (current === "v-home" || current === "v-done") { showDone(res); msg("d-msg", "Sent: this was saved earlier with no signal.", "ok"); }
+          await afterQueued(x, res, pend, "Sent: this was saved earlier with no signal.");
         } else if (x.kind === "handoverMany") {
           const res = await handoverManyApi(x.payload);
           queueDel(x.id);
-          if (current === "v-home" || current === "v-done") { await finishMany(res.results, x.payload.photos); }
+          if ((x.fast && FASTQ === x.id && current === "v-done") || (!x.fast && (current === "v-home" || current === "v-done"))) { await finishMany(res.results, x.payload.photos); }
           else for (const r1 of res.results) { if (r1.duplicate) continue; const bytes = await makePdf(r1, r1.hop, false, {attachPhotos: await photosForHop(r1.ref, r1.hop, x.payload.photos)});
             await sendPdf(r1.ref, r1.hop, bytes); }
         } else if (x.kind === "collect") {
@@ -14773,8 +14825,9 @@ async function processQueue() {
           queueDel(x.id);
         }
       } catch (e) {
-        if (e instanceof Offline) break;
+        if (e instanceof Offline) { const q = Q(), it = q.find(y => y.id === x.id); if (it) { it.offlineAt = Date.now(); ls.set("ct-queue", q); } break; }
         const q = Q(); const it = q.find(y => y.id === x.id); if (it) { it.error = e.message; ls.set("ct-queue", q); }
+        if (x.fast && FASTQ === x.id && current === "v-done") msg("d-msg", `<b>Not saved:</b> ${esc(e.message)}<br>Nothing went to the log. Do the handover again (Discard the one in the waiting list on the home screen).`, "err");
       }
     }
   } finally { qBusy = false; renderQueue(); }
