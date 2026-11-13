@@ -107,7 +107,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
   <div class="msg" id="lmsg"></div>
   <div class="list" id="list"><div class="empty">Loading...</div></div>
   <div class="row" style="justify-content:space-between"><button class="btn small" id="reload">Refresh</button><button class="btn small" id="csv">Download the list (CSV)</button></div>
-  <div class="foot">Manage users v1.2 · Developed by Gerald Pakree<br>The same logins work in all the BCX field apps.</div>
+  <div class="foot">Manage users v1.3 · Developed by Gerald Pakree<br>The same logins work in all the BCX field apps.</div>
 </main>
 
 <main class="wrap" id="v-edit" hidden>
@@ -140,7 +140,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
 </main>
 
 <script>
-const VER = "1.2", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "1.3", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const APP_URL = "https://geraldceb.github.io/";
 const ROLE = {ENG: "Engineer", STORES: "Stores", ADMIN: "Admin"};
 const $ = id => document.getElementById(id);
@@ -159,7 +159,13 @@ async function call(body) {
   return j;
 }
 const initials = n => String(n || "?").split(/\s+/).filter(Boolean).map(w => w[0]).filter((c, i, a) => i === 0 || i === a.length - 1).join("").toUpperCase();
-const show = v => { ["v-list", "v-edit"].forEach(x => $(x).hidden = x !== v); window.scrollTo(0, 0); };
+// v1.2: editing a person is its own step on the phone's history, so the phone's back button returns to the list
+let SKIPPOP = false;
+const show = v => { ["v-list", "v-edit"].forEach(x => $(x).hidden = x !== v); window.scrollTo(0, 0);
+  const inEdit = !!(history.state && history.state.e);
+  if (v === "v-edit" && !inEdit) history.pushState({e: 1}, "");
+  if (v === "v-list" && inEdit) { SKIPPOP = true; history.back(); } };
+window.addEventListener("popstate", () => { if (SKIPPOP) { SKIPPOP = false; return; } if (!$("v-edit").hidden) { show("v-list"); renderList(); } });
 
 // ---------- list ----------
 async function load(note) {

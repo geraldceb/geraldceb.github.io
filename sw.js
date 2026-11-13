@@ -1,5 +1,5 @@
 // Offline support for the BCX Field Apps landing page. The version changes whenever the app changes.
-const CACHE = "field-hub-v1-4-20261113";
+const CACHE = "field-hub-v1-5-20261113";
 const EXCLUDE = ["boot-recon/", "boot-stock/", "users/", "store-visit/", "fault-tags/", "custody/"]; // other apps in sub-folders of this site keep their own offline copy
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 const BASE = new URL("./", self.registration.scope).pathname;

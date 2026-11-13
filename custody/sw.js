@@ -1,5 +1,5 @@
 // Offline support for BCX Spares Custody. The version changes whenever the app changes.
-const CACHE = "custody-v4-1-20261113b";
+const CACHE = "custody-v4-2-20261113c";
 const EXCLUDE = []; // other apps in sub-folders of this site keep their own offline copy
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 const BASE = new URL("./", self.registration.scope).pathname;
