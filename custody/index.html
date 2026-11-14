@@ -111,6 +111,9 @@ label.import input { position: absolute; inset: 0; opacity: 0; width: 100%; curs
 .tagf .yn { display: flex; align-items: center; gap: 10px; font-size: 14px; } .tagf .yn .seg { margin-left: auto; }
 .tagf .need { font-size: 13px; color: var(--poor); font-weight: 600; }
 /* v4.7: same look as the Fault Tags app */
+.item .locked { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--sunk); }
+.item .locked .lbl { display: block; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.item .locked .v { font-size: 14px; color: var(--ink); word-break: break-word; } .item .locked .lockbtn { grid-column: 1 / -1; justify-self: start; }
 .tagf .locked { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--sunk); }
 .tagf .locked .lbl { display: block; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 0; }
 .tagf .locked .v { font-size: 14px; color: var(--ink); word-break: break-word; }
@@ -118,6 +121,8 @@ label.import input { position: absolute; inset: 0; opacity: 0; width: 100%; curs
 .tagf .locked.open { background: transparent; }
 .tagf .hl { display: grid; gap: 8px; padding: 10px; border: 2px solid #E8A800; border-radius: 10px; background: rgba(232, 168, 0, .13); }
 .tagf .hl .lbl { font-weight: 700; color: var(--ink); }
+.cond { display: grid; gap: 8px; margin-top: 8px; } .cond .yn { display: flex; align-items: center; gap: 10px; font-size: 14px; } .cond .yn .seg { margin-left: auto; }
+.cond .seg button.rtc[aria-pressed="true"] { background: #1E4FAF; color: #fff; }
 .tagf .hl textarea, .tagf .hl input { border-color: #E8A800; }
 .party { border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); padding: 12px; display: grid; gap: 10px; }
 .party h3 { margin: 0; font: 700 17px/1.1 var(--display); }
@@ -13541,7 +13546,7 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "4.7";
+const APP_VERSION = "4.8";
 const DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const SITE = "https://geraldceb.github.io/custody/";
 const RES_DEFAULT = [["ARSMAH", "Arshad Mahomed", "148156", "TARSMAH", "FARSMAH"], ["ARVRAJ", "Arvin Rajcoomar", "149032", "TARVRAJ", "FARVRAJ"], ["BENFYN", "Bevan C Fynn", "152072", "TBENFYN", "FBENFYN"], ["BRAHIR", "Branden Harilal", "148249", "TBRAHIR", "FBRAHIR"], ["CALJON", "Caleb Jonah", "150263", "TCALJON", "FCALJON"], ["CLIMTH", "Clifford Bonga Mthiyane", "148224", "TCLIMTH", "FCLIMTH"], ["DALSTA", "Dale Eric Stadler", "148711", "TDALSTA", "FDALSTA"], ["DAMMUN", "Damien Munien", "154458", "TDAMMUN", "FDAMMUN"], ["DEVBUG", "Deven Bugwandeen", "148351", "TDEVBUG", "FDEVBUG"], ["DHINAI", "Dhilend Raj Naidu", "152921", "TDHINAI", "FDHINAI"], ["EUGCHE", "Eugene Chetty", "148204", "TEUGCHE", "FEUGCHE"], ["GERPAK", "Gerald Pakree", "148154", "TGERPAK", "FGERPAK"], ["GOPRAJ", "Gopaul Erald Rajendran", "148980", "TGOPRAJ", "FGOPRAJ"], ["JAHKHA", "Jahmeel Khan", "150978", "TJAHKHA", "FJAHKHA"], ["JERPAK", "Jeremy Christopher Pakree", "148748", "TJERPAK", "FJERPAK"], ["KEESTA", "Keegan Stapelfeldt", "148346", "TKEESTA", "FKEESTA"], ["KYLDAV", "Kylan David", "998025", "TKYLDAV", "FKYLDAV"], ["MAHYUS", "Mahomed Faheem Yusuf", "148362", "TMAHYUS", "FMAHYUS"], ["MAHPER", "Mahomed S Peroo", "152017", "TMAHPER", "FMAHPER"], ["MITSOO", "Mithesh Soomaroo", "153985", "TMITSOO", "FMITSOO"], ["MLUNZI", "Mlungisi Nzimande", "995154", "TMLUNZI", "FMLUNZI"], ["SAIKHA", "Mohammed Saif Khan", "153708", "TSAIKHA", "FSAIKHA"], ["MOHEBR", "Mohammed Z Ebrahim", "149013", "TMOHEBR", "FMOHEBR"], ["NADKHA", "Nadeem Khan", "151408", "TNADKHA", "FNADKHA"], ["NAEMAN", "Naeson Manikkam", "148350", "TNAEMAN", "FNAEMAN"], ["NELGOV", "Nelanthran Govinden", "148729", "TNELGOV", "FNELGOV"], ["NISNAI", "Nishay Naidoo", "998026", "TNISNAI", "FNISNAI"], ["NIVMAH", "Nivendra Maharaj", "148771", "TNIVMAH", "FNIVMAH"], ["PHENGW", "Phelelani Ndumiso Ngwane", "148388", "TPHENGW", "FPHENGW"], ["RAJNAI", "Raj Naidoo", "145998", "TRAJNAI", "FRAJNAI"], ["RIVMUR", "Rivasen B Muruvan", "148997", "TRIVMUR", "FRIVMUR"], ["RONHAR", "Ronesh Harilall", "148275", "TRONHAR", "FRONHAR"], ["SHAEBR", "Shaahid Ebrahim", "150189", "TSHAEBR", "FSHAEBR"], ["SIPNGE", "Siphesihle Ngeleka", "154054", "TSIPNGE", "FSIPNGE"], ["SIYKHU", "Siyabonga Khumalo", "154032", "TSIYKHU", "FSIYKHU"], ["SUGMAR", "Sugandren Mari", "148209", "TSUGMAR", "FSUGMAR"], ["SULISA", "Suleyman Isaacs", "998148", "TSULISA", "FSULISA"], ["UWACAS", "Uwais Syed Cassim", "155138", "TUWACAS", "FUWACAS"], ["UZAMAH", "Uzair Mahomed", "148813", "TUZAMAH", "FUZAMAH"], ["VENPIL", "Venay Pillay", "148142", "TVENPIL", "FVENPIL"], ["VERRAG", "Veron Raghoo", "148228", "TVERRAG", "FVERRAG"], ["VINJAC", "Vincent Jaku", "148352", "TVINJAC", "FVINJAC"], ["WASKHA", "Waseem Khan", "151827", "TWASKHA", "FWASKHA"], ["ZIABOB", "Zia Bobat", "154377", "TZIABOB", "FZIABOB"], ["ZUBKHA", "Zubair Khan", "149008", "TZUBKHA", "FZUBKHA"]];
@@ -14082,7 +14087,18 @@ function pickLedgerIssue(doc) {
 function manualOut() { if (!OUT.issues.length) OUT.issues.push(blankIssue()); renderOut(); }
 
 function itemEditor(it, i, list) {
-  return `<div class="item sel" data-i="${i}" data-list="${list}">
+  if (it.fromBI && !it.unlock) return `<div class="item sel" data-i="${i}" data-list="${list}">
+    <div class="row" style="justify-content:space-between"><b class="small">Item ${i + 1} · from the ledger</b><button class="btn small" data-del="${i}">Remove</button></div>
+    <div><b>${esc(it.description || "-")}</b></div>
+    <div class="locked" style="margin-top:6px">
+      <div><span class="lbl">Item no.</span><span class="v mono">${esc(it.itemNo || "-")}</span></div>
+      <div><span class="lbl">Serial</span><span class="v mono">${esc(it.serial || "-")}</span></div>
+      <div><span class="lbl">Tag</span><span class="v mono">${esc(it.tag || "-")}</span></div>
+      <div><span class="lbl">SO</span><span class="v mono">${esc(it.so || "-")}</span></div>
+      <div><span class="lbl">Qty</span><span class="v">${esc(it.qty || 1)}</span></div>
+      <button type="button" class="btn small lockbtn" data-unlock="${i}">&#128274; Edit</button></div>
+  </div>`;
+  return `<div class="item sel" data-i="${i}" data-list="${list}">${it.fromBI ? `<div class="small" style="color:var(--poor)"><b>Editing a ledger line.</b> Only change it if it's wrong.</div>` : ""}
     <div class="row" style="justify-content:space-between"><b class="small">Item ${i + 1}</b><button class="btn small" data-del="${i}">Remove</button></div>
     <div class="field"><input type="text" data-f="description" value="${esc(it.description)}" placeholder="Description"></div>
     <div class="grid">
@@ -14109,6 +14125,8 @@ function bindEditor(boxId, getList, after) {
   });
   $(boxId).addEventListener("change", e => { if (e.target.dataset.f === "condition") $(boxId).dispatchEvent(new Event("input")); });
   $(boxId).addEventListener("click", e => {
+    const u = e.target.closest("[data-unlock]");
+    if (u) { if (confirm("Change this line? It comes from the Nav ledger. Only change it if it's wrong.")) { getList()[Number(u.dataset.unlock)].unlock = true; after(); } return; }
     const d = e.target.dataset.del; if (d == null) return;
     getList().splice(Number(d), 1); after();
   });
@@ -14275,7 +14293,7 @@ function buildRetItems() {
       cust: (parts[0] || "").trim(), loc: parts.slice(1).join(" - ").trim(), on: takenGet(keyOf("RET", doc, item, serial))});
   });
   RET.items.sort((a, b) => a.description.localeCompare(b.description));
-  RET.items.forEach(it => { if (RET.sel[it.key] == null || (it.on && it.serial)) RET.sel[it.key] = false; if (!RET.cond[it.key]) RET.cond[it.key] = it.kind === "faulty" ? "Faulty" : "Working";
+  RET.items.forEach(it => { if (RET.sel[it.key] == null || (it.on && it.serial)) RET.sel[it.key] = false; if (!RET.cond[it.key] || (it.kind === "faulty" && RET.cond[it.key] === "Working")) RET.cond[it.key] = it.kind === "faulty" ? "Faulty" : "Working";
     if (!RET.t[it.key]) RET.t[it.key] = {call: it.so || "", cust: it.cust, loc: it.loc, fault: "", acc: "", urgent: "no", copies: it.serial ? 1 : it.qty};
     const t = RET.t[it.key]; if (!t.urgent) t.urgent = "no"; if (t.ser == null) t.ser = it.serial || ""; if (t.stk == null) t.stk = it.itemNo || ""; });
   $("r-pick").hidden = false;
@@ -14296,7 +14314,7 @@ function renderRetItems() {
       ${it.on ? `<div class="small" style="color:var(--poor);font-weight:600">${blocked ? "Already on a return: " : "Check first, some may already be on "}${esc(onTxt(it.on))}</div>` : ""}
       <label class="ih"><input type="checkbox" data-act="sel" ${on ? "checked" : ""}${blocked ? " disabled" : ""}><span><span class="desc">${esc(it.description)}</span>${it.proj ? ' <span class="chip open">Project</span>' : it.other ? ` <span class="chip">${esc(it.other)}</span>` : ""}<br>
       <span class="meta">${esc(it.itemNo)} · S/N ${esc(it.serial || "-")} · Tag ${esc(it.tag || "-")}${it.so ? " · " + esc(it.so) : ""}</span></span></label>
-      ${on ? `<div class="seg" role="group" aria-label="Condition">${["Faulty", "Working", "RTC"].map(x => `<button data-act="cond" data-c="${x}" class="${x === "RTC" ? "rtc" : ""}" aria-pressed="${x === c}">${x}</button>`).join("")}</div>` : ""}
+      ${on ? condUi(it, c) : ""}
       ${on && RET.tags ? tagForm(it, RET.t[it.key], c) : ""}
     </div>`;
   }).join("") || `<div class="empty">${retView === "sel" ? "Nothing ticked yet." : q && inView.length ? `Nothing in the ${retView} boot matches “${esc(RET.q)}”.` : `Nothing in the ${retView} boot on this ledger.`}</div>`;
@@ -14311,15 +14329,25 @@ const NOT_USED = "NOT USED";
 function tagNeed(t, cond) {
   const m = [];
   if (cond === "Working") return m;
-  if (!String(t.fault || "").trim()) m.push("fault description");
+  const f = String(t.fault || "").trim(); if (!f || f.toUpperCase() === NOT_USED) m.push("fault description");
   return m;
+}
+// v4.8: faulty-boot stock is always faulty; working stock can be marked faulty (then a fault description is needed).
+// Return to customer is a Yes/No like the Fault Tags app (Yes = RTC, which is always urgent).
+function condUi(it, c) {
+  const flt = c !== "Working";
+  return `<div class="cond">
+    ${it.kind === "faulty" ? `<div class="small">From the faulty boot, so it goes back as <b>faulty</b>.</div>`
+      : `<div class="yn"><span>Condition</span><span class="seg" role="group" aria-label="Condition"><button data-act="cond" data-c="Working" aria-pressed="${!flt}">Working</button><button data-act="cond" data-c="Faulty" aria-pressed="${flt}">Faulty</button></span></div>`}
+    ${flt ? `<div class="yn"><span>Return to customer</span><span class="seg" role="group" aria-label="Return to customer"><button data-act="cond" data-c="RTC" class="rtc" aria-pressed="${c === "RTC"}">Yes</button><button data-act="cond" data-c="Faulty" aria-pressed="${c === "Faulty"}">No</button></span></div>` : ""}
+  </div>`;
 }
 // v4.7: laid out like the Fault Tags app: Nav details locked (change them on purpose, per tag), fault description + accessories highlighted,
 // Urgent follows RTC (RTC is always urgent, anything else defaults to No), working stock starts as NOT USED but can be changed
 function tagForm(it, t, cond) {
-  const need = tagNeed(t, cond), many = !it.serial && (it.qty || 1) > 1;
   if (cond === "Working" && !String(t.fault || "").trim()) t.fault = NOT_USED;
   if (cond !== "Working" && t.fault === NOT_USED) t.fault = "";
+  const need = tagNeed(t, cond), many = !it.serial && (it.qty || 1) > 1;
   const nav = !t.unlock ? `<div class="locked">
       <div><span class="lbl">Call ref</span><span class="v mono">${esc(t.call || "-")}</span></div>
       <div><span class="lbl">Customer</span><span class="v">${esc(t.cust || "-")}</span></div>
@@ -14337,11 +14365,11 @@ function tagForm(it, t, cond) {
   return `<div class="tagf">
     ${nav}
     <div class="hl">
-      <div class="field"><span class="lbl">Fault description${cond === "Working" ? " (working stock: leave NOT USED unless it was tried and didn't work)" : " (required)"}</span><textarea rows="2" data-tf="fault" placeholder="What is wrong with the unit">${esc(t.fault)}</textarea></div>
+      <div class="field"><span class="lbl">Fault description${cond === "Working" ? "" : " (required)"}</span>${cond === "Working" ? `<div class="small" style="font-size:15px;padding:8px 2px"><b>${NOT_USED}</b> &nbsp;(tried it and it didn't work? mark it <b>Faulty</b> above)</div>` : `<textarea rows="2" data-tf="fault" placeholder="What is wrong with the unit">${esc(t.fault)}</textarea>`}</div>
       <div class="field"><span class="lbl">Accessories attached</span><input type="text" data-tf="acc" value="${esc(t.acc)}" placeholder="e.g. power cable, stand (optional)"></div>
     </div>
-    ${cond === "Faulty" ? `<div class="yn"><span>Return to customer: <b>No</b> · Urgent</span><span class="seg" role="group" aria-label="Urgent"><button data-tf-urgent="yes" aria-pressed="${t.urgent === "yes"}">Yes</button><button data-tf-urgent="no" aria-pressed="${t.urgent !== "yes"}">No</button></span></div>`
-      : cond === "RTC" ? `<div class="small">Return to customer: <b>Yes</b> · Urgent: <b>Yes</b> (RTC is always urgent)</div>` : `<div class="small">Return to customer: No · Urgent: No</div>`}
+    ${cond === "Faulty" ? `<div class="yn"><span>Urgent</span><span class="seg" role="group" aria-label="Urgent"><button data-tf-urgent="yes" aria-pressed="${t.urgent === "yes"}">Yes</button><button data-tf-urgent="no" aria-pressed="${t.urgent !== "yes"}">No</button></span></div>`
+      : cond === "RTC" ? `<div class="small">Urgent: <b>Yes</b> (RTC is always urgent)</div>` : `<div class="small">Working stock, not used: Return to customer No · Urgent No</div>`}
     ${many ? `<div class="yn"><span>Tags to print</span><input type="number" min="1" max="99" data-tf="copies" value="${esc(t.copies)}" style="width:80px;margin-left:auto"></div>` : ""}
     <div class="need" ${need.length ? "" : "hidden"}>Still needed: ${esc(need.join(", "))}</div>
   </div>`;
@@ -15015,6 +15043,8 @@ function init() {
       try { for (const f of fs.slice(0, 4)) iss.photos.push(await imageToB64(f, 1600, 0.8)); iss.done = null; renderOut(true); msg("o-check", ""); } catch (er) { msg("o-check", esc(er.message), "err"); } return; } if (e.target.dataset.if === "bookedTo") outSummary(); });
   $("o-issues").addEventListener("click", e => {
     const box = e.target.closest("[data-iss]"); if (!box) return; const k = Number(box.dataset.iss), iss = OUT.issues[k];
+    const u = e.target.closest("[data-unlock]");   // v4.8: a ledger line is changed only on purpose
+    if (u) { if (confirm("Change this line? It comes from the Nav ledger. Only change it if it's wrong.")) { iss.items[Number(u.dataset.unlock)].unlock = true; iss.done = null; renderOut(true); } return; }
     if (e.target.dataset.del != null) { const [it] = iss.items.splice(Number(e.target.dataset.del), 1); if (it && it.fromBI) iss.removed.push(it); iss.done = null; renderOut(true); }
     else if (e.target.dataset.restore != null) { const [it] = iss.removed.splice(Number(e.target.dataset.restore), 1); if (it) iss.items.push(it); iss.done = null; renderOut(true); }
     else if (e.target.dataset.ipdel != null) { iss.photos.splice(Number(e.target.dataset.ipdel), 1); iss.done = null; renderOut(true); }
