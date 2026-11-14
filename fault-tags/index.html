@@ -178,6 +178,15 @@ footer.bar #share { min-height: 48px; flex: none; }
 .pick input[type=checkbox] { width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--accent); flex: none; }
 .pick .body { display: grid; gap: 3px; min-width: 0; flex: 1; }
 .tagform { display: grid; gap: 8px; padding-top: 4px; border-top: 1px dashed var(--line); }
+/* v2.8: Nav details locked, fault + accessories highlighted */
+.locked { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--sunk); }
+.locked .lbl { display: block; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.locked .v { font-size: 14px; color: var(--ink); word-break: break-word; }
+.locked .lockbtn { grid-column: 1 / -1; justify-self: start; }
+.locked.open { background: transparent; }
+.hl { display: grid; gap: 8px; padding: 10px; border: 2px solid #E8A800; border-radius: 10px; background: rgba(232, 168, 0, .13); }
+.hl .lbl { font-weight: 700; color: var(--ink); }
+.hl textarea, .hl input { border-color: #E8A800; }
 .tagform .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 @media (max-width: 460px) { .tagform .grid3 { grid-template-columns: 1fr; } }
 .tagform label.lbl { margin-bottom: -4px; }
@@ -194,7 +203,7 @@ footer.bar #share { min-height: 48px; flex: none; }
 </style>
 
 <header class="top"><div class="wrap">
-  <div class="mark"><img class="logo" src="data:image/jpeg;base64,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" alt="BCX" width="131" height="60"><div class="title"><span>FAULT TAGS</span><small>Developed by Gerald Pakree · v2.7</small></div></div>
+  <div class="mark"><img class="logo" src="data:image/jpeg;base64,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" alt="BCX" width="131" height="60"><div class="title"><span>FAULT TAGS</span><small>Developed by Gerald Pakree · v2.8</small></div></div>
   <div class="status" aria-live="polite">
     <span class="pill" id="pill-tags">0 tags</span>
     <span class="pill" id="pill-pages">0 pages</span>
@@ -366,7 +375,7 @@ const FT = (() => {
 
   /* tags: [{date, call, customer, location, equipment, fault, accessories, engineer, serial, stock, rtc:"yes"|"no"|"", urgent:"yes"|"no"|"", working}] */
   async function build(PDFLib, tags) {
-    const {PDFDocument, StandardFonts, rgb} = PDFLib;
+    const {PDFDocument, StandardFonts, rgb, degrees} = PDFLib;
     const doc = await PDFDocument.create();
     const font = await doc.embedFont(StandardFonts.Helvetica), bold = await doc.embedFont(StandardFonts.HelveticaBold);
     const col = c => rgb(c[0], c[1], c[2]);
@@ -391,12 +400,13 @@ const FT = (() => {
       const R = x0 + TAG_W - 4, L = x0 + 3;
       const after = (txt, min = 0) => Math.max(L + bold.widthOfTextAtSize(txt, 7.6) + 4, min);
       // frame and header
-      if (blue) pg.drawRectangle({x: x0, y: Y(12.5), width: TAG_W, height: 12.5, color: col(BLUE_FILL)});
-      pg.drawRectangle({x: x0, y: Y(TAG_H), width: TAG_W, height: TAG_H, borderColor: ink, borderWidth: blue ? 1.6 : 1});
+      // RTC (design B, Nov 2026): a big pale RTC behind the writing and a thick blue border
+      if (blue) pg.drawText("RTC", {x: x0 + 34, y: Y(TAG_H - 22), size: 118, font: bold, color: col([0.62, 0.74, 0.93]), opacity: 0.55, rotate: degrees(28)});
+      pg.drawRectangle({x: x0, y: Y(TAG_H), width: TAG_W, height: TAG_H, borderColor: ink, borderWidth: blue ? 3.5 : 1});
       const head = "BCX FS DURBAN- CUSTOMER FAULT TAG";
       lab(head, x0 + TAG_W / 2 - bold.widthOfTextAtSize(head, 7.8) / 2, 9.6, {size: 7.8});
       line(x0, x0 + TAG_W, 12.5, 1.6);
-      if (blue) { // RTC badge
+      if (false) { // old RTC badge (replaced by the watermark)
         const bw = 26; pg.drawRectangle({x: R - bw, y: Y(10.8), width: bw, height: 9, color: col(BLUE)});
         pg.drawText("RTC", {x: R - bw + (bw - bold.widthOfTextAtSize("RTC", 7.5)) / 2, y: Y(8.6), size: 7.5, font: bold, color: rgb(1, 1, 1)});
       }
@@ -540,7 +550,10 @@ async function importFile(file) {
 /* ---------- tag state ---------- */
 function stateOf(it) {
   let t = S.tags[it.key];
-  if (!t) t = S.tags[it.key] = {sel: it.kind === "faulty", fault: "", acc: "", rtc: it.kind === "working" ? "no" : "", urgent: it.kind === "working" ? "no" : "", call: it.so || "", cust: it.cust, loc: it.loc, copies: it.serial ? 1 : it.qty};
+  // v2.8: Urgent defaults to No (RTC makes it Yes); working items start with NOT USED but it can be changed
+  if (!t) t = S.tags[it.key] = {sel: it.kind === "faulty", fault: it.kind === "working" ? NOT_USED : "", acc: "", rtc: it.kind === "working" ? "no" : "", urgent: "no", call: it.so || "", cust: it.cust, loc: it.loc, copies: it.serial ? 1 : it.qty};
+  if (!t.urgent) t.urgent = "no";
+  if (t.ser == null) t.ser = it.serial || ""; if (t.stk == null) t.stk = it.item || "";   // what prints; locked unless changed on purpose
   return t;
 }
 function missing(it) {
@@ -548,7 +561,6 @@ function missing(it) {
   if (!t.sel) return m;
   if (it.kind === "faulty" && !t.fault.trim()) m.push("fault description");
   if (!t.rtc) m.push("Return to customer");
-  if (!t.urgent) m.push("Urgent");
   return m;
 }
 const copiesOf = it => { const t = stateOf(it); return it.serial ? 1 : Math.max(1, Math.min(99, Number(t.copies) || 1)); };
@@ -566,15 +578,29 @@ function cardHtml(it) {
   let form = "";
   if (t.sel) {
     const k = esc(it.key);
-    form = `<div class="tagform">
-      <div class="grid3">
+    // v2.8: the Nav details are locked; changing them is a deliberate step per tag
+    const navLocked = !t.unlock ? `<div class="locked">
+        <div><span class="lbl">Call ref</span><span class="v mono">${esc(t.call || "-")}</span></div>
+        <div><span class="lbl">Customer</span><span class="v">${esc(t.cust || "-")}</span></div>
+        <div><span class="lbl">Location</span><span class="v">${esc(t.loc || "-")}</span></div>
+        <div><span class="lbl">Serial number</span><span class="v mono">${esc(t.ser || "-")}</span></div>
+        <div><span class="lbl">Stock code</span><span class="v mono">${esc(t.stk || "-")}</span></div>
+        <button type="button" class="btn small lockbtn" data-act="unlock">&#128274; Edit these</button>
+      </div>` : `<div class="locked open"><div class="small" style="grid-column:1/-1"><b>Editing the Nav details on this tag.</b> Only change them if they are wrong.</div>
         <div class="field"><label class="lbl" for="call-${k}">Call ref</label><input type="text" id="call-${k}" class="mono" data-act="call" value="${esc(t.call)}"></div>
         <div class="field"><label class="lbl" for="cust-${k}">Customer</label><input type="text" id="cust-${k}" data-act="cust" value="${esc(t.cust)}"></div>
         <div class="field"><label class="lbl" for="loc-${k}">Location</label><input type="text" id="loc-${k}" data-act="loc" value="${esc(t.loc)}"></div>
-      </div>
-      <div class="field"><label class="lbl" for="fault-${k}">Fault description${it.kind === "faulty" ? " (required)" : ""}</label>
-        ${it.kind === "faulty" ? `<textarea id="fault-${k}" rows="2" data-act="fault" placeholder="What is wrong with the unit">${esc(t.fault)}</textarea>` : `<div class="fixed">${NOT_USED}</div>`}</div>
+        <div class="field"><label class="lbl" for="ser-${k}">Serial number</label><input type="text" id="ser-${k}" class="mono" data-act="ser" value="${esc(t.ser)}"></div>
+        <div class="field"><label class="lbl" for="stk-${k}">Stock code</label><input type="text" id="stk-${k}" class="mono" data-act="stk" value="${esc(t.stk)}"></div>
+        <button type="button" class="btn small lockbtn" data-act="lock">Done</button>
+      </div>`;
+    form = `<div class="tagform">
+      ${navLocked}
+      <div class="hl">
+      <div class="field"><label class="lbl" for="fault-${k}">Fault description${it.kind === "faulty" ? " (required)" : " (working stock: leave NOT USED unless it was tried and didn't work)"}</label>
+        <textarea id="fault-${k}" rows="2" data-act="fault" placeholder="What is wrong with the unit">${esc(t.fault)}</textarea></div>
       <div class="field"><label class="lbl" for="acc-${k}">Accessories attached</label><input type="text" id="acc-${k}" data-act="acc" value="${esc(t.acc)}" placeholder="e.g. power cable, stand (optional)"></div>
+      </div>
       ${ynHtml("Return to customer", "rtc", t.rtc)}
       ${t.rtc === "yes" ? `<div class="yn"><span class="name">Urgent</span><span class="fixed">Yes - RTC tags are always urgent</span></div>` : ynHtml("Urgent", "urgent", t.urgent)}
       ${!it.serial && it.qty > 1 ? `<div class="count">Tags to print <input type="number" inputmode="numeric" min="1" max="99" data-act="copies" value="${copiesOf(it)}" aria-label="Number of tags"> (Nav qty ${it.qty})</div>` : ""}
@@ -626,16 +652,26 @@ function renderCounts() {
 function renderAll() { renderEngineer(); renderLines(); }
 
 /* ---------- interactions ---------- */
+function focusFault(key) { const f = document.getElementById("fault-" + key); if (f) { f.focus(); const n = f.value.length; if (f.value === NOT_USED) f.select(); else f.setSelectionRange(n, n); } }
 function onClick(e) {
-  const b = e.target.closest("button[data-act]"); if (!b) return;
+  const b = e.target.closest("button[data-act]");
+  if (!b) { // tapping a ticked item goes straight to its fault description
+    const card = e.target.closest(".line"); if (!card || e.target.closest("input, textarea, label, select, a")) return;
+    const t = S.tags[card.dataset.key]; if (t && t.sel) focusFault(card.dataset.key); return;
+  }
   const card = b.closest(".line"); if (!card) return;
   const t = S.tags[card.dataset.key]; if (!t) return;
+  if (b.dataset.act === "unlock") {
+    if (!confirm("Change the call ref, customer, location, serial or stock code on this tag?\n\nThese come from Nav. Only change them if they are wrong.")) return;
+    t.unlock = true; save(); refreshCard(card.dataset.key); const f = document.getElementById("call-" + card.dataset.key); if (f) f.focus(); return;
+  }
+  if (b.dataset.act === "lock") { t.unlock = false; save(); refreshCard(card.dataset.key); return; }
   if (b.dataset.act === "rtc" || b.dataset.act === "urgent") {
     const was = t.rtc;
     t[b.dataset.act] = b.dataset.v;
     if (b.dataset.act === "rtc") {
       if (t.rtc === "yes") t.urgent = "yes";                        // RTC is always urgent
-      else if (was === "yes") t.urgent = card.dataset.key.startsWith("w:") ? "no" : ""; // ask again once it's no longer RTC
+      else if (was === "yes") t.urgent = "no";                     // back to the default once it's no longer RTC
     }
     save(); refreshCard(card.dataset.key); renderCounts();
   }
@@ -644,14 +680,14 @@ function onChange(e) {
   const el = e.target, card = el.closest(".line"); if (!card) return;
   const it = ITEMS.faulty.concat(ITEMS.working).find(x => x.key === card.dataset.key); if (!it) return;
   const t = stateOf(it);
-  if (el.dataset.act === "sel") { t.sel = el.checked; save(); refreshCard(it.key); renderCounts(); if (t.sel && it.kind === "faulty") { const f = document.getElementById("fault-" + it.key); if (f && !f.value) f.focus(); } }
+  if (el.dataset.act === "sel") { t.sel = el.checked; save(); refreshCard(it.key); renderCounts(); if (t.sel && it.kind === "faulty") focusFault(it.key); }
   if (el.dataset.act === "copies") { refreshCard(it.key); renderCounts(); }
 }
 function onInput(e) {
   const el = e.target, card = el.closest(".line"); if (!card || !el.dataset.act || el.dataset.act === "sel") return;
   const t = S.tags[card.dataset.key]; if (!t) return;
   const a = el.dataset.act;
-  if (["call", "cust", "loc", "fault", "acc", "copies"].includes(a)) t[a] = el.value;
+  if (["call", "cust", "loc", "ser", "stk", "fault", "acc", "copies"].includes(a)) t[a] = el.value;
   save(); renderCounts();
   if (a === "fault") { const it = ITEMS.faulty.find(x => x.key === card.dataset.key); const nd = card.querySelector(".need"), m = it ? missing(it) : []; if (nd) { nd.textContent = m.length ? "Still needed: " + m.join(", ") : ""; nd.hidden = !m.length; } const chip = card.querySelector(".chip.state"); if (chip && it) { chip.className = "chip state " + (m.length ? "warn" : t.rtc === "yes" ? "rtc" : "in"); chip.textContent = m.length ? "Needs details" : t.rtc === "yes" ? "RTC tag" : "Ready"; card.className = "line " + (m.length ? "st-part" : t.rtc === "yes" ? "rtc" : "st-in"); } }
 }
@@ -665,14 +701,14 @@ async function makeTags() {
   const sel = selected();
   if (!sel.length) { setMsg("Tick at least one item to make a tag.", "err"); return; }
   const bad = sel.filter(it => missing(it).length);
-  if (bad.length) { S.view = bad[0].kind; save(); renderLines(); const el = document.querySelector(`.line[data-key="${CSS.escape(bad[0].key)}"]`); if (el) el.scrollIntoView({block: "center"}); setMsg(`${bad.length} tag${bad.length === 1 ? " needs" : "s need"} details: fault description, Return to customer and Urgent.`, "err"); return; }
+  if (bad.length) { S.view = bad[0].kind; save(); renderLines(); const el = document.querySelector(`.line[data-key="${CSS.escape(bad[0].key)}"]`); if (el) el.scrollIntoView({block: "center"}); setMsg(`${bad.length} tag${bad.length === 1 ? " needs" : "s need"} details: fault description and Return to customer.`, "err"); return; }
   const btn = $("make"); btn.disabled = true; setMsg("Making tags...");
   try {
     const tags = [];
     for (const it of sel) {
       const t = stateOf(it);
-      const tag = {date: today(), call: t.call, customer: t.cust, location: t.loc, equipment: it.desc, fault: it.kind === "working" ? NOT_USED : t.fault,
-        accessories: t.acc, engineer: r[0], serial: it.serial, stock: it.item, rtc: t.rtc, urgent: t.rtc === "yes" ? "yes" : t.urgent, working: it.kind === "working"};
+      const tag = {date: today(), call: t.call, customer: t.cust, location: t.loc, equipment: it.desc, fault: String(t.fault || "").trim() || (it.kind === "working" ? NOT_USED : ""),
+        accessories: t.acc, engineer: r[0], serial: t.ser, stock: t.stk, rtc: t.rtc, urgent: t.rtc === "yes" ? "yes" : (t.urgent || "no"), working: it.kind === "working" && String(t.fault || "").trim().toUpperCase() === NOT_USED};
       for (let c = 0; c < copiesOf(it); c++) tags.push(tag);
     }
     const out = await FT.build(PDFLib, tags);
@@ -856,7 +892,7 @@ const BCXUsers = (() => {
    One login per phone covers Boot Recon, Fault Tags and Spares Custody: Nav code + PIN checked by the Google script,
    kept for 30 days. Engineers are locked to their own boot; Admin and Stores can pick anyone. */
 (() => {
-  const APP = "BCX Fault Tags", VER = "2.7", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+  const APP = "BCX Fault Tags", VER = "2.8", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
   const g = id => document.getElementById(id);
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },

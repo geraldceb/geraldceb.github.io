@@ -85,6 +85,7 @@ label.import input { position: absolute; inset: 0; opacity: 0; width: 100%; curs
 .trow.off { opacity: .45; }
 .absent { display: flex; gap: 8px; align-items: center; font-size: 14px; padding: 4px 0; }
 .warnbox { border: 1px solid var(--poor); background: var(--poor-soft); color: var(--ink); border-radius: 8px; padding: 10px; font-size: 13.5px; display: grid; gap: 8px; }
+#h-items input[data-why] { width: 100%; box-sizing: border-box; font: 400 16px/1.2 var(--body); padding: 10px; border: 1px solid var(--poor); border-radius: 8px; background: var(--surface); color: var(--ink); }
 .warnbox input, #c-reasonx { font: 400 16px/1.2 var(--body); padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
 .unconf { color: var(--poor); font-weight: 600; }
 .multibar { position: sticky; bottom: 8px; display: grid; gap: 6px; background: var(--surface, #fff); border: 1px solid var(--line); border-radius: 10px; padding: 10px; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
@@ -109,6 +110,15 @@ label.import input { position: absolute; inset: 0; opacity: 0; width: 100%; curs
 .tagf input[type=text] { padding: 8px; font-size: 15px; background: var(--surface); }
 .tagf .yn { display: flex; align-items: center; gap: 10px; font-size: 14px; } .tagf .yn .seg { margin-left: auto; }
 .tagf .need { font-size: 13px; color: var(--poor); font-weight: 600; }
+/* v4.7: same look as the Fault Tags app */
+.tagf .locked { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--sunk); }
+.tagf .locked .lbl { display: block; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.tagf .locked .v { font-size: 14px; color: var(--ink); word-break: break-word; }
+.tagf .locked .lockbtn { grid-column: 1 / -1; justify-self: start; }
+.tagf .locked.open { background: transparent; }
+.tagf .hl { display: grid; gap: 8px; padding: 10px; border: 2px solid #E8A800; border-radius: 10px; background: rgba(232, 168, 0, .13); }
+.tagf .hl .lbl { font-weight: 700; color: var(--ink); }
+.tagf .hl textarea, .tagf .hl input { border-color: #E8A800; }
 .party { border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); padding: 12px; display: grid; gap: 10px; }
 .party h3 { margin: 0; font: 700 17px/1.1 var(--display); }
 .sigwrap { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 8px; height: 150px; touch-action: none; }
@@ -327,7 +337,7 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
       <h3>Handed over by</h3>
       <select id="g-code"></select>
       <label class="small absent" id="g-absent-wrap" hidden><input type="checkbox" id="g-absent"> <span id="g-absent-lbl">Not here to sign</span></label>
-      <div id="g-absent-box" hidden class="warnbox">You're recording that you collected these items <b>without their signature</b>. Your signature only. It's flagged in red on the PDF and in the emails until <span class="g-nm"></span> confirms it in the app with their own login, or the Admin approves it. Don't use someone else's PIN.
+      <div id="g-absent-box" hidden class="warnbox"><div>You're recording that you collected these items <b>without their signature</b>. Your signature only. It's flagged in red on the PDF and in the emails until <span class="g-nm"></span> confirms it in the app with their own login, or the Admin approves it. Don't use someone else's PIN.</div>
         <input id="g-reason" placeholder="Why can't they sign? e.g. not on site, on leave" autocomplete="off"></div>
       <input type="password" id="g-pin" inputmode="numeric" maxlength="8" placeholder="PIN" autocomplete="off"><div class="small" id="g-me" hidden>Logged in on this phone, so no PIN needed. Just sign.</div>
       <div class="sigwrap" id="g-sigwrap"><canvas id="g-sig"></canvas><div class="ph">Sign here</div><button class="btn small clr" data-clear="g-sig">Clear</button></div>
@@ -13318,7 +13328,7 @@ if (typeof module !== "undefined") module.exports = NAVPDF;
 
   /* tags: [{date, call, customer, location, equipment, fault, accessories, engineer, serial, stock, rtc:"yes"|"no"|"", urgent:"yes"|"no"|"", working}] */
   async function build(PDFLib, tags) {
-    const {PDFDocument, StandardFonts, rgb} = PDFLib;
+    const {PDFDocument, StandardFonts, rgb, degrees} = PDFLib;
     const doc = await PDFDocument.create();
     const font = await doc.embedFont(StandardFonts.Helvetica), bold = await doc.embedFont(StandardFonts.HelveticaBold);
     const col = c => rgb(c[0], c[1], c[2]);
@@ -13343,12 +13353,13 @@ if (typeof module !== "undefined") module.exports = NAVPDF;
       const R = x0 + TAG_W - 4, L = x0 + 3;
       const after = (txt, min = 0) => Math.max(L + bold.widthOfTextAtSize(txt, 7.6) + 4, min);
       // frame and header
-      if (blue) pg.drawRectangle({x: x0, y: Y(12.5), width: TAG_W, height: 12.5, color: col(BLUE_FILL)});
-      pg.drawRectangle({x: x0, y: Y(TAG_H), width: TAG_W, height: TAG_H, borderColor: ink, borderWidth: blue ? 1.6 : 1});
+      // RTC (design B, Nov 2026): a big pale RTC behind the writing and a thick blue border
+      if (blue) pg.drawText("RTC", {x: x0 + 34, y: Y(TAG_H - 22), size: 118, font: bold, color: col([0.62, 0.74, 0.93]), opacity: 0.55, rotate: degrees(28)});
+      pg.drawRectangle({x: x0, y: Y(TAG_H), width: TAG_W, height: TAG_H, borderColor: ink, borderWidth: blue ? 3.5 : 1});
       const head = "BCX FS DURBAN- CUSTOMER FAULT TAG";
       lab(head, x0 + TAG_W / 2 - bold.widthOfTextAtSize(head, 7.8) / 2, 9.6, {size: 7.8});
       line(x0, x0 + TAG_W, 12.5, 1.6);
-      if (blue) { // RTC badge
+      if (false) { // old RTC badge (replaced by the watermark)
         const bw = 26; pg.drawRectangle({x: R - bw, y: Y(10.8), width: bw, height: 9, color: col(BLUE)});
         pg.drawText("RTC", {x: R - bw + (bw - bold.widthOfTextAtSize("RTC", 7.5)) / 2, y: Y(8.6), size: 7.5, font: bold, color: rgb(1, 1, 1)});
       }
@@ -13530,7 +13541,7 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "4.5";
+const APP_VERSION = "4.7";
 const DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const SITE = "https://geraldceb.github.io/custody/";
 const RES_DEFAULT = [["ARSMAH", "Arshad Mahomed", "148156", "TARSMAH", "FARSMAH"], ["ARVRAJ", "Arvin Rajcoomar", "149032", "TARVRAJ", "FARVRAJ"], ["BENFYN", "Bevan C Fynn", "152072", "TBENFYN", "FBENFYN"], ["BRAHIR", "Branden Harilal", "148249", "TBRAHIR", "FBRAHIR"], ["CALJON", "Caleb Jonah", "150263", "TCALJON", "FCALJON"], ["CLIMTH", "Clifford Bonga Mthiyane", "148224", "TCLIMTH", "FCLIMTH"], ["DALSTA", "Dale Eric Stadler", "148711", "TDALSTA", "FDALSTA"], ["DAMMUN", "Damien Munien", "154458", "TDAMMUN", "FDAMMUN"], ["DEVBUG", "Deven Bugwandeen", "148351", "TDEVBUG", "FDEVBUG"], ["DHINAI", "Dhilend Raj Naidu", "152921", "TDHINAI", "FDHINAI"], ["EUGCHE", "Eugene Chetty", "148204", "TEUGCHE", "FEUGCHE"], ["GERPAK", "Gerald Pakree", "148154", "TGERPAK", "FGERPAK"], ["GOPRAJ", "Gopaul Erald Rajendran", "148980", "TGOPRAJ", "FGOPRAJ"], ["JAHKHA", "Jahmeel Khan", "150978", "TJAHKHA", "FJAHKHA"], ["JERPAK", "Jeremy Christopher Pakree", "148748", "TJERPAK", "FJERPAK"], ["KEESTA", "Keegan Stapelfeldt", "148346", "TKEESTA", "FKEESTA"], ["KYLDAV", "Kylan David", "998025", "TKYLDAV", "FKYLDAV"], ["MAHYUS", "Mahomed Faheem Yusuf", "148362", "TMAHYUS", "FMAHYUS"], ["MAHPER", "Mahomed S Peroo", "152017", "TMAHPER", "FMAHPER"], ["MITSOO", "Mithesh Soomaroo", "153985", "TMITSOO", "FMITSOO"], ["MLUNZI", "Mlungisi Nzimande", "995154", "TMLUNZI", "FMLUNZI"], ["SAIKHA", "Mohammed Saif Khan", "153708", "TSAIKHA", "FSAIKHA"], ["MOHEBR", "Mohammed Z Ebrahim", "149013", "TMOHEBR", "FMOHEBR"], ["NADKHA", "Nadeem Khan", "151408", "TNADKHA", "FNADKHA"], ["NAEMAN", "Naeson Manikkam", "148350", "TNAEMAN", "FNAEMAN"], ["NELGOV", "Nelanthran Govinden", "148729", "TNELGOV", "FNELGOV"], ["NISNAI", "Nishay Naidoo", "998026", "TNISNAI", "FNISNAI"], ["NIVMAH", "Nivendra Maharaj", "148771", "TNIVMAH", "FNIVMAH"], ["PHENGW", "Phelelani Ndumiso Ngwane", "148388", "TPHENGW", "FPHENGW"], ["RAJNAI", "Raj Naidoo", "145998", "TRAJNAI", "FRAJNAI"], ["RIVMUR", "Rivasen B Muruvan", "148997", "TRIVMUR", "FRIVMUR"], ["RONHAR", "Ronesh Harilall", "148275", "TRONHAR", "FRONHAR"], ["SHAEBR", "Shaahid Ebrahim", "150189", "TSHAEBR", "FSHAEBR"], ["SIPNGE", "Siphesihle Ngeleka", "154054", "TSIPNGE", "FSIPNGE"], ["SIYKHU", "Siyabonga Khumalo", "154032", "TSIYKHU", "FSIYKHU"], ["SUGMAR", "Sugandren Mari", "148209", "TSUGMAR", "FSUGMAR"], ["SULISA", "Suleyman Isaacs", "998148", "TSULISA", "FSULISA"], ["UWACAS", "Uwais Syed Cassim", "155138", "TUWACAS", "FUWACAS"], ["UZAMAH", "Uzair Mahomed", "148813", "TUZAMAH", "FUZAMAH"], ["VENPIL", "Venay Pillay", "148142", "TVENPIL", "FVENPIL"], ["VERRAG", "Veron Raghoo", "148228", "TVERRAG", "FVERRAG"], ["VINJAC", "Vincent Jaku", "148352", "TVINJAC", "FVINJAC"], ["WASKHA", "Waseem Khan", "151827", "TWASKHA", "FWASKHA"], ["ZIABOB", "Zia Bobat", "154377", "TZIABOB", "FZIABOB"], ["ZUBKHA", "Zubair Khan", "149008", "TZUBKHA", "FZUBKHA"]];
@@ -14265,7 +14276,8 @@ function buildRetItems() {
   });
   RET.items.sort((a, b) => a.description.localeCompare(b.description));
   RET.items.forEach(it => { if (RET.sel[it.key] == null || (it.on && it.serial)) RET.sel[it.key] = false; if (!RET.cond[it.key]) RET.cond[it.key] = it.kind === "faulty" ? "Faulty" : "Working";
-    if (!RET.t[it.key]) RET.t[it.key] = {call: it.so || "", cust: it.cust, loc: it.loc, fault: "", acc: "", urgent: "", copies: it.serial ? 1 : it.qty}; });
+    if (!RET.t[it.key]) RET.t[it.key] = {call: it.so || "", cust: it.cust, loc: it.loc, fault: "", acc: "", urgent: "no", copies: it.serial ? 1 : it.qty};
+    const t = RET.t[it.key]; if (!t.urgent) t.urgent = "no"; if (t.ser == null) t.ser = it.serial || ""; if (t.stk == null) t.stk = it.itemNo || ""; });
   $("r-pick").hidden = false;
   const nf = RET.items.filter(i => i.kind === "faulty").length, nw = RET.items.length - nf;
   msg("r-msg", `${nf} faulty and ${nw} working boot items for ${esc(title(r[1]))}.`, "ok");
@@ -14300,31 +14312,48 @@ function tagNeed(t, cond) {
   const m = [];
   if (cond === "Working") return m;
   if (!String(t.fault || "").trim()) m.push("fault description");
-  if (cond === "Faulty" && !t.urgent) m.push("Urgent");
   return m;
 }
+// v4.7: laid out like the Fault Tags app: Nav details locked (change them on purpose, per tag), fault description + accessories highlighted,
+// Urgent follows RTC (RTC is always urgent, anything else defaults to No), working stock starts as NOT USED but can be changed
 function tagForm(it, t, cond) {
   const need = tagNeed(t, cond), many = !it.serial && (it.qty || 1) > 1;
+  if (cond === "Working" && !String(t.fault || "").trim()) t.fault = NOT_USED;
+  if (cond !== "Working" && t.fault === NOT_USED) t.fault = "";
+  const nav = !t.unlock ? `<div class="locked">
+      <div><span class="lbl">Call ref</span><span class="v mono">${esc(t.call || "-")}</span></div>
+      <div><span class="lbl">Customer</span><span class="v">${esc(t.cust || "-")}</span></div>
+      <div><span class="lbl">Location</span><span class="v">${esc(t.loc || "-")}</span></div>
+      <div><span class="lbl">Serial number</span><span class="v mono">${esc(t.ser || "-")}</span></div>
+      <div><span class="lbl">Stock code</span><span class="v mono">${esc(t.stk || "-")}</span></div>
+      <button type="button" class="btn small lockbtn" data-tf-lock="open">&#128274; Edit these</button></div>`
+    : `<div class="locked open"><div class="small" style="grid-column:1/-1"><b>Editing the Nav details on this tag.</b> Only change them if they are wrong. A changed serial or stock code is also used on this return.</div>
+      <div class="field"><span class="lbl">Call ref</span><input type="text" class="mono" data-tf="call" value="${esc(t.call)}"></div>
+      <div class="field"><span class="lbl">Customer</span><input type="text" data-tf="cust" value="${esc(t.cust)}"></div>
+      <div class="field"><span class="lbl">Location</span><input type="text" data-tf="loc" value="${esc(t.loc)}"></div>
+      <div class="field"><span class="lbl">Serial number</span><input type="text" class="mono" data-tf="ser" value="${esc(t.ser)}"></div>
+      <div class="field"><span class="lbl">Stock code</span><input type="text" class="mono" data-tf="stk" value="${esc(t.stk)}"></div>
+      <button type="button" class="btn small lockbtn" data-tf-lock="close">Done</button></div>`;
   return `<div class="tagf">
-    <div class="grid"><div class="field"><span class="lbl">Call ref</span><input type="text" class="mono" data-tf="call" value="${esc(t.call)}"></div>
-      <div class="field"><span class="lbl">Customer</span><input type="text" data-tf="cust" value="${esc(t.cust)}"></div></div>
-    <div class="field"><span class="lbl">Location</span><input type="text" data-tf="loc" value="${esc(t.loc)}"></div>
-    <div class="field"><span class="lbl">Fault description${cond === "Working" ? "" : " (required)"}</span>${cond === "Working" ? `<div class="small"><b>${NOT_USED}</b> (working stock)</div>` : `<textarea rows="2" data-tf="fault" placeholder="What is wrong with the unit">${esc(t.fault)}</textarea>`}</div>
-    <div class="field"><span class="lbl">Accessories attached</span><input type="text" data-tf="acc" value="${esc(t.acc)}" placeholder="e.g. power cable, stand (optional)"></div>
-    ${cond === "Faulty" ? `<div class="yn"><span>Urgent</span><span class="seg" role="group" aria-label="Urgent"><button data-tf-urgent="yes" aria-pressed="${t.urgent === "yes"}">Yes</button><button data-tf-urgent="no" aria-pressed="${t.urgent === "no"}">No</button></span></div>`
-      : cond === "RTC" ? `<div class="small">Return to customer: <b>Yes</b> · Urgent: <b>Yes</b> (RTC is always urgent, prints blue)</div>` : `<div class="small">Return to customer: No · Urgent: No</div>`}
+    ${nav}
+    <div class="hl">
+      <div class="field"><span class="lbl">Fault description${cond === "Working" ? " (working stock: leave NOT USED unless it was tried and didn't work)" : " (required)"}</span><textarea rows="2" data-tf="fault" placeholder="What is wrong with the unit">${esc(t.fault)}</textarea></div>
+      <div class="field"><span class="lbl">Accessories attached</span><input type="text" data-tf="acc" value="${esc(t.acc)}" placeholder="e.g. power cable, stand (optional)"></div>
+    </div>
+    ${cond === "Faulty" ? `<div class="yn"><span>Return to customer: <b>No</b> · Urgent</span><span class="seg" role="group" aria-label="Urgent"><button data-tf-urgent="yes" aria-pressed="${t.urgent === "yes"}">Yes</button><button data-tf-urgent="no" aria-pressed="${t.urgent !== "yes"}">No</button></span></div>`
+      : cond === "RTC" ? `<div class="small">Return to customer: <b>Yes</b> · Urgent: <b>Yes</b> (RTC is always urgent)</div>` : `<div class="small">Return to customer: No · Urgent: No</div>`}
     ${many ? `<div class="yn"><span>Tags to print</span><input type="number" min="1" max="99" data-tf="copies" value="${esc(t.copies)}" style="width:80px;margin-left:auto"></div>` : ""}
     <div class="need" ${need.length ? "" : "hidden"}>Still needed: ${esc(need.join(", "))}</div>
   </div>`;
 }
-const tagFields = (t, cond) => ({tagCall: t.call || "", customer: t.cust || "", location: t.loc || "", fault: cond === "Working" ? NOT_USED : (t.fault || ""), accessories: t.acc || "",
-  urgent: cond === "RTC" ? "yes" : cond === "Working" ? "no" : (t.urgent || ""), copies: Math.max(1, Math.min(99, Number(t.copies) || 1))});
+const tagFields = (t, cond) => ({tagCall: t.call || "", customer: t.cust || "", location: t.loc || "", fault: String(t.fault || "").trim() || (cond === "Working" ? NOT_USED : ""), accessories: t.acc || "",
+  urgent: cond === "RTC" ? "yes" : cond === "Working" ? "no" : (t.urgent || "no"), copies: Math.max(1, Math.min(99, Number(t.copies) || 1))});
 // tags for a trail's items (works for any phone, from what was saved)
 function tagsFor(items, engineer) {
   const d = new Date(), today = `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`, tags = [];
   items.filter(i => i.fault || i.customer || i.tagCall).forEach(i => {
     const tag = {date: today, call: i.tagCall || i.so, customer: i.customer, location: i.location, equipment: i.description, fault: i.fault, accessories: i.accessories,
-      engineer, serial: i.serial, stock: i.itemNo, rtc: i.condition === "RTC" ? "yes" : "no", urgent: i.condition === "RTC" ? "yes" : (i.urgent || "no"), working: i.condition === "Working"};
+      engineer, serial: i.serial, stock: i.itemNo, rtc: i.condition === "RTC" ? "yes" : "no", urgent: i.condition === "RTC" ? "yes" : (i.urgent || "no"), working: i.condition === "Working" && String(i.fault || "").toUpperCase() === NOT_USED};
     for (let c = 0; c < (i.serial ? 1 : Math.max(1, Number(i.copies) || 1)); c++) tags.push(tag);
   });
   return tags;
@@ -14338,7 +14367,8 @@ async function saveTags(items, engineer) {
   return {name, tags: tags.length, pages: out.pages, rtc: out.rtc, overflow: out.overflow};
 }
 function retChosen() {
-  const chosen = RET.items.filter(i => RET.sel[i.key]).map(i => Object.assign({doc: i.doc, itemNo: i.itemNo, description: i.description, serial: i.serial, tag: i.tag, so: i.so, qty: i.qty, condition: RET.cond[i.key]},
+  const tv = (i, f, d) => RET.tags && RET.t[i.key] && RET.t[i.key].unlock && String(RET.t[i.key][f] || "").trim() ? String(RET.t[i.key][f]).trim() : d;   // Nav details changed on purpose
+  const chosen = RET.items.filter(i => RET.sel[i.key]).map(i => Object.assign({doc: i.doc, itemNo: tv(i, "stk", i.itemNo), description: i.description, serial: tv(i, "ser", i.serial), tag: i.tag, so: i.so, qty: i.qty, condition: RET.cond[i.key]},
       RET.tags ? tagFields(RET.t[i.key], RET.cond[i.key]) : {}))
     .concat(RET.extra.filter(i => i.description || i.itemNo || i.serial).map(i => Object.assign({}, i, RET.tags ? tagFields({call: i.so, cust: i.cust, loc: i.loc, fault: i.fault, acc: i.acc, urgent: i.urgent, copies: i.qty}, i.condition) : {})));
   if (!chosen.length) { msg("r-check", "Tick at least one item.", "err"); return null; }
@@ -14346,7 +14376,7 @@ function retChosen() {
     const bad = RET.items.filter(i => RET.sel[i.key] && tagNeed(RET.t[i.key], RET.cond[i.key]).length).length
       + RET.extra.filter(i => (i.description || i.itemNo || i.serial) && tagNeed({fault: i.fault, urgent: i.urgent}, i.condition).length).length;
     if (bad) { retView = "sel"; document.querySelectorAll("#r-pick .seg[aria-label=Show] button").forEach(x => x.setAttribute("aria-pressed", x.dataset.view === "sel")); renderRetItems();
-      msg("r-check", `${bad} item${bad === 1 ? " needs" : "s need"} fault tag details (fault description and Urgent). Or untick "Make fault tags".`, "err"); return null; }
+      msg("r-check", `${bad} item${bad === 1 ? " needs" : "s need"} a fault description for the fault tag. Or untick "Make fault tags".`, "err"); return null; }
   }
   const L = loadLedger(), r = RES().find(x => x[0] === RET.eng);
   return {type: "RET", navDoc: L ? "Ledger " + (L.date || L.file) : "", bookedTo: RET.eng, bookedToName: r ? title(r[1]) : RET.eng,
@@ -15017,10 +15047,19 @@ function init() {
       const ok = shown.filter(it => !(it.on && it.serial)), on = !ok.every(it => RET.sel[it.key]); ok.forEach(it => RET.sel[it.key] = on); renderRetItems(); return;
     }
     const card = e.target.closest(".item"); if (!card) return; const k = card.dataset.key;
+    const lk = e.target.closest("[data-tf-lock]");
+    if (lk) {
+      if (lk.dataset.tfLock === "open" && !confirm("Change the call ref, customer, location, serial or stock code on this tag?\n\nThese come from Nav. Only change them if they are wrong.")) return;
+      RET.t[k].unlock = lk.dataset.tfLock === "open"; renderRetItems(); soon(saveRetDraft); return;
+    }
     if (e.target.dataset.tfUrgent) { RET.t[k].urgent = e.target.dataset.tfUrgent; renderRetItems(); return; }
-    if (e.target.dataset.act === "sel") { RET.sel[k] = e.target.checked; renderRetItems(); }
-    if (e.target.dataset.act === "cond") { RET.cond[k] = e.target.dataset.c; renderRetItems(); }
+    if (e.target.dataset.act === "sel") { RET.sel[k] = e.target.checked; renderRetItems(); if (e.target.checked && RET.cond[k] !== "Working") retFocusFault(k); return; }
+    if (e.target.dataset.act === "cond") { RET.cond[k] = e.target.dataset.c; renderRetItems(); if (RET.cond[k] !== "Working") retFocusFault(k); return; }
+    // tapping a ticked item goes straight to its fault description
+    if (RET.sel[k] && RET.tags && !e.target.closest("input, textarea, button, label, select")) retFocusFault(k);
   });
+  window.retFocusFault = k => { const card = [...document.querySelectorAll("#r-items .item")].find(c => c.dataset.key === k), f = card && card.querySelector('textarea[data-tf="fault"]');
+    if (f) { f.focus(); if (f.value === NOT_USED) f.select(); else f.setSelectionRange(f.value.length, f.value.length); } };
   $("r-add").onclick = () => { RET.extra.push(blankItem("Faulty")); renderExtra(); };
   const renderExtra = () => { $("r-extra").innerHTML = RET.extra.map((it, i) => itemEditor(it, i, "r")).join(""); renderRetItems(); };
   renderExtraR = renderExtra;
