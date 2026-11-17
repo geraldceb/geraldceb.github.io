@@ -155,6 +155,8 @@ label.import input { position: absolute; inset: 0; opacity: 0; width: 100%; curs
 .banner { border-radius: 8px; padding: 10px 12px; background: var(--warn-soft); color: var(--warn); font-size: 14px; display: grid; gap: 6px; }
 .small { font-size: 13px; color: var(--muted); }
 details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+.homeled { background: rgba(46, 125, 79, .13); border-left: 4px solid #2E7D4F; border-radius: 8px; padding: 8px 10px; }
+.homeled .hm { color: #2E7D4F; font-weight: 700; }
 </style>
 
 <header class="top"><div class="wrap">
@@ -13546,7 +13548,7 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "4.8";
+const APP_VERSION = "4.9";
 const DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const SITE = "https://geraldceb.github.io/custody/";
 const RES_DEFAULT = [["ARSMAH", "Arshad Mahomed", "148156", "TARSMAH", "FARSMAH"], ["ARVRAJ", "Arvin Rajcoomar", "149032", "TARVRAJ", "FARVRAJ"], ["BENFYN", "Bevan C Fynn", "152072", "TBENFYN", "FBENFYN"], ["BRAHIR", "Branden Harilal", "148249", "TBRAHIR", "FBRAHIR"], ["CALJON", "Caleb Jonah", "150263", "TCALJON", "FCALJON"], ["CLIMTH", "Clifford Bonga Mthiyane", "148224", "TCLIMTH", "FCLIMTH"], ["DALSTA", "Dale Eric Stadler", "148711", "TDALSTA", "FDALSTA"], ["DAMMUN", "Damien Munien", "154458", "TDAMMUN", "FDAMMUN"], ["DEVBUG", "Deven Bugwandeen", "148351", "TDEVBUG", "FDEVBUG"], ["DHINAI", "Dhilend Raj Naidu", "152921", "TDHINAI", "FDHINAI"], ["EUGCHE", "Eugene Chetty", "148204", "TEUGCHE", "FEUGCHE"], ["GERPAK", "Gerald Pakree", "148154", "TGERPAK", "FGERPAK"], ["GOPRAJ", "Gopaul Erald Rajendran", "148980", "TGOPRAJ", "FGOPRAJ"], ["JAHKHA", "Jahmeel Khan", "150978", "TJAHKHA", "FJAHKHA"], ["JERPAK", "Jeremy Christopher Pakree", "148748", "TJERPAK", "FJERPAK"], ["KEESTA", "Keegan Stapelfeldt", "148346", "TKEESTA", "FKEESTA"], ["KYLDAV", "Kylan David", "998025", "TKYLDAV", "FKYLDAV"], ["MAHYUS", "Mahomed Faheem Yusuf", "148362", "TMAHYUS", "FMAHYUS"], ["MAHPER", "Mahomed S Peroo", "152017", "TMAHPER", "FMAHPER"], ["MITSOO", "Mithesh Soomaroo", "153985", "TMITSOO", "FMITSOO"], ["MLUNZI", "Mlungisi Nzimande", "995154", "TMLUNZI", "FMLUNZI"], ["SAIKHA", "Mohammed Saif Khan", "153708", "TSAIKHA", "FSAIKHA"], ["MOHEBR", "Mohammed Z Ebrahim", "149013", "TMOHEBR", "FMOHEBR"], ["NADKHA", "Nadeem Khan", "151408", "TNADKHA", "FNADKHA"], ["NAEMAN", "Naeson Manikkam", "148350", "TNAEMAN", "FNAEMAN"], ["NELGOV", "Nelanthran Govinden", "148729", "TNELGOV", "FNELGOV"], ["NISNAI", "Nishay Naidoo", "998026", "TNISNAI", "FNISNAI"], ["NIVMAH", "Nivendra Maharaj", "148771", "TNIVMAH", "FNIVMAH"], ["PHENGW", "Phelelani Ndumiso Ngwane", "148388", "TPHENGW", "FPHENGW"], ["RAJNAI", "Raj Naidoo", "145998", "TRAJNAI", "FRAJNAI"], ["RIVMUR", "Rivasen B Muruvan", "148997", "TRIVMUR", "FRIVMUR"], ["RONHAR", "Ronesh Harilall", "148275", "TRONHAR", "FRONHAR"], ["SHAEBR", "Shaahid Ebrahim", "150189", "TSHAEBR", "FSHAEBR"], ["SIPNGE", "Siphesihle Ngeleka", "154054", "TSIPNGE", "FSIPNGE"], ["SIYKHU", "Siyabonga Khumalo", "154032", "TSIYKHU", "FSIYKHU"], ["SUGMAR", "Sugandren Mari", "148209", "TSUGMAR", "FSUGMAR"], ["SULISA", "Suleyman Isaacs", "998148", "TSULISA", "FSULISA"], ["UWACAS", "Uwais Syed Cassim", "155138", "TUWACAS", "FUWACAS"], ["UZAMAH", "Uzair Mahomed", "148813", "TUZAMAH", "FUZAMAH"], ["VENPIL", "Venay Pillay", "148142", "TVENPIL", "FVENPIL"], ["VERRAG", "Veron Raghoo", "148228", "TVERRAG", "FVERRAG"], ["VINJAC", "Vincent Jaku", "148352", "TVINJAC", "FVINJAC"], ["WASKHA", "Waseem Khan", "151827", "TWASKHA", "FWASKHA"], ["ZIABOB", "Zia Bobat", "154377", "TZIABOB", "FZIABOB"], ["ZUBKHA", "Zubair Khan", "149008", "TZUBKHA", "FZUBKHA"]];
@@ -13629,7 +13631,7 @@ window.addEventListener("popstate", e => {
 function renderWho() { const w = $("who"); if (w) w.innerHTML = SESSION ? `Logged in as <b>${esc(me().name)}</b> (${esc(me().code)})` : ""; $("btn-settings").hidden = !(SESSION && me().role === "ADMIN"); }
 
 /* ---------- login ---------- */
-function fillCodes() { $("codes").innerHTML = RES_DEFAULT.map(r => `<option value="${esc(r[0])}">${esc(title(r[1]))}</option>`).join(""); }
+function fillCodes() { const act = new Set(users().map(u => u.code)); $("codes").innerHTML = RES_DEFAULT.filter(r => !act.size || act.has(r[0])).map(r => `<option value="${esc(r[0])}">${esc(title(r[1]))}</option>`).join(""); }
 async function doLogin() {
   const code = $("l-code").value.trim().toUpperCase(), pin = $("l-pin").value.trim();
   if (!code || !pin) return msg("l-msg", "Enter your Nav code and PIN.", "err");
@@ -14053,6 +14055,7 @@ function issueTaken(iss) {
 function renderLedgerPick() {
   const L = loadLedger(), code = $("o-led-eng").value;
   $("o-led-info").innerHTML = L ? `Ledger <b>${esc(L.date || L.file)}</b> on this phone. Documents (BI, project TR/TS and others) only show once Nav has posted them and you have a new copy of the ledger.` : "No ledger on this phone yet. Import this week's Item Ledger Entries.";
+  homeMark($("o-led-info"), L);
   const box = $("o-led-list");
   if (!L || !code) { box.innerHTML = ""; return; }
   const {r, issues} = ledgerIssuesFor(code);
@@ -14261,7 +14264,8 @@ function startRet() {
   retView = "faulty"; document.querySelectorAll("#r-pick .seg[aria-label=Show] button").forEach(x => x.setAttribute("aria-pressed", x.dataset.view === "faulty"));
   $("r-tags").checked = true;
   const wrap = $("r-eng-wrap"); wrap.hidden = false; $("r-eng-hint").hidden = me().role !== "ENG";
-  const sel = $("r-eng"); sel.innerHTML = (me().role === "ENG" ? "" : '<option value="">Choose the engineer</option>') + RES().map(r => `<option value="${esc(r[0])}">${esc(title(r[1]))} (${esc(r[0])})${r[0] === me().code ? " - my boot" : ""}</option>`).join("");
+  const act = new Set(users().map(u => u.code));   // v4.9: only people active in Manage users
+  const sel = $("r-eng"); sel.innerHTML = (me().role === "ENG" ? "" : '<option value="">Choose the engineer</option>') + RES().filter(r => !act.size || act.has(r[0]) || r[0] === me().code).map(r => `<option value="${esc(r[0])}">${esc(title(r[1]))} (${esc(r[0])})${r[0] === me().code ? " - my boot" : ""}</option>`).join("");
   sel.value = RET.eng; $("r-prep").hidden = false;
   $("r-extra").innerHTML = ""; $("r-search").value = ""; msg("r-check", ""); msg("r-msg", "");
   const d = draftGet("ct-draft-ret");
@@ -14276,6 +14280,7 @@ function startRet() {
 function renderLedgerInfo() {
   const L = loadLedger();
   $("r-ledger-info").innerHTML = L ? `Ledger <b>${esc(L.date || L.file)}</b> on this phone (${L.rows.length} lines). Import a newer one if you have it.` : "No ledger on this phone yet. Import the Item Ledger Entries file you got this week.";
+  homeMark($("r-ledger-info"), L);
 }
 function buildRetItems() {
   const L = loadLedger(), r = RES().find(x => x[0] === RET.eng);
@@ -14423,6 +14428,7 @@ async function retPrepare() {
   } catch (e) { msg("r-check", e instanceof Offline ? "Preparing needs signal. Try again when you have signal, or go straight to the handover." : esc(e.message), "err"); }
   finally { btn.disabled = false; }
 }
+const homeMark = (el, L) => { if (!el) return; const on = !!(L && L.src === "home"); el.classList.toggle("homeled", on); if (on) el.insertAdjacentHTML("afterbegin", '<span class="hm">&#10003; From the home page</span> · '); };   // green when the ledger came from the BCX Field Apps home page
 async function readLedgerFile(file) {
   let rows;
   try { rows = await XLSX_MINI.read(file); } catch (e) { throw new Error("That file couldn't be read. Import the .xlsx exactly as exported from Nav."); }
