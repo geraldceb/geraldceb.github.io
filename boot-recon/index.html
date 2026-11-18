@@ -109,6 +109,15 @@ label.import input { position: absolute; inset: 0; opacity: 0; width: 100%; curs
 .lhead .desc { font-weight: 600; font-size: 16px; min-width: 0; overflow-wrap: anywhere; }
 .chip { font: 600 11px/1 var(--body); letter-spacing: 0.05em; text-transform: uppercase; padding: 4px 6px; border-radius: 5px; background: var(--sunk); color: var(--muted); white-space: nowrap; }
 .chip.f { background: var(--warn-soft); color: var(--warn); }
+/* v2.15: full / partial recon, quantity badge */
+.modebar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 8px 0 4px; } .modebar .name { font-weight: 700; } .modebar .seg { margin-left: auto; }
+.modebar .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.addmore { border: 1px dashed var(--line); border-radius: var(--radius); padding: 8px 10px; margin: 6px 0; } .addmore summary { cursor: pointer; font-weight: 600; }
+.addmore #add-find { margin: 8px 0; width: 100%; }
+.addrow { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); } .addrow .t { flex: 1; min-width: 0; font-size: 14px; } .addrow .t small { display: block; color: var(--muted); }
+.qtyb { font: 800 13px/1 var(--body); padding: 5px 8px; border-radius: 6px; background: var(--sunk); color: var(--ink); white-space: nowrap; border: 1px solid var(--line); }
+.qtyb.many { background: #1E4FAF; color: #fff; border-color: #1E4FAF; font-size: 15px; }
+.chip.add { background: #E3ECFB; color: #1E4FAF; }
 .chip.in { background: var(--good-soft); color: var(--good); }
 .chip.out { background: var(--poor-soft); color: var(--poor); }
 .chip.warn { background: var(--warn-soft); color: var(--warn); }
@@ -170,7 +179,7 @@ footer.bar #share { min-height: 48px; flex: none; }
 </style>
 
 <header class="top"><div class="wrap">
-  <div class="mark"><img class="logo" src="data:image/jpeg;base64,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" alt="BCX" width="131" height="60"><div class="title"><span>BOOT STOCK RECON</span><small>Developed by Gerald Pakree · v2.14</small></div></div>
+  <div class="mark"><img class="logo" src="data:image/jpeg;base64,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" alt="BCX" width="131" height="60"><div class="title"><span>BOOT STOCK RECON</span><small>Developed by Gerald Pakree · v2.15</small></div></div>
   <div class="status" aria-live="polite">
     <span class="pill" id="pill-checked">0/0 checked</span>
     <span class="pill" id="pill-pages">2 pages</span>
@@ -194,6 +203,13 @@ footer.bar #share { min-height: 48px; flex: none; }
     <label class="import">Import Nav export (.xlsx)<input type="file" id="import" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
     <details class="other-note" id="other-note" hidden><summary id="other-sum"></summary><div id="other-list"></div></details>
     <div class="ledger-info" id="ledger-info">Import the weekly Item Ledger Entries export. A newer Resource List export can be imported the same way.</div>
+    <div id="mode-ui" hidden>
+      <div class="modebar"><span class="name">Recon type</span><span class="seg" role="group" aria-label="Recon type"><button type="button" data-mode="full">Full recon</button><button type="button" data-mode="partial">Partial recon</button></span></div>
+      <div class="small" id="mode-note"></div>
+      <details class="addmore" id="add-more" hidden><summary id="add-sum"></summary>
+        <input type="search" id="add-find" placeholder="Find an item to add" autocomplete="off" aria-label="Find an item to add">
+        <div id="add-list"></div></details>
+    </div>
     <div id="check-ui" hidden>
       <div style="display:grid;gap:10px">
         <div class="progress" aria-hidden="true"><i class="pi" id="bar-in"></i><i class="po" id="bar-out"></i></div>
@@ -400,7 +416,7 @@ const BR2 = (() => {
     const header = (pg, n) => {
       const lw = 92, lh = lw * logo.height / logo.width;
       pg.drawImage(logo, {x: W / 2 - lw / 2, y: H - 8 - lh, width: lw, height: lh});
-      text(pg, "Boot Stock Recon", W / 2, H - 8 - lh - 18, {bold: true, size: 17, align: "center"});
+      text(pg, v.partial ? "Boot Stock Recon - PARTIAL" : "Boot Stock Recon", W / 2, H - 8 - lh - 18, {bold: true, size: 17, align: "center", color: v.partial ? [0.75, 0.1, 0.12] : undefined});
       text(pg, REV, M, 18, {size: 8});
       const parts = [["Page ", font], [String(n), bold], [" of ", font], [String(total), bold]];
       let x = W - M - parts.reduce((a, [t, f]) => a + f.widthOfTextAtSize(t, 8), 0);
@@ -434,6 +450,13 @@ const BR2 = (() => {
     });
     if (v.signature) await image(cover, v.signature, M + LW + 8, top - 3 * RH + 2, 200, RH - 4, true);
     top -= rows.length * RH + 16;
+    if (v.partial) {   // v2.15: a partial recon says so on the cover
+      const red = [0.75, 0.1, 0.12], pl = wrapLines(v.partial, s => font.widthOfTextAtSize(s, 9), W - 2 * M - 16), bh = 20 + pl.length * 12;
+      rect(cover, M, top - bh, W - 2 * M, bh, {fill: [0.99, 0.93, 0.93], stroke: red, bw: 1.6});
+      text(cover, "PARTIAL RECON", M + 8, top - 14, {bold: true, size: 11, color: red});
+      pl.forEach((l, i) => text(cover, l, M + 8, top - 27 - i * 12, {size: 9}));
+      top -= bh + 10;
+    }
     rect(cover, M, top - 18, W - 2 * M, 18, {fill: C.grey});
     text(cover, "COMMENTS", W / 2, top - 13, {bold: true, size: 10.5, align: "center"});
     const lines = wrapLines(v.comments, s => font.widthOfTextAtSize(s, COMMENT_SIZE), COMMENT_WIDTH);
@@ -581,13 +604,18 @@ function setMsg(t, kind) { const m = $("msg"); m.textContent = t; m.className = 
 let RES = (() => { const saved = ls.get("brl-res2", null) || []; return RES_DEFAULT.map(d => saved.find(x => x[1] === d[1]) || d); })(); // built-in list, keeping boot locations updated from a Resource List import // active engineers: [resourceNo, name, empNo, workingLoc, nonWorkingLoc]
 let LEDGER = ls.get("brl-ledger", null);          // {date, file, rows:[[date, doc, so, job, item, desc, serial, tag, loc, qty, ship]]}
 const prefs = ls.get("brl-prefs", {lineManager: "Gerald Pakree"});
-const blank = () => ({resNo: "", engineer: "", empCode: "", date: today(), lineManager: prefs.lineManager || "", comments: "", checks: {}, extras: [], sig: ""});
+const blank = () => ({resNo: "", engineer: "", empCode: "", date: today(), lineManager: prefs.lineManager || "", comments: "", checks: {}, extras: [], sig: "", mode: "full", added: {}});
 let S = Object.assign(blank(), ls.get("brl-draft", {}));
 const photos = new Map(); // "lineKey:kind" -> {blob, url}
 const open = new Set();   // line keys with photos expanded
 let filter = "todo", query = "";
 let LINES = [];
 let OTHER = []; // TR / TS lines in his boot: shown for information only, not reconned
+let ALL = [];   // v2.15: every BI / SMS / SO line for the engineer; LINES is the part being reconned (all of it for a full recon)
+const AGED = 30;  // working boot stock older than this needs attention (same rule as My Boot Stock)
+const ageDays = d => { const t = Date.parse(String(d || "").slice(0, 10)); return isNaN(t) ? 0 : Math.floor((Date.now() - t) / 864e5); };
+const needsAttention = L => L.faulty || ageDays(L.old || L.date) > AGED;
+const isPartial = () => S.mode === "partial";
 
 let saveT = null;
 function save() { clearTimeout(saveT); saveT = setTimeout(() => { ls.set("brl-draft", S); prefs.lineManager = S.lineManager; ls.set("brl-prefs", prefs); }, 250); }
@@ -619,7 +647,7 @@ function pickEngineer(name) {
 
 /* ---------- ledger ---------- */
 function buildLines() {
-  LINES = []; OTHER = [];
+  LINES = []; OTHER = []; ALL = [];
   const r = resByNo();
   if (!r || !LEDGER) return;
   const W = r[3], F = r[4], groups = new Map();
@@ -634,11 +662,29 @@ function buildLines() {
     } else {
       const key = "N:" + loc + "|" + type + "|" + item;
       const g = groups.get(key);
-      if (g) { g.qty += Number(qty) || 0; g.docs++; if (date > g.date) g.date = date; }
-      else { const o = {key, item, desc: String(desc).trim(), serial: "", tag: "", loc, faulty, qty: Number(qty) || 0, date, doc, so, ship, docs: 1}; groups.set(key, o); LINES.push(o); }
+      if (g) { g.qty += Number(qty) || 0; g.docs++; if (date > g.date) g.date = date; if (date < g.old) g.old = date; }
+      else { const o = {key, item, desc: String(desc).trim(), serial: "", tag: "", loc, faulty, qty: Number(qty) || 0, date, old: date, doc, so, ship, docs: 1}; groups.set(key, o); LINES.push(o); }
     }
   });
   LINES.sort((a, b) => (a.faulty - b.faulty) || a.desc.localeCompare(b.desc) || String(a.serial).localeCompare(String(b.serial)));
+  ALL = LINES;
+  if (isPartial()) LINES = ALL.filter(L => needsAttention(L) || S.added[L.key]);   // partial: what needs attention, plus what was added
+}
+function renderMode() {
+  const ui = $("mode-ui"); ui.hidden = !ALL.length; if (!ALL.length) return;
+  document.querySelectorAll("#mode-ui button[data-mode]").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === (S.mode || "full")));
+  const need = ALL.filter(needsAttention), added = ALL.filter(L => S.added[L.key] && !needsAttention(L)), rest = ALL.filter(L => !needsAttention(L) && !S.added[L.key]);
+  const qty = a => a.reduce((n, L) => n + (Number(L.qty) || 0), 0), nw = need.filter(L => !L.faulty).length, nf = need.filter(L => L.faulty).length;
+  $("mode-note").innerHTML = !isPartial() ? `<b>Full recon:</b> every line in the boot (${ALL.length} lines) is checked.`
+    : `<b>Partial recon:</b> only what needs attention: <b>${nw}</b> working line${nw === 1 ? "" : "s"} older than ${AGED} days and <b>all ${nf}</b> faulty line${nf === 1 ? "" : "s"}`
+      + (added.length ? `, plus <b>${added.length}</b> you added` : "") + `. The PDF is marked <b>PARTIAL</b>.`;
+  const box = $("add-more"); box.hidden = !isPartial() || !rest.length;
+  $("add-sum").textContent = `Add other items from the boot (${rest.length} not needing attention, qty ${qty(rest)})`;
+  const q = ($("add-find").value || "").trim().toLowerCase();
+  const list = rest.filter(L => !q || [L.desc, L.serial, L.tag, L.item, L.so].some(v => String(v || "").toLowerCase().includes(q)));
+  $("add-list").innerHTML = list.length ? list.map(L => `<div class="addrow"><span class="qtyb${L.qty > 1 ? " many" : ""}">QTY ${esc(L.qty)}</span>
+      <span class="t">${esc(L.desc)}<small class="mono">${esc([L.item, L.serial && "S/N " + L.serial].filter(Boolean).join(" · "))} · ${ageDays(L.old || L.date)} days</small></span>
+      <button type="button" class="btn small" data-add="${esc(L.key)}">Add</button></div>`).join("") : `<div class="small" style="padding:8px 0">No items match.</div>`;
 }
 const counted = (L, c) => (c.counted === "" || c.counted == null) ? L.qty : Number(c.counted);
 const norm = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -879,7 +925,8 @@ function cardHtml(L) {
   if (need.length) body += `<div class="need">Still needed: ${esc(need.join(", "))}</div>`;
   const isOpen = open.has(L.key);
   return `<div class="line st-${st}" data-key="${esc(L.key)}">
-    <div class="lhead"><span class="desc">${esc(L.desc)}</span>${L.faulty ? `<span class="chip f">Faulty</span>` : ""}${chip}</div>
+    <div class="lhead"><span class="qtyb${L.qty > 1 ? " many" : ""}" title="Quantity on the ledger">QTY ${esc(L.qty)}</span><span class="desc">${esc(L.desc)}</span>${L.faulty ? `<span class="chip f">Faulty</span>` : ""}${isPartial() && S.added[L.key] && !needsAttention(L) ? `<span class="chip add">Added</span>` : ""}${chip}</div>
+    ${isPartial() && S.added[L.key] && !needsAttention(L) ? `<button type="button" class="btn small" data-act="unadd" style="justify-self:start">Take out of this recon</button>` : ""}
     <div class="meta mono">${ids}</div>
     <div class="meta">${ctx}</div>
     <div class="seg"><button type="button" data-act="in" aria-pressed="${c.status === "in"}">In boot</button><button type="button" data-act="out" aria-pressed="${c.status === "out"}">Not in boot</button></div>
@@ -897,13 +944,14 @@ function visible(L) {
   return true;
 }
 function renderLines() {
+  renderMode();
   const box = $("lines");
   $("check-ui").hidden = !LINES.length;
   $("lines-empty").hidden = LINES.length > 0;
   const info = $("ledger-info");
   if (LEDGER) {
     const r = resByNo();
-    info.innerHTML = `Ledger <b>${esc(LEDGER.date || LEDGER.file)}</b> loaded (${LEDGER.rows.length} lines, all engineers).` + (r ? ` <b>${LINES.length}</b> lines to recon for ${esc(S.engineer)} (BI, SMS and SO).` : " Pick the engineer to see his lines.");
+    info.innerHTML = `Ledger <b>${esc(LEDGER.date || LEDGER.file)}</b> loaded (${LEDGER.rows.length} lines, all engineers).` + (r ? ` <b>${LINES.length}</b> lines to recon for ${esc(S.engineer)} (BI, SMS and SO)${isPartial() ? ` (partial, of ${ALL.length} in the boot)` : ""}.` : " Pick the engineer to see his lines.");
     homeMark(info, LEDGER);
     if (r && !LINES.length) $("lines-empty").innerHTML = `<strong>No ledger lines for ${esc(S.engineer)}.</strong>No BI, SMS or SO lines on this ledger for ${esc(r[3] || "-")} or ${esc(r[4] || "-")}. Check the engineer and the export.`;
   }
@@ -974,6 +1022,7 @@ function renderExtras() { $("extras").innerHTML = S.extras.map(extraHtml).join("
 
 /* ---------- interactions (delegated) ---------- */
 function onClick(e) {
+  { const u = e.target.closest('[data-act="unadd"]'); if (u) { const k = u.closest(".line").dataset.key; delete S.added[k]; buildLines(); renderAll(); save(); return; } }
   const btn = e.target.closest("button[data-act]"); if (!btn) return;
   const card = btn.closest(".line"); if (!card) return;
   const key = card.dataset.key, act = btn.dataset.act;
@@ -1018,6 +1067,13 @@ function onChange(e) {
 /* ---------- comments ---------- */
 const mctx = document.createElement("canvas").getContext("2d"); mctx.font = "10px Helvetica, Arial, sans-serif";
 const measure = s => mctx.measureText(s).width;
+// v2.15: what a partial recon covered, for the PDF cover and comments
+function partialText() {
+  const need = ALL.filter(needsAttention), added = ALL.filter(L => S.added[L.key] && !needsAttention(L)), rest = ALL.length - LINES.length;
+  const nw = need.filter(L => !L.faulty).length, nf = need.filter(L => L.faulty).length, rq = ALL.filter(L => !LINES.includes(L)).reduce((n, L) => n + (Number(L.qty) || 0), 0);
+  return `Only items needing attention were checked: ${nw} working boot line${nw === 1 ? "" : "s"} older than ${AGED} days and all ${nf} faulty line${nf === 1 ? "" : "s"}`
+    + (added.length ? `, plus ${added.length} line${added.length === 1 ? "" : "s"} the engineer added` : "") + `. ${rest} other boot line${rest === 1 ? " (qty " : "s (qty "}${rq}) ${rest === 1 ? "was" : "were"} not checked.`;
+}
 function summaryLines() {
   const r = resByNo(); if (!LEDGER || !r) return [];
   const k = counts(), out = LINES.filter(L => stateOf(L) === "out");
@@ -1036,6 +1092,7 @@ function summaryLines() {
     lines.push(`Serials validated from photos: ${bc + tx} of ${ser.length} (barcode ${bc}, text ${tx}). Tags validated: ${tv} of ${tg.length}.`);
   }
   if (out.length) lines.push("Not in boot: " + out.map(L => `${L.desc}${L.serial ? " S/N " + L.serial : ""} (${(S.checks[L.key] || {}).reason || "no reason"})`).join("; ") + ".");
+  if (isPartial()) lines.unshift(`PARTIAL RECON: ${LINES.length} of ${ALL.length} boot lines checked (aged working stock and all faulty stock${ALL.some(L => S.added[L.key] && !needsAttention(L)) ? ", plus items added" : ""}).`);
   return lines;
 }
 function composeComments() {
@@ -1135,10 +1192,10 @@ async function makePdf() {
       serial: x.c1 ? {value: x.c1, check: "none"} : {check: "na"}, tag: x.c2 ? {value: x.c2, check: "none"} : {check: "na"},
       photos: await pdfPhotos("X:" + x.id, null, {}, false)});
     const v = {engineer: S.engineer, empCode: S.empCode, date: ddmmyyyy(S.date), lineManager: S.lineManager,
-      comments: composeComments(), signature: S.sig ? b64(S.sig.split(",")[1]) : null};
+      comments: composeComments(), signature: S.sig ? b64(S.sig.split(",")[1]) : null, partial: isPartial() ? partialText() : ""};
     const out = await BR.build(PDFLib, b64(LOGO_B64), v, items, (i, n) => setMsg(`Building item page ${i} of ${n}...`));
     const safe = BR.clean(S.engineer).replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim();
-    const filename = `Boot Stock Recon - ${safe} ${ddmmyyyy(S.date).replace(/\//g, "-")}.pdf`;
+    const filename = `Boot Stock Recon${isPartial() ? " (Partial)" : ""} - ${safe} ${ddmmyyyy(S.date).replace(/\//g, "-")}.pdf`;
     const blob = new Blob([out.bytes], {type: "application/pdf"});
     const done = `Saved ${filename} (${out.pages} pages, ${mb(blob.size)}).`;
     const dl = await getDownloads();
@@ -1172,6 +1229,14 @@ function init() {
   $("filters").addEventListener("click", e => { const b = e.target.closest("button[data-f]"); if (!b) return; if (b.dataset.f !== "tidy") filter = b.dataset.f; renderLines(); });
   let ft = null; $("find").addEventListener("input", e => { clearTimeout(ft); ft = setTimeout(() => { query = e.target.value.trim(); if (query && filter === "todo") filter = "all"; renderLines(); }, 150); });
   ["lines", "extras"].forEach(id => { const el = $(id); el.addEventListener("click", onClick); el.addEventListener("input", onInput); el.addEventListener("change", onChange); });
+  // v2.15: recon type and adding items
+  document.querySelectorAll("#mode-ui button[data-mode]").forEach(b => b.addEventListener("click", () => {
+    if ((S.mode || "full") === b.dataset.mode) return; S.mode = b.dataset.mode; buildLines(); renderAll(); save();
+    setMsg(isPartial() ? `Partial recon: ${LINES.length} of ${ALL.length} lines need attention.` : `Full recon: all ${ALL.length} lines.`, "ok");
+  }));
+  $("add-find").addEventListener("input", renderMode);
+  $("add-list").addEventListener("click", e => { const b = e.target.closest("[data-add]"); if (!b) return;
+    S.added[b.dataset.add] = true; buildLines(); renderAll(); save(); setMsg("Added to this recon. It's in the list below.", "ok"); });
   $("add-extra").addEventListener("click", () => { const x = {id: uid(), desc: "", c1: "", c2: ""}; S.extras.push(x); open.add("X:" + x.id); renderExtras(); save(); const f = document.querySelector(`.line[data-key="X:${x.id}"] input[data-act="xdesc"]`); if (f) { f.focus(); f.scrollIntoView({block: "center"}); } });
   $("f-comments").value = S.comments;
   $("f-comments").addEventListener("input", e => { S.comments = e.target.value; renderSummary(); save(); });
@@ -1343,7 +1408,7 @@ const BCXUsers = (() => {
    One login per phone covers Boot Recon, Fault Tags and Spares Custody: Nav code + PIN checked by the Google script,
    kept for 30 days. Engineers are locked to their own boot; Admin and Stores can pick anyone. */
 (() => {
-  const APP = "BCX Boot Stock Recon", VER = "2.14", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+  const APP = "BCX Boot Stock Recon", VER = "2.15", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
   const g = id => document.getElementById(id);
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
