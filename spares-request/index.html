@@ -1,0 +1,998 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<title>Spares Request</title>
+<style>
+/* My Boot Stock: an engineer's own boot stock aging, from the Item Ledger Entries.
+   Rules (Gerald's boot aging): working-boot maint stock (BI) may stay 30 days, older is overdue;
+   faulty-boot stock is aged 0-2 / 3-7 / 8+ days and should be returned; project stock (TR/TS) is shown for information. */
+:root { --bg:#F3F1EF; --surface:#FFFFFF; --sunk:#ECE8E5; --ink:#1D1A1A; --muted:#6E6662; --line:#DED8D3; --accent:#D2231B;
+  --good:#1F7A4D; --good-soft:#E1F1E8; --poor:#B4261D; --poor-soft:#F8E2DF; --warn:#8A5A00; --warn-soft:#F7ECD4; --info:#2D5B8A; --info-soft:#E2ECF6;
+  --display:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif; --body:"Barlow","Segoe UI",Roboto,Arial,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; }
+@media (prefers-color-scheme: dark) { :root { --bg:#151314; --surface:#1F1C1D; --sunk:#2A2627; --ink:#F2EEEC; --muted:#A79F9B; --line:#3A3436; --accent:#F0453B;
+  --good:#5BC98F; --good-soft:#17352A; --poor:#FF7B70; --poor-soft:#3D1D1B; --warn:#E8B45A; --warn-soft:#3A2E15; --info:#8DB8E8; --info-soft:#1B2A3A; color-scheme: dark } }
+* { box-sizing: border-box; } [hidden] { display: none !important; }
+html { padding-top: env(safe-area-inset-top,0px); padding-bottom: env(safe-area-inset-bottom,0px); }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.45 var(--body); }
+.wrap { max-width: 640px; margin: 0 auto; padding: 0 16px; }
+header.top { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; align-items: center; gap: 10px; padding-block: 10px; }
+.logo { height: 28px; width: auto; background: #fff; border-radius: 4px; padding: 2px 3px; }
+.mark { display: grid; gap: 3px; } .mark b { font: 700 20px/1 var(--display); } .mark small { font: 500 11px/1 var(--body); color: var(--muted); }
+main { padding-block: 16px 40px; display: grid; gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 12px; }
+h2 { margin: 0; font: 700 19px/1.15 var(--display); display: flex; gap: 8px; align-items: baseline; } h2 .aside { margin-left: auto; font: 500 13px/1 var(--body); color: var(--muted); }
+.btn { font: 600 15px/1 var(--body); min-height: 42px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.btn.small { min-height: 34px; padding: 7px 10px; font-size: 13px; } .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+select, input[type=search] { font: 400 16px/1.2 var(--body); padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--sunk); color: var(--ink); width: 100%; }
+.small { font-size: 13px; color: var(--muted); }
+.msg { font-size: 14px; } .msg.ok { color: var(--good); } .msg.err { color: var(--poor); } .msg.warn { color: var(--warn); }
+.tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.tile { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 2px; background: var(--surface); }
+.tile .n { font: 700 30px/1 var(--display); } .tile .l { font-size: 13px; color: var(--muted); } .tile .s { font-size: 12.5px; }
+.tile.bad { border-color: var(--poor); background: var(--poor-soft); } .tile.bad .n { color: var(--poor); }
+.tile.ok .n { color: var(--good); } .tile.warn { border-color: var(--warn); background: var(--warn-soft); } .tile.warn .n { color: var(--warn); }
+.bars { display: grid; gap: 7px; }
+.bar { display: grid; grid-template-columns: 74px 1fr 34px; gap: 8px; align-items: center; font-size: 13.5px; }
+.bar .t { display: block; height: 16px; background: var(--sunk); border-radius: 4px; overflow: hidden; } .bar .f { display: block; height: 100%; border-radius: 4px; background: var(--good); }
+.bar .f.warn { background: #D9A23A; } .bar .f.bad { background: var(--poor); } .bar .c { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-wrap: wrap; }
+.seg button { font: 600 14px/1 var(--body); padding: 9px 11px; border: 0; background: var(--surface); color: var(--ink); border-right: 1px solid var(--line); cursor: pointer; }
+.seg button:last-child { border-right: 0; } .seg button[aria-pressed=true] { background: var(--ink); color: var(--surface); }
+.list { display: grid; gap: 8px; }
+.it { border: 1px solid var(--line); border-left: 4px solid var(--good); border-radius: 8px; padding: 10px 12px; display: grid; gap: 3px; }
+.it.bad { border-left-color: var(--poor); } .it.warn { border-left-color: #D9A23A; } .it.info { border-left-color: var(--info); }
+.it .h { display: flex; gap: 8px; align-items: baseline; } .it .d { font-weight: 600; } .it .age { margin-left: auto; font: 700 15px/1 var(--display); white-space: nowrap; }
+.it.bad .age { color: var(--poor); } .it.warn .age { color: var(--warn); }
+.it .m { font: 500 12.5px/1.4 var(--mono); color: var(--muted); }
+.chip { font: 600 11px/1 var(--body); text-transform: uppercase; letter-spacing: .04em; padding: 4px 6px; border-radius: 5px; background: var(--sunk); color: var(--muted); white-space: nowrap; }
+.chip.bad { background: var(--poor-soft); color: var(--poor); } .chip.info { background: var(--info-soft); color: var(--info); }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; } th, td { text-align: left; padding: 7px 4px; border-bottom: 1px solid var(--line); }
+th { font: 600 12px/1.2 var(--body); color: var(--muted); text-transform: uppercase; letter-spacing: .03em; } td.n { text-align: right; font-variant-numeric: tabular-nums; }
+tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
+.empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+#gate { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: grid; place-items: center; padding: 20px; }
+#gate .box { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 12px; text-align: center; }
+.bcx-home { display: inline-grid; place-items: center; width: 38px; height: 38px; color: var(--accent); text-decoration: none; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); flex: none; }
+.bcx-home svg { width: 20px; height: 20px; }
+.foot { text-align: center; font-size: 12px; color: var(--muted); }
+.homeled { background: rgba(46, 125, 79, .13); border-left: 4px solid #2E7D4F; border-radius: 8px; padding: 8px 10px; }
+.homeled .hm { color: #2E7D4F; font-weight: 700; }
+
+/* ---- Spares Request v1.0 ---- */
+.wrap { max-width: 720px; }
+.mark b { white-space: nowrap; }
+.sig { margin-left: auto; font: 600 12px/1 var(--body); padding: 6px 9px; border-radius: 20px; background: var(--good-soft); color: var(--good); white-space: nowrap; }
+.sig.off { background: var(--poor-soft); color: var(--poor); }
+.btn:disabled { opacity: .55; cursor: default; }
+.btn.good { background: var(--good); border-color: var(--good); color: #fff; }
+.btn.ghost { background: transparent; }
+.grow { flex: 1; }
+.lbl { font: 600 12px/1.2 var(--body); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+input.f, select.f, textarea.f { font: 400 16px/1.25 var(--body); padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--sunk); color: var(--ink); width: 100%; }
+textarea.f { min-height: 64px; resize: vertical; }
+.mono { font-family: var(--mono); }
+.chip.good { background: var(--good-soft); color: var(--good); } .chip.warn { background: var(--warn-soft); color: var(--warn); }
+.status { display: grid; gap: 4px; padding: 10px 12px; border-radius: 9px; background: var(--sunk); font-size: 13.5px; }
+.status .old { color: var(--warn); font-weight: 600; } .status .none { color: var(--poor); font-weight: 600; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs button { font: 600 14px/1 var(--body); padding: 9px 12px; border-radius: 20px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.tabs button[aria-pressed=true] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.tabs button .n { display: inline-block; min-width: 18px; margin-left: 4px; padding: 2px 5px; border-radius: 10px; background: var(--accent); color: #fff; font-size: 11.5px; }
+.tabs button .n.z { background: var(--sunk); color: var(--muted); }
+/* calls */
+.calls { display: grid; gap: 8px; max-height: 430px; overflow-y: auto; }
+.call { border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px; display: grid; gap: 2px; cursor: pointer; background: var(--surface); text-align: left; font: inherit; color: inherit; }
+.call.sel { border: 2px solid var(--accent); background: var(--poor-soft); }
+.call .h { display: flex; gap: 6px; align-items: center; } .call .so { font: 600 13.5px/1 var(--mono); } .call .st { font-weight: 600; }
+.call .m { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fill { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; font-size: 14.5px; background: var(--sunk); border-radius: 8px; padding: 10px 12px; }
+.fill > span:nth-child(odd) { color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; align-self: center; }
+.fill b { font-weight: 600; }
+/* spares lines */
+.sline { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px; align-items: center; }
+.sline .d { font-weight: 600; } .sline .c { font: 500 12px/1.3 var(--mono); color: var(--muted); }
+.qbox { display: flex; align-items: center; gap: 4px; }
+.qbox button { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font: 700 18px/1 var(--body); color: var(--ink); cursor: pointer; }
+.qbox b { font: 700 20px/1 var(--display); min-width: 30px; text-align: center; }
+.sline .x { grid-column: 1/-1; justify-self: start; }
+.boot { grid-column: 1/-1; background: var(--warn-soft); color: var(--warn); border-radius: 6px; padding: 7px 9px; font-size: 13px; font-weight: 600; }
+.boot.f { background: var(--info-soft); color: var(--info); }
+.sugg { display: grid; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.sugg button { text-align: left; font: 400 14px/1.3 var(--body); padding: 9px 11px; border: 0; border-bottom: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; display: flex; gap: 8px; align-items: baseline; }
+.sugg button:last-child { border-bottom: 0; } .sugg button .c { font: 500 12px/1 var(--mono); color: var(--muted); margin-left: auto; white-space: nowrap; }
+.sugg button.mine { background: var(--good-soft); }
+/* request cards */
+.req { border: 1px solid var(--line); border-left: 5px solid var(--info); border-radius: 10px; padding: 11px 12px; display: grid; gap: 6px; background: var(--surface); }
+.req.urg { border-left-color: var(--poor); } .req.done { border-left-color: var(--good); opacity: .92; } .req.dead { border-left-color: var(--muted); opacity: .8; }
+.req .t { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; } .req .t b { font-size: 15.5px; } .req .t .ago { margin-left: auto; font-size: 12.5px; color: var(--muted); }
+.req .s { font-size: 13px; color: var(--muted); } .req .s .mono { color: var(--ink); font-weight: 600; }
+.req .sp { font-size: 14.5px; } .req .sp b { display: inline-block; min-width: 30px; font: 700 16px/1 var(--display); }
+.req .sp.out { text-decoration: line-through; color: var(--muted); }
+.req .acts { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.req .acts .r { margin-left: auto; }
+.req .why { font-size: 13px; color: var(--poor); font-weight: 600; }
+.req label.pick { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
+.trk { display: flex; gap: 0; align-items: center; margin: 2px 0; }
+.trk span { flex: 1; height: 6px; background: var(--sunk); margin-right: 3px; border-radius: 3px; }
+.trk span.d { background: var(--good); } .trk span.c { background: var(--accent); }
+.trkl { font-size: 13px; font-weight: 600; }
+.steps { display: grid; } .steps div { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: center; padding: 6px 0; font-size: 14.5px; }
+.dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); margin: auto; } .dot.d { background: var(--good); border-color: var(--good); }
+.dot.c { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--poor-soft); } .dot.x { background: var(--poor); border-color: var(--poor); }
+/* big result */
+.big { display: grid; place-items: center; text-align: center; gap: 8px; padding: 24px 14px; border-radius: 12px; }
+.big .ic { font: 700 56px/1 var(--display); } .big h3 { margin: 0; font: 700 26px/1.1 var(--display); } .big p { margin: 0; color: var(--ink); font-size: 14.5px; }
+.big.ok { background: var(--good-soft); border: 2px solid var(--good); color: var(--good); }
+.big.no { background: var(--poor-soft); border: 2px solid var(--poor); color: var(--poor); }
+.big .id { font: 700 18px/1.2 var(--mono); color: var(--ink); }
+/* drop zone */
+.drop { border: 3px dashed var(--info); border-radius: 14px; background: var(--info-soft); padding: 22px 14px; text-align: center; display: grid; gap: 6px; place-items: center; cursor: pointer; }
+.drop.over { background: #cfe0f3; } .drop b { font: 700 19px/1.15 var(--display); color: var(--info); }
+.det { border-left: 5px solid var(--good); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; } .kv span:nth-child(odd) { color: var(--muted); }
+/* modal */
+#modal { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.45); display: grid; place-items: center; padding: 16px; }
+#modal .box { width: 100%; max-width: 420px; background: var(--surface); color: var(--ink); border-radius: 12px; padding: 18px; display: grid; gap: 12px; }
+#modal h3 { margin: 0; font: 700 20px/1.2 var(--display); }
+/* kitchen screen */
+body.kds { background: #141213; }
+#kds { color: #F2EEEC; min-height: 100vh; padding: 14px 18px 24px; }
+#kds .hd { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+#kds .hd .ttl { font: 700 30px/1 var(--display); }
+#kds .hd .clk { margin-left: auto; font: 700 30px/1 var(--display); }
+#kds .pill { font: 600 14px/1 var(--body); padding: 8px 12px; border-radius: 30px; background: #2A2627; border: 0; color: #F2EEEC; cursor: default; }
+#kds .pill.r { background: #5A1A16; color: #FFB4AC; } #kds .pill.off { background: #5A1A16; color: #FFB4AC; }
+#kds button.pill { cursor: pointer; }
+#kds .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; align-items: start; }
+#kds .col h4 { margin: 0 0 10px; font: 700 21px/1 var(--display); display: flex; gap: 10px; align-items: center; text-transform: uppercase; letter-spacing: .04em; }
+#kds .col h4 span { background: #3A3436; border-radius: 20px; padding: 4px 12px; font-size: 17px; }
+#kds .none { color: #776f6b; font-size: 15px; padding: 8px 2px; }
+.tk { background: #FAF6EE; color: #1D1A1A; border-radius: 10px; margin-bottom: 12px; overflow: hidden; border-top: 10px solid #2D5B8A; }
+.tk.u { border-top-color: #D2231B; } .tk.late { box-shadow: 0 0 0 4px #D2231B; } .tk.rd { border-top-color: #1F7A4D; }
+.tk.fresh { animation: fresh 1.2s ease-in-out 3; } @keyframes fresh { 50% { box-shadow: 0 0 0 6px #F0C04A; } }
+.tk .t { display: flex; align-items: baseline; gap: 10px; padding: 10px 14px 4px; } .tk .t .eng { font: 700 23px/1.05 var(--display); }
+.tk .t .age { margin-left: auto; font: 700 24px/1 var(--display); white-space: nowrap; } .tk.u .t .age, .tk.late .t .age { color: #B4261D; }
+.tk .s { padding: 0 14px 8px; font-size: 14.5px; color: #4a4442; } .tk .s .mono { font-weight: 700; color: #1D1A1A; }
+.tk ul { list-style: none; margin: 0; padding: 8px 14px; border-top: 1px dashed #cfc6bd; display: grid; gap: 4px; }
+.tk li { font-size: 18.5px; display: flex; gap: 10px; align-items: baseline; } .tk li b { font: 700 21px/1 var(--display); min-width: 36px; }
+.tk li .c { font: 500 13px/1 var(--mono); color: #888; } .tk li.out { text-decoration: line-through; color: #999; }
+.tk li button { all: unset; cursor: pointer; display: flex; gap: 10px; align-items: baseline; width: 100%; }
+.tk .nt { padding: 0 14px 6px; font-size: 14px; color: #8A5A00; font-weight: 600; }
+.tk .f { display: flex; gap: 8px; padding: 8px 14px 12px; flex-wrap: wrap; align-items: center; }
+.tk .f button { font: 600 14px/1 var(--body); padding: 10px 12px; border-radius: 7px; border: 0; background: #E4DED8; color: #1D1A1A; cursor: pointer; }
+.tk .f button.go { background: #1F7A4D; color: #fff; margin-left: auto; } .tk .f .bi { font: 700 14px/1 var(--mono); background: #E1F1E8; color: #1F7A4D; padding: 9px 10px; border-radius: 7px; }
+.tk .f .w { margin-left: auto; font-size: 13px; color: #6E6662; }
+#kset { position: fixed; right: 18px; top: 64px; z-index: 40; width: 420px; background: #1F1C1D; border: 1px solid #3A3436; border-radius: 12px; padding: 16px; display: grid; gap: 12px; color: #F2EEEC; }
+#kset select { font: 400 16px/1.2 var(--body); padding: 10px; border-radius: 8px; background: #2A2627; color: #F2EEEC; border: 1px solid #4a4446; width: 100%; }
+#kset label.tg { display: flex; gap: 10px; align-items: center; font-size: 15px; } #kset input[type=checkbox] { width: 20px; height: 20px; }
+#kset .small { color: #A79F9B; }
+/* printing */
+#printarea { display: none; }
+@media print {
+  body > *:not(#printarea) { display: none !important; }
+  #printarea { display: block !important; color: #000; }
+  body { background: #fff !important; }
+}
+.pa4 table { width: 100%; border-collapse: collapse; border: 2px solid #000; margin-bottom: 4mm; table-layout: fixed; page-break-inside: avoid; }
+.pa4 th, .pa4 td { border: 1px solid #000; padding: 1px 5px; font: 10pt/1.05 Calibri, Carlito, Arial, sans-serif; height: 13pt; color: #000; text-align: left; text-transform: none; letter-spacing: 0; }
+.pa4 th { font-size: 12pt; font-weight: 700; border-width: 2px; text-align: center; } .pa4 th.t { font-size: 14pt; position: relative; }
+.pa4 .u { background: #000; color: #fff; padding: 0 6px; margin-left: 8px; font-size: 11pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pa4 .r { position: absolute; right: 6px; top: 5px; font-size: 8.5pt; font-weight: 400; } .pa4 td.so { font-weight: 700; }
+.pslip { font: 12px/1.3 "Courier New", monospace; color: #000; page-break-after: always; padding: 2mm 1mm 6mm; }
+.pslip .c { text-align: center; } .pslip .tt { font: 700 17px/1.1 Arial, sans-serif; display: block; }
+.pslip hr { border: 0; border-top: 1px dashed #000; margin: 6px 0; }
+.pslip .u { background: #000; color: #fff; text-align: center; font: 700 15px/1.6 Arial, sans-serif; margin: 5px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pslip .ln { display: flex; gap: 6px; } .pslip .ln b { min-width: 22px; } .pslip .bx { display: inline-block; width: 11px; height: 11px; border: 1.5px solid #000; margin-right: 5px; vertical-align: -2px; }
+.pslip.w58 { font-size: 10.5px; } .pslip.w58 .tt { font-size: 14px; }
+@media (min-width: 900px) { .wrap { max-width: 900px; } #list-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; } }
+</style><style id="pagestyle"></style></head><body>
+<div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
+<header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
+  <img class="logo" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAA8AIMDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDuPiB8WbbwDrFtp1xpU1208AnDxyhAPmIxyPauT/4aV03/AKFy7/8AAlf8K5f9pD/kd9L/AOwcP/Rslc74K+EmseONEfVLC+soIlnMJWYtnIAOeAfWgD0r/hpXTf8AoXLv/wACV/wqez/aQ0OSdVu9EvoIieXSRZMfhxXI/wDDOHib/oK6V+cn/wATWZr/AMC/Fmh6bJfRtaX6RKWkjtmJcDuQCBn8OaAPpTw74n0jxVp4vdHvUuYejAcMh9GB5BrZr4o8DeLr3wZ4lt9TtZG8ncFuYQeJou4Pv6e9fZ0d5bzWKXqyr9meISiQnA2EZz+VAE5YKCSQAOpNefeIvjN4O8PyNB9ve/uE4MdivmAH/eyF/WvHPij8WrvxReTaTo9w9vokZKllOGuvc/7PoPz9uE8O+ENe8V3PkaNp01ztOHkHCJ9WPAoA9vf9pPSwxC+Hrxl7EzqD/Ktbwr8c7LxT4nstEi0S4t5LtiolecELgE9Me1ecQ/s8eL5EDSXWlRE/wmZyR+S103gT4J+I/DHjXTNZvLvTXt7WQtIsMjljlSOMoPWgD0TxH8QB4c1Q2U+kTyKVDRyrIAHHqKj0T4mWOr6rFYPZy2pl4R5HBBbsPxrU8aeGV8SaK0cYAu4MvbsfX+79D/hXgxEkEpBDRyxvyOhUj+tctWpOE/I+my3AYPHYZ2Vqi31f3n1B1pa5LwL4nHiDRwJmX7bb4SYevo34/wA81k/Frx2vgzww6Wrj+1r4GO1GeYx3k/Dt74rpi1JXR87Woyo1HTnujI8VfHTSPDXiG50iLTptQNsdss0UoVQ/dRx2/nVvwT8XV8c66NMsfDtzEqqZJp2nBWJfU8dzxivlmOOe9uliiR5riaQKoHzM7E/qSa+v/hp4Hj8D+Fo7V1U6jcYlvJF7v2UH0Xp+Z70zM7eiiigD5k/aQ/5HfS/+wcP/AEbJXoH7O/8AyTu4/wCv+T/0FK8//aQ/5HfS/wDsHD/0bJXA6F4+8T+GrA2WjatLa2pkMpjWNCNxxk8g+goA+2ailmjt4XlkdUjQFmZjgADqTXx+PjD49H/MxTf9+o//AIms/WfiL4t8QWTWepa5cTWzfeiAVA312gZ/GgDI16e1ufEWqT2QC2kt3K8KjtGXJH6Yr3T4heI7rw/8EPDejhzHeanZQxSYPIiWNSw/HKj8TXlPw28LQeLvG1npt3cRxW4/fSq7YaVF5KL6k/yya7j9o1yPFGj2yjEUVjlAOgy5H9BQB5/4B8Iy+NfFdtpSMY4P9ZcyhfuRDr+J4A9zX2Lo+jWGhaZDp2m26W9tCMKij9T6n3rxH9mu0ix4gvTjzh5MQ9h85P8AT8q9/oAKKKKAEryP4m+F/s0/9u2qfupSFuVA6N2b8ehr1zIqreWkF7azWtwoeKVSrqe4NROmpqx14HGTwlZVI7dfQ+e/DutzeHtahv4slR8s0f8AfQ9R/hXnPj3xLfeKfFt5qN6rR4by4YSf9VGOi/1+pNeg65pyaTrd5YRzCdIHKrIPT0PuOhrEXwtaeI/FGk2k11HaC5uBFK7HBYddo/2uMD6rXLQnyvkZ9LneDhXorF0+i+9HUfAXwB59x/wl2pR/uoiUsFYfeboZPw6D3z6V9D1WsbO202xgsrSJYbeBBHFGnRVHAFWa7T48KKKKAPmT9pD/AJHfS/8AsHD/ANGyVq/B74b+GPFvg2XUNYsZJ7lLt4gwmZflCqRwD7msr9pD/kd9L/7Bw/8ARsldf8CNe0bS/Ac0F/qtlazG9kYRzXCocbU5wTQB03/CjvAP/QJl/wDAqX/GsnX/AIB+FrzTJV0ZJrC+CkxSNO0iE9gwOePpXoP/AAmPhn/oYdK/8C4/8ax9f+J3hTw/psl4+sWl3KFJjtraYPJIewwOn1NAHyHDPfaBriyxs0F9Yz5BHVZEP+Ir2H47wHWNF8K+LIV/c3Ntskx/CWAkX+b/AJV45d3FxrOs3Fz5e65vbhpNqjqztnA/E19e3vgm31j4Y23hS8YB47GKJZeuyVFGG/MflmgDxH4BeJodH8Xz6TcOEi1SNVQk8eauSo/EFh9cV9RV8K6tpOo+Gdbm06+ie3vbWTsccjowPp3Br2zwN8fYY7SKw8WpL5iDaL+Fd2//AH1659x+VAHv1FchD8UPBE0QdfE2ngf7Um0/keauWHjvwtql7FZWOvWNxdSnEcUcoLMcZ4FAHQ4rk/HXiZfD2jEQuv264ykA9PVvw/niujvbyCwspbu4cJDCpd2PYCvnrxFrc3iDWZr6XIU/LCh/gQdB/jWFeryqy3PXybL/AK1W5pfDH8fIzVWSeYIoaSWRsAdSxP8AWvP9d1SefWCV8yH7K+2MdGQg9fY5FfQ3wx8L+fcf29dp+6iJW2Rh1bu34dBXHfHjwB9ivf8AhLNOi/0a4YLeoo+5J2f6Hv7/AFqMPSsuZnbn2Yc8vq1N6Lf17fI9P+FXjuPxt4YRpmX+1LTEV2nqez/Q/wA8131fFHgTxddeCvFFtqsG94c+Xcwhv9bEeo+vce4r7M03ULXVtOt9QspRLa3CCSKQdwa6j5st0UUUAfOP7QOk6nqPjLTpLLT7u6RNPCs0ELOFPmScZAryP/hGdf8A+gHqX/gJJ/hX3VRQB8K/8Izr/wD0A9S/8BJP8Kt2PgrxPfziG28PanI5/wCnVwPxJGBX2/RQB4n8LvgzLoOoQ674kEbXseGt7RDuETf3mPQn0A6V7ZRRQBx3jf4eaL48slS+jMN5GMQ3kQ+dPY+o9j+lfPfiH4I+MNDldrazGqWw6S2hyce6Hn8s19a0UAfDEnhTxFE5R9B1RWHUG0k/wrsPhToOsWvxN0Oa50m+hhWV90klu6qP3bdSRX1vRQB5T8StT1LUJ10exs7t7WMhpnjhYiRuy5x0H8/pXH6D4U1HWNYhtJbW4t4Cd00skRQKo69e9fQLAbugpRjJwBWMqHNLmbPZw+dPD0PYUoW8/PuRWdpDY2sVtAgSKJQqKOwFM1HT7XVtOuNPvYhLa3CGOWM/xA1borY8Zycndnxr4v8Ah3rnhrxJdabBp95eWqtvgnigZg8Z6cgdex9xXqHwN17W9KlbwxrGm6hHZyEyWc0ts4WJupQkjgHqPf6173RQAUUUUAf/2Q==" alt="BCX" width="61" height="28"><div class="mark"><b>Spares Request</b><small id="sub">v1.0</small></div><span class="sig" id="sig">● Online</span></div></header>
+<main class="wrap" id="app" hidden>
+  <section id="v-list" style="display:grid;gap:14px">
+    <div class="card">
+      <div class="row"><span id="who" style="flex:1"></span><button class="btn small" id="b-board" title="Check for a newer Dispatch Board and item list">⟳ Refresh</button></div>
+      <div class="status" id="st"></div>
+      <div class="row"><button class="btn primary grow" id="b-new">+ New request</button><button class="btn grow" id="b-kds" hidden>Stores screen</button></div>
+      <div class="msg" id="note" hidden></div>
+    </div>
+    <div class="card" id="dropcard" hidden>
+      <h2>Office files <span class="aside">PC or phone</span></h2>
+      <div class="drop" id="drop" role="button" tabindex="0"><span style="font:700 34px/1 var(--display);color:var(--info)">⬇</span><b>Drop the Dispatch Board or Item Ledger here</b><div class="small">Either file, any order – the app works out which is which. Or tap to choose a file.</div></div>
+      <input type="file" id="drop-file" multiple accept=".xml,.xlsx,.txt,.csv,.tsv" hidden>
+      <div id="det" style="display:grid;gap:10px"></div>
+    </div>
+    <div class="card">
+      <h2 id="list-h">Requests <span class="aside" id="list-age"></span></h2>
+      <div class="tabs" id="tabs" hidden></div>
+      <div class="row" id="printbar" hidden></div>
+      <div class="list" id="list"></div>
+    </div>
+  </section>
+  <section id="v-new" hidden style="display:grid;gap:14px"></section>
+  <section id="v-sent" hidden style="display:grid;gap:14px"></section>
+  <section id="v-view" hidden style="display:grid;gap:14px"></section>
+  <div class="foot">Spares Request v1.0 · Developed by Gerald Pakree</div>
+</main>
+<div id="kds" hidden></div>
+<div id="kset" hidden></div>
+<div id="modal" hidden></div>
+<div id="printarea"></div>
+<script>
+/* Minimal offline .xlsx reader: first worksheet -> array of rows (arrays of cell values).
+   Uses the browser's DecompressionStream for zip entries; dates stay as Excel serial numbers. */
+const XLSX_MINI = (() => {
+  const dec = new TextDecoder();
+  async function unzip(buf) {
+    const u8 = new Uint8Array(buf), dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+    let e = u8.length - 22;
+    while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+    if (e < 0) throw new Error("not-zip");
+    const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true);
+    const files = {};
+    for (let i = 0; i < n; i++) {
+      if (dv.getUint32(p, true) !== 0x02014b50) break;
+      const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true);
+      const nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lho = dv.getUint32(p + 42, true);
+      files[dec.decode(u8.subarray(p + 46, p + 46 + nl))] = {method, csize, lho};
+      p += 46 + nl + xl + cl;
+    }
+    async function text(name) {
+      const f = files[name]; if (!f) return null;
+      const start = f.lho + 30 + dv.getUint16(f.lho + 26, true) + dv.getUint16(f.lho + 28, true);
+      const data = u8.subarray(start, start + f.csize);
+      if (f.method === 0) return dec.decode(data);
+      const stream = new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+      return await new Response(stream).text();
+    }
+    return {files, text};
+  }
+  const xml = s => new DOMParser().parseFromString(s, "application/xml");
+  const all = (node, tag) => Array.from(node.getElementsByTagNameNS("*", tag));
+  function colIndex(ref) { let n = 0; for (const ch of ref.replace(/\d+/g, "")) n = n * 26 + (ch.charCodeAt(0) - 64); return n - 1; }
+
+  async function read(file) {
+    const z = await unzip(await file.arrayBuffer());
+    const wb = xml(await z.text("xl/workbook.xml"));
+    const first = all(wb, "sheet")[0];
+    const rid = first.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id") || first.getAttribute("r:id");
+    let path = "xl/worksheets/sheet1.xml";
+    const relsTxt = await z.text("xl/_rels/workbook.xml.rels");
+    if (relsTxt) {
+      const rel = all(xml(relsTxt), "Relationship").find(r => r.getAttribute("Id") === rid);
+      if (rel) { const t = rel.getAttribute("Target"); path = t.startsWith("/") ? t.slice(1) : "xl/" + t.replace(/^\.\//, ""); }
+    }
+    const sst = [];
+    const ssTxt = await z.text("xl/sharedStrings.xml");
+    if (ssTxt) all(xml(ssTxt), "si").forEach(si => sst.push(all(si, "t").map(t => t.textContent).join("")));
+    const sheet = xml(await z.text(path));
+    const rows = [];
+    all(sheet, "row").forEach(r => {
+      const row = [];
+      all(r, "c").forEach((c, k) => {
+        const ref = c.getAttribute("r"), idx = ref ? colIndex(ref) : k, t = c.getAttribute("t");
+        const v = all(c, "v")[0];
+        let val = null;
+        if (t === "s") val = v ? sst[+v.textContent] : "";
+        else if (t === "inlineStr") val = all(c, "t").map(x => x.textContent).join("");
+        else if (t === "str" || t === "e") val = v ? v.textContent : "";
+        else if (t === "b") val = v ? v.textContent === "1" : null;
+        else val = v ? (v.textContent === "" ? "" : Number(v.textContent)) : null;
+        row[idx] = val;
+      });
+      rows.push(row);
+    });
+    return rows;
+  }
+  const serialToDate = n => new Date(Math.round((n - 25569) * 86400000));
+  return {read, serialToDate};
+})();
+if (typeof module !== "undefined") module.exports = XLSX_MINI;
+
+
+</script>
+<script>
+/* BCX Spares Request v1.0
+   An engineer (or a Group Leader for him) asks for spares on a call; a GL checks it and sends it to stores; stores pick it,
+   book it out on a BI, and it closes when Spares Custody records that BI being collected.
+   - Sending is LIVE ONLY: a request counts once the Google script has saved it. The phone shows "Sent" with the request
+     number from the server, or a red "NOT SENT". Nothing is queued to send later. A retry re-uses the same Client ID, so a
+     request that did get through (but the answer was lost) is never doubled.
+   - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
+   - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
+   - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
+const VER = "1.0", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
+const api = () => ls.get("ct-api") || DEFAULT_API;
+const title = s => String(s || "").toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+const pad = n => String(n).padStart(2, "0");
+const ddmm = iso => { const m = /^(\d{4})[-/](\d{2})[-/](\d{2})/.exec(iso || ""); return m ? `${m[3]}/${m[2]}/${m[1]}` : String(iso || ""); };
+const hm = s => { const m = /(\d{2}):(\d{2})/.exec(s || ""); return m ? m[1] + ":" + m[2] : ""; };
+const parseStamp = s => { const m = /^(\d{4})[-/](\d{2})[-/](\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/.exec(s || ""); return m ? new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0)).getTime() : 0; };
+const mins = s => Math.max(0, Math.round((Date.now() - parseStamp(s)) / 60000));
+const ago = s => { const n = mins(s); return n < 1 ? "just now" : n < 60 ? n + " min" : n < 1440 ? Math.floor(n / 60) + " h " + pad(n % 60) : Math.floor(n / 1440) + " d"; };
+const dayAge = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ""); if (!m) return null; const n = new Date(); return Math.max(0, Math.round((Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()) - Date.UTC(+m[1], m[2] - 1, +m[3])) / 864e5)); };
+const daysTxt = d => d == null ? "" : d === 0 ? "today" : d === 1 ? "1 day" : d + " days";
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2));
+const URGENT_LATE = 10, NEW_LATE = 20, PICK_LATE = 40;   // minutes before a stores ticket gets a red outline
+
+let SESS = null, REQS = (ls.get("sr-cache") || {}).requests || [], REV = "", LAST_OK = 0, NET_DOWN = false, TAB = "", VIEW = "list", CUR = null, SEL = new Set();
+let F = null;   // the request being written / edited
+const ROLE = () => (SESS && SESS.user.role) || "ENG";
+const isGL = () => !!SESS && (SESS.user.gl || ROLE() === "ADMIN");
+const isStores = () => ROLE() === "STORES" || ROLE() === "ADMIN";
+const isLead = () => isGL() || isStores();
+const me = () => SESS.user;
+
+function valid(s) { if (!s || !s.token || !s.user) return false; try { return Number(atob(s.token.replace(/-/g, "+").replace(/_/g, "/")).split("|")[1]) > Date.now(); } catch (e) { return false; } }
+function people() { return ((SESS && SESS.users) || []).slice().sort((a, b) => a.name.localeCompare(b.name)); }
+function nameOf(code) { const u = people().find(x => x.code === code); return u ? u.name : code; }
+
+/* ---------- server ---------- */
+async function call(action, body = {}, timeout = 25000) {
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), timeout);
+  try {
+    const r = await fetch(api(), {method: "POST", body: JSON.stringify(Object.assign({action, token: SESS && SESS.token}, body)), redirect: "follow", signal: ctl.signal});
+    const j = await r.json(); setNet(true);
+    if (!j.ok && /^LOGIN:/.test(j.error || "")) { const e = new Error(j.error.replace(/^LOGIN:\s*/, "")); e.login = true; throw e; }
+    if (!j.ok && /Unknown action/i.test(j.error || "")) { const e = new Error("The Google script needs updating to v2.13 for Spares Requests."); e.old = true; throw e; }
+    return j;
+  } catch (e) {
+    if (e.name === "AbortError" || e instanceof TypeError) { setNet(false); const x = new Error(e.name === "AbortError" ? "No answer from the server." : "No signal."); x.net = true; x.timeout = e.name === "AbortError"; throw x; }
+    throw e;
+  } finally { clearTimeout(t); }
+}
+function setNet(up) { NET_DOWN = !up; if (up) LAST_OK = Date.now(); paintSig(); }
+function online() { return navigator.onLine && !NET_DOWN; }
+function paintSig() {
+  const s = $("sig"); if (!s) return; const on = navigator.onLine && !NET_DOWN;
+  s.className = "sig" + (on ? "" : " off"); s.textContent = on ? "● Online" : "● No signal";
+  const k = $("k-live"); if (k) { k.className = "pill" + (on ? "" : " off"); k.textContent = on ? `● Live · ${LAST_OK ? Math.round((Date.now() - LAST_OK) / 1000) + "s ago" : "connecting"}` : "● NO SIGNAL – not updating"; }
+}
+window.addEventListener("online", () => { NET_DOWN = false; paintSig(); sync(); });
+window.addEventListener("offline", paintSig);
+
+/* ---------- local copies: Dispatch Board, Item list, Item Ledger ---------- */
+const board = () => ls.get("sr-board");
+const items = () => ls.get("sr-items");
+function ledger() { return ["brl-ledger", "ft-ledger", "ct-ledger"].map(ls.get).filter(L => L && L.rows).sort((a, b) => (b.importedAt || 0) - (a.importedAt || 0))[0] || null; }
+const BCOL = ["so", "ref", "date", "ship", "code", "res", "mach", "rep", "tech", "note", "sla"];
+const brow = r => { const o = {}; BCOL.forEach((k, i) => o[k] = r[i] == null ? "" : r[i]); return o; };
+function boardAge() { const B = board(); if (!B) return null; const t = parseStamp(B.exported); return t ? Math.round((Date.now() - t) / 60000) : null; }
+function boardLine() {
+  const B = board(); if (!B) return `<span class="none">No Dispatch Board on this phone yet.</span>${isLead() ? " Drop the export in below, or" : " Ask a GL to share it, or"} type the call in.`;
+  const a = boardAge(), old = a != null && a > 24 * 60;
+  return `Dispatch Board <b>${esc(ddmm(B.exported))} ${esc(hm(B.exported))}</b> · ${B.rows.length} calls${a != null ? ` · <span class="${a > 240 ? "old" : ""}">${a < 60 ? a + " min" : a < 1440 ? Math.floor(a / 60) + " h" : Math.floor(a / 1440) + " days"} old</span>` : ""}${B.by ? " · shared by " + esc(B.by) : ""}${old ? ' <span class="old">(out of date)</span>' : ""}`;
+}
+
+// what an engineer already has: working boot T<code>, faulty boot F<code>
+function bootHas(code, item) {
+  const L = ledger(); if (!L || !item) return null;
+  const want = String(item).trim().toUpperCase(), w = [], f = [];
+  L.rows.forEach(x => {
+    const loc = String(x[8] || "").toUpperCase(); if (loc.slice(1) !== code || !/^[TF]/.test(loc) || Number(x[9]) <= 0) return;
+    if (String(x[4] || "").trim().toUpperCase() !== want) return;
+    (loc[0] === "F" ? f : w).push({doc: x[1], qty: Number(x[9]) || 1, days: dayAge(x[0])});
+  });
+  if (!w.length && !f.length) return null;
+  const q = a => a.reduce((n, i) => n + i.qty, 0);
+  return {w, f, wq: q(w), fq: q(f), text: [w.length ? `${q(w)} working (${w.map(i => `${i.doc} ${daysTxt(i.days)}`).join(", ")})` : "", f.length ? `${q(f)} in the faulty boot (${f.map(i => i.doc).join(", ")})` : ""].filter(Boolean).join("; ")};
+}
+function bootHtml(code, item, whose) {
+  const b = bootHas(code, item); if (!b) return "";
+  let h = "";
+  if (b.wq) h += `<div class="boot">⚠ Already in ${whose} boot: ${b.wq} working (${b.w.map(i => `${esc(i.doc)} ${daysTxt(i.days)}`).join(", ")}). Still needed?</div>`;
+  if (b.fq) h += `<div class="boot f">ℹ ${b.fq} in ${whose} FAULTY boot (${b.f.map(i => esc(i.doc)).join(", ")}) – not usable</div>`;
+  return h;
+}
+
+/* ---------- sync ---------- */
+let syncing = false;
+async function sync(force) {
+  if (!SESS || syncing || !navigator.onLine) { paintSig(); return; }
+  syncing = true;
+  try {
+    const j = await call("srList", {rev: force ? "" : REV});
+    if (j.me) { const s = ls.get("ct-session"); if (s && s.user && s.user.code === j.me.code && !!s.user.gl !== !!j.me.gl) { s.user.gl = !!j.me.gl; ls.set("ct-session", s); SESS = s; } }
+    if (!j.same) {
+      const before = new Set(REQS.map(q => q.id + q.status));
+      REQS = j.requests; REV = j.rev; ls.set("sr-cache", {requests: REQS, at: Date.now(), user: me().code});
+      const fresh = REQS.filter(q => !before.has(q.id + q.status));
+      onFresh(fresh);
+      const B = board(); if (j.board && j.board.stamp && (!B || B.stamp !== j.board.stamp)) getBoard();
+      const I = items(); if (j.itemsVer && (!I || I.ver !== j.itemsVer)) getItems();
+      if (!j.board || !j.board.stamp) { /* nobody has shared one yet */ }
+      render();
+    }
+  } catch (e) { if (e.login) { ls.del("ct-session"); render(); } else if (e.old) { note(e.message, "err"); } }
+  finally { syncing = false; paintSig(); }
+}
+async function getBoard() {
+  try { const j = await call("srBoardGet", {have: (board() || {}).stamp || ""}); if (j.board) { ls.set("sr-board", Object.assign({stamp: j.stamp}, j.board)); render(); } } catch (e) {}
+}
+async function getItems() {
+  try { const j = await call("itemsGet", {have: (items() || {}).ver || ""}, 45000); if (j.items) { if (!ls.set("sr-items", {ver: j.ver, items: j.items, hide: j.hide})) ls.del("sr-items"); if (VIEW === "list") renderList(); } } catch (e) {}
+}
+function note(t, k) { const m = $("note"); if (m) { m.textContent = t || ""; m.className = "msg" + (k ? " " + k : ""); m.hidden = !t; } const km = $("k-msg"); if (km) km.textContent = k === "err" ? t || "" : ""; }
+
+/* ---------- screens ---------- */
+function go(view, push = true) {
+  if (push && view !== VIEW && view !== "list") history.pushState({sr: view}, "");
+  VIEW = view; render(); window.scrollTo(0, 0);
+}
+window.addEventListener("popstate", () => { if (VIEW === "kds") { exitKds(); return; } if (VIEW !== "list") { VIEW = "list"; render(); } });
+window.BCX_BACK = {can: () => VIEW !== "list" && VIEW !== "kds", go: () => history.back()};
+
+function render() {
+  SESS = ls.get("ct-session");
+  if (!valid(SESS)) { $("gate").hidden = false; $("app").hidden = true; return; }
+  $("gate").hidden = true;
+  if (VIEW === "kds") return renderKds();
+  $("app").hidden = false;
+  $("sub").textContent = `v${VER} · ${me().name.split(" ").filter((w, i, a) => i === 0 || i === a.length - 1).join(" ")}${isGL() ? " · Group Leader" : isStores() ? " · " + (ROLE() === "ADMIN" ? "Admin" : "Stores") : ""}`;
+  ["list", "new", "sent", "view"].forEach(v => $("v-" + v).hidden = VIEW !== v);
+  if (VIEW === "list") renderList();
+  if (VIEW === "new") renderForm();
+  if (VIEW === "view") renderView();
+}
+
+/* ---------- list ---------- */
+const STEP = {GL: 1, NEW: 2, PICKING: 3, READY: 4, COLLECTED: 5};
+const SNAME = {GL: "Waiting for a GL check", NEW: "At stores", PICKING: "Being picked", READY: "Booked out – ready to collect", COLLECTED: "Collected", REJECTED: "Rejected", CANCELLED: "Cancelled"};
+function tabsFor() {
+  if (!isLead()) return [];
+  const t = [];
+  if (isGL()) t.push(["check", "To check", q => q.status === "GL"]);
+  t.push(["stores", "At stores", q => q.status === "NEW" || q.status === "PICKING"]);
+  t.push(["ready", "Ready", q => q.status === "READY"]);
+  if (!isGL()) t.push(["check", "With GL", q => q.status === "GL"]);
+  t.push(["done", "Done", q => ["COLLECTED", "REJECTED", "CANCELLED"].includes(q.status)]);
+  return t;
+}
+function renderList() {
+  const L = ledger(), I = items();
+  $("who").innerHTML = `Logged in as <b>${esc(me().name)}</b> (${esc(me().code)})`;
+  $("st").innerHTML = `<div>${boardLine()}</div><div>${L ? `Item Ledger <b>${esc(L.date || "")}</b> – used for the "already in the boot" notices` : '<span class="old">No Item Ledger on this phone – the "already in the boot" notices are off. Get it on the home page.</span>'}</div>${I ? "" : '<div class="old">Item list not downloaded yet – you can still type spares in.</div>'}`;
+  $("b-kds").hidden = !isLead();
+  $("dropcard").hidden = !isLead();
+  $("b-board").hidden = !navigator.onLine;
+  const tabs = tabsFor();
+  if (tabs.length && !tabs.find(t => t[0] === TAB)) TAB = isGL() ? "check" : "stores";
+  $("tabs").hidden = !tabs.length;
+  $("tabs").innerHTML = tabs.map(([k, l, f]) => { const n = REQS.filter(f).length; return `<button data-tab="${k}" aria-pressed="${TAB === k}">${l}<span class="n${n && k !== "done" ? "" : " z"}">${n}</span></button>`; }).join("");
+  let list = tabs.length ? REQS.filter(tabs.find(t => t[0] === TAB)[2]) : REQS;
+  const open = q => ["GL", "NEW", "PICKING", "READY"].includes(q.status);
+  if (!tabs.length) list = list.filter(open).concat(list.filter(q => !open(q)));
+  else list = list.slice().sort((a, b) => (TAB === "done" ? String(b.updated).localeCompare(String(a.updated)) : (b.urgent - a.urgent) || String(a.created).localeCompare(String(b.created))));
+  const c = ls.get("sr-cache");
+  $("list-h").firstChild.nodeValue = (tabs.length ? "Requests" : "My requests") + " ";
+  $("list-age").textContent = c && c.at ? (online() ? "" : "saved copy from " + new Date(c.at).toLocaleTimeString("en-ZA", {hour: "2-digit", minute: "2-digit"})) : "";
+  SEL.forEach(id => { if (!REQS.find(q => q.id === id)) SEL.delete(id); });
+  $("printbar").hidden = !isLead() || !SEL.size;
+  $("printbar").innerHTML = `<b>${SEL.size} ticked</b><button class="btn small primary" data-act="printsel">Print ticked (A4 form)</button><button class="btn small" data-act="clearsel">Clear</button>`;
+  $("list").innerHTML = list.length ? list.map(cardHtml).join("") : `<div class="empty">${tabs.length ? "Nothing here." : "No requests yet. Tap “+ New request” when you need spares."}</div>`;
+}
+function trk(q) {
+  if (q.status === "REJECTED" || q.status === "CANCELLED") return "";
+  const n = STEP[q.status] || 0; return `<div class="trk">${[1, 2, 3, 4, 5].map(i => `<span class="${i < n || q.status === "COLLECTED" ? "d" : i === n ? "c" : ""}"></span>`).join("")}</div>`;
+}
+function linesHtml(q) { return q.lines.map(l => `<div class="sp${l.out ? " out" : ""}"><b>${l.qty}</b> ${esc(l.desc)} ${l.item ? `<span class="small mono">${esc(l.item)}</span>` : ""}${l.out ? ' <span class="chip bad">out of stock</span>' : ""}</div>`).join(""); }
+function cardHtml(q) {
+  const mine = q.engineer === me().code || q.createdBy === me().code, dead = q.status === "REJECTED" || q.status === "CANCELLED";
+  const a = [];
+  if (q.status === "GL" && isGL()) a.push(`<button class="btn small" data-act="reject">Reject</button><button class="btn small" data-act="edit">Edit</button><button class="btn small good r" data-act="approve">Send to stores →</button>`);
+  else if (q.status === "GL" && mine) a.push(`<button class="btn small" data-act="cancel">Cancel</button><button class="btn small" data-act="edit">Edit</button>`);
+  if (q.status === "NEW" && isStores()) a.push(`<button class="btn small good r" data-act="pick">Start picking</button>`);
+  if (q.status === "NEW" && isGL() && !isStores()) a.push(`<button class="btn small" data-act="reject">Reject</button><button class="btn small" data-act="edit">Edit</button>`);
+  if (q.status === "NEW" && mine && !isLead()) a.push(`<button class="btn small" data-act="cancel">Cancel</button>`);
+  if (q.status === "PICKING" && isStores()) a.push(`<button class="btn small" data-act="unpick">Back to new</button><button class="btn small" data-act="nostock">Can't supply</button><button class="btn small good r" data-act="booked">Booked out → BI</button>`);
+  if (q.status === "READY" && isLead()) a.push(`<button class="btn small r" data-act="collected">Mark collected</button>`);
+  if (isLead()) a.push(`<button class="btn small" data-act="print">🖨 Print</button>`);
+  const who = q.createdBy !== q.engineer ? ` · by ${esc(q.createdByName)}` : "";
+  const st = q.status === "READY" ? `Booked out on <b class="mono">${esc(q.bi)}</b> – collect from stores` : q.status === "COLLECTED" ? `Collected ${q.collectedRef ? "(" + esc(q.collectedRef) + ")" : ""}` : q.status === "PICKING" ? `Being picked by ${esc(q.storesName)}` : q.status === "NEW" && q.glName ? `At stores · checked by ${esc(q.glName)}` : SNAME[q.status] || q.status;
+  return `<div class="req${q.urgent && !dead && q.status !== "COLLECTED" ? " urg" : ""}${q.status === "COLLECTED" || q.status === "READY" ? " done" : ""}${dead ? " dead" : ""}" data-id="${esc(q.id)}">
+    <div class="t">${isLead() ? `<label class="pick"><input type="checkbox" data-act="sel"${SEL.has(q.id) ? " checked" : ""} aria-label="Tick to print"></label>` : ""}<b>${esc(q.engineerName)}</b>${q.urgent ? '<span class="chip bad">Urgent</span>' : ""}${q.route === "EMERGENCY" ? '<span class="chip bad">Emergency</span>' : ""}${q.onBoard ? "" : '<span class="chip warn">Not on the Dispatch Board</span>'}<span class="ago">${esc(ago(q.created))}</span></div>
+    <div class="s"><span class="mono">${esc(q.callRef)}</span> · ${esc(q.customer)}${q.custRef ? " · ref " + esc(q.custRef) : ""}${who}</div>
+    ${linesHtml(q)}
+    ${q.inBoot && !dead && q.status !== "COLLECTED" ? `<div class="boot" style="font-size:12.5px">⚠ Already in ${q.engineer === me().code ? "your" : "his"} boot: ${esc(q.inBoot)}</div>` : ""}
+    ${q.note ? `<div class="small">Note: ${esc(q.note)}</div>` : ""}
+    ${trk(q)}<div class="trkl">${st}</div>
+    ${dead ? `<div class="why">${q.status === "REJECTED" ? "Rejected" : "Cancelled"}${q.reason ? ": " + esc(q.reason) : ""}${q.status === "REJECTED" && q.glName ? " – " + esc(q.glName) : ""}</div>` : ""}
+    <div class="small mono">${esc(q.id)}</div>
+    ${a.length ? `<div class="acts">${a.join("")}</div>` : ""}
+  </div>`;
+}
+
+/* ---------- actions ---------- */
+async function act(id, op, extra = {}) {
+  if (!navigator.onLine) { note("No signal: nothing was changed. Try again when you have signal.", "err"); return null; }
+  try {
+    const j = await call("srAct", Object.assign({id, op}, extra));
+    if (!j.ok) { note(j.error, "err"); await sync(true); return null; }
+    REQS = REQS.map(q => q.id === id ? j.request : q); REV = ""; ls.set("sr-cache", {requests: REQS, at: Date.now(), user: me().code});
+    note(""); render(); sync(true); return j.request;
+  } catch (e) { note(e.net ? "No signal: that change did NOT go through. Try again when you have signal." : e.message, "err"); return null; }
+}
+function modal(html, onok) {
+  const m = $("modal"); m.innerHTML = `<div class="box">${html}<div class="msg err" id="m-msg"></div><div class="row"><button class="btn grow" data-m="no">Back</button><button class="btn primary grow" data-m="ok">OK</button></div></div>`;
+  m.hidden = false; const f = m.querySelector("input,textarea"); if (f) setTimeout(() => f.focus(), 50);
+  m.onclick = async e => {
+    const b = e.target.closest("[data-m]"); if (!b) return;
+    if (b.dataset.m === "no") { m.hidden = true; return; }
+    b.disabled = true; const err = await onok(m); b.disabled = false;
+    if (err) $("m-msg").textContent = err; else m.hidden = true;
+  };
+  m.onkeydown = e => { if (e.key === "Enter" && e.target.tagName === "INPUT") m.querySelector('[data-m="ok"]').click(); if (e.key === "Escape") m.hidden = true; };
+}
+const findQ = id => REQS.find(q => q.id === id);
+async function doAct(id, op) {
+  const q = findQ(id); if (!q) return;
+  if (op === "approve") return act(id, "approve");
+  if (op === "pick") { const r = await act(id, "pick"); if (r && P().onPick) printReqs([r], P().layout); return r; }
+  if (op === "unpick" || op === "collected") return act(id, op);
+  if (op === "reject" || op === "nostock") return modal(`<h3>${op === "nostock" ? "Can't supply" : "Reject"} ${esc(q.engineerName)}'s request?</h3><div class="small">${esc(q.callRef)} · ${esc(q.customer)}</div><label class="lbl">Reason (the engineer sees this)<input class="f" id="m-in" maxlength="200" placeholder="${op === "nostock" ? "e.g. Out of stock – ordered, ETA Friday" : "e.g. Use the one in your boot"}"></label>`,
+    async m => { const v = m.querySelector("#m-in").value.trim(); if (!v) return "Give a reason."; await act(id, "reject", {reason: v}); });
+  if (op === "cancel") return modal(`<h3>Cancel this request?</h3><div class="small">${esc(q.callRef)} · ${esc(q.customer)}</div>`, async () => { await act(id, "cancel"); });
+  if (op === "booked") return modal(`<h3>Booked out</h3><div class="small">${esc(q.engineerName)} · ${esc(q.callRef)}</div><label class="lbl">Nav document no. (BI)<input class="f mono" id="m-in" autocapitalize="characters" placeholder="BI1608231"></label>`,
+    async m => { const v = m.querySelector("#m-in").value.trim().toUpperCase().replace(/\s+/g, ""); if (!/^[A-Z]{1,4}\d{4,10}$/.test(v)) return "Enter the document number, e.g. BI1608231."; await act(id, "booked", {bi: v}); });
+  if (op === "edit") { startForm(q); return; }
+  if (op === "print") return printReqs([q], isStores() ? P().layout : "a4");
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const card = b.closest("[data-id]"), id = card && card.dataset.id, a = b.dataset.act;
+  if (a === "sel") { b.checked ? SEL.add(id) : SEL.delete(id); renderList(); return; }
+  if (a === "printsel") { printReqs(REQS.filter(q => SEL.has(q.id)), "a4"); return; }
+  if (a === "clearsel") { SEL.clear(); renderList(); return; }
+  if (a === "lineout") { act(id, "lineOut", {line: Number(b.dataset.line)}); return; }
+  if (id) doAct(id, a);
+});
+$("list").addEventListener("click", e => { if (e.target.closest("[data-act],input,label,button")) return; const c = e.target.closest("[data-id]"); if (c && !isLead()) { CUR = c.dataset.id; go("view"); } });
+$("tabs").addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) { TAB = b.dataset.tab; renderList(); } });
+
+/* ---------- request detail (engineer tracker) ---------- */
+function renderView() {
+  const q = findQ(CUR); if (!q) { $("v-view").innerHTML = `<div class="card">That request is no longer on the list.</div>`; return; }
+  const n = STEP[q.status] || 0, dead = q.status === "REJECTED" || q.status === "CANCELLED";
+  const steps = [["Sent" + (q.route === "EMERGENCY" ? " (emergency – straight to stores)" : ""), hm(q.created), 1], ["Checked by a GL", q.glName ? q.glName + " " + hm(q.glAt) : q.status === "GL" ? "waiting" : "", 2], ["Picking at stores", q.storesName ? q.storesName + " " + hm(q.pickingAt) : "", 3], ["Booked out" + (q.bi ? " on " + q.bi : ""), hm(q.bookedAt), 4], ["Collected", q.collectedRef || "", 5]];
+  $("v-view").innerHTML = `<div class="card"><h2>${esc(q.callRef)} <span class="aside mono">${esc(q.id)}</span></h2><div class="small">${esc(q.customer)}${q.custRef ? " · ref " + esc(q.custRef) : ""}</div>${linesHtml(q)}${q.urgent ? '<div><span class="chip bad">Urgent</span></div>' : ""}</div>
+   <div class="card"><h2>Where it is now <span class="aside">${online() ? "updates live" : "no signal – last saved copy"}</span></h2>
+   ${dead ? `<div class="why" style="color:var(--poor);font-weight:600">${q.status === "REJECTED" ? "Rejected by " + esc(q.glName || "") : "Cancelled"}${q.reason ? ": " + esc(q.reason) : ""}</div>` :
+     `<div class="steps">${steps.map(([t, w, i]) => `<div><span class="dot ${i < n || q.status === "COLLECTED" ? "d" : i === n ? "c" : ""}"></span>${i === n && q.status !== "COLLECTED" ? "<b>" + esc(t) + "</b>" : esc(t)}<span class="small">${esc(w || "")}</span></div>`).join("")}</div>`}
+   </div>`;
+  const acts = [];
+  if ((q.status === "GL" || q.status === "NEW") && (q.engineer === me().code || q.createdBy === me().code)) acts.push(`<button class="btn" data-act="cancel">Cancel request</button>`);
+  if (q.status === "GL") acts.push(`<button class="btn" data-act="edit">Edit</button>`);
+  if (acts.length) $("v-view").insertAdjacentHTML("beforeend", `<div class="row" data-id="${esc(q.id)}">${acts.join("")}</div>`);
+}
+
+/* ---------- new / edit request ---------- */
+function blankForm() { return {clientId: uid(), engineer: isLead() ? "" : me().code, call: null, manual: false, lines: [], urgent: false, note: "", q: "", iq: ""}; }
+function startForm(edit) {
+  if (edit) F = {edit: edit.id, status: edit.status, engineer: edit.engineer, call: {so: edit.callRef, ship: edit.customer, ref: edit.custRef}, lines: edit.lines.map(l => Object.assign({}, l)), urgent: edit.urgent, note: edit.note || "", q: "", iq: ""};
+  else { const d = ls.get("sr-draft"); F = d && d.user === me().code && !d.edit ? d.f : blankForm(); }
+  go("new");
+}
+function saveDraft() { if (F && !F.edit) ls.set("sr-draft", {user: me().code, f: F, at: Date.now()}); }
+function engCalls(code) { const B = board(); return B ? B.rows.map(brow).filter(r => r.res === code).sort((a, b) => String(b.date).localeCompare(String(a.date))) : []; }
+function searchCalls(q) {
+  const B = board(); if (!B) return []; const t = q.toUpperCase().split(/\s+/).filter(Boolean);
+  return B.rows.map(brow).filter(r => { const s = `${r.so} ${r.ref} ${r.ship} ${r.res} ${r.mach}`.toUpperCase(); return t.every(x => s.includes(x)); }).slice(0, 40);
+}
+function callHtml(r) {
+  const sel = F.call && F.call.so === r.so;
+  const tech = r.tech && r.tech !== "Unassigned" ? `<span class="chip${r.tech === "Arrived" ? " good" : ""}">${esc(r.tech)}</span>` : "";
+  return `<button type="button" class="call${sel ? " sel" : ""}" data-so="${esc(r.so)}"><span class="h"><span class="so">${esc(r.so)}</span><span class="chip warn">${esc(title(r.rep))}</span>${tech}<span class="chip" style="margin-left:auto">${esc(r.mach)}</span></span>
+    <span class="st">${esc(r.ship)}</span><span class="m">${r.ref ? "Ref " + esc(r.ref) + " · " : ""}${r.res && r.res !== F.engineer ? esc(nameOf(r.res)) + " · " : !r.res ? "Not allocated · " : ""}${esc(r.note)}</span></button>`;
+}
+function itemSugg(q) {
+  const I = items(), out = [], seen = new Set(); q = q.trim().toUpperCase(); if (q.length < 2) return [];
+  const t = q.split(/\s+/);
+  // his own ledger items first (codes he has used), then the item list
+  const L = ledger();
+  if (L && F.engineer) L.rows.forEach(x => { const loc = String(x[8] || "").toUpperCase(); if (loc.slice(1) !== F.engineer) return; const code = String(x[4] || "").trim(), d = String(x[5] || "").trim(); const s = (code + " " + d).toUpperCase(); if (!seen.has(code.toUpperCase()) && t.every(w => s.includes(w))) { seen.add(code.toUpperCase()); out.push([code, d, "", 1]); } });
+  if (I) for (const i of I.items) { if (out.length >= 14) break; const s = (i[0] + " " + i[1]).toUpperCase(); if (!seen.has(String(i[0]).toUpperCase()) && t.every(w => s.includes(w))) { seen.add(String(i[0]).toUpperCase()); out.push(i); } }
+  return out.slice(0, 14);
+}
+function renderForm() {
+  const lead = isLead(), editing = !!F.edit, whose = F.engineer === me().code ? "your" : "his";
+  let h = "";
+  if (editing) h += `<div class="card"><h2>Edit request <span class="aside mono">${esc(F.edit)}</span></h2><div class="fill"><span>Call ref</span><b class="mono">${esc(F.call.so)}</b><span>Customer</span><b>${esc(F.call.ship)}</b><span>Engineer</span><b>${esc(nameOf(F.engineer))}</b></div></div>`;
+  else {
+    if (lead) h += `<div class="card"><h2>Engineer</h2><select class="f" id="f-eng"><option value="">Choose the engineer...</option>${people().filter(u => u.role === "ENG" || u.gl || u.code === me().code).map(u => `<option value="${esc(u.code)}"${F.engineer === u.code ? " selected" : ""}>${esc(u.name)} (${esc(u.code)})</option>`).join("")}</select></div>`;
+    if (F.engineer) {
+      const mine = engCalls(F.engineer), list = F.q ? searchCalls(F.q) : mine;
+      h += `<div class="card"><h2>1. Which call? <span class="aside">${board() ? "" : "no Dispatch Board"}</span></h2><div class="status" style="padding:7px 10px"><div>${boardLine()}</div></div>
+        ${board() ? `<input class="f" id="f-q" type="search" placeholder="Search SO, site or customer ref..." value="${esc(F.q)}" autocomplete="off">
+        <div class="small">${F.q ? `${list.length} call${list.length === 1 ? "" : "s"} found (all engineers)` : `${whose === "your" ? "Your" : esc(nameOf(F.engineer)) + "'s"} calls on the Dispatch Board (${esc(F.engineer)}) – ${mine.length}`}</div>
+        <div class="calls" id="f-calls">${list.map(callHtml).join("") || '<div class="empty">No calls. Search, or type the call in.</div>'}</div>` : ""}
+        <button type="button" class="btn small" id="f-man" style="justify-self:start">${F.manual ? "Pick from the Dispatch Board instead" : "Call not on the list? Type it in"}</button>
+        ${F.manual ? `<label class="lbl">Call ref (SO)<input class="f mono" id="f-so" autocapitalize="characters" value="${esc(F.call ? F.call.so : "")}" placeholder="SO3827304"></label>
+          <label class="lbl">Customer / site<input class="f" id="f-ship" list="f-ships" value="${esc(F.call ? F.call.ship : "")}" placeholder="e.g. MARKHAM - BALLITO"></label><datalist id="f-ships">${shipNames().map(s => `<option value="${esc(s)}">`).join("")}</datalist>
+          <div class="small">The GL will see “Not on the Dispatch Board” on this one.</div>` : ""}
+      </div>`;
+    }
+  }
+  if (F.engineer && (F.call || editing)) {
+    const dup = !editing && REQS.find(q => q.callRef === String(F.call.so).toUpperCase() && ["GL", "NEW", "PICKING", "READY"].includes(q.status));
+    h += `<div class="card"><h2>${editing ? "Spares" : "2. Spares"}</h2>
+      ${editing ? "" : `<div class="fill"><span>Call ref</span><b class="mono">${esc(F.call.so || "–")}</b><span>Customer</span><b>${esc(F.call.ship || "–")}</b><span>Engineer</span><b>${esc(nameOf(F.engineer))}</b></div>`}
+      ${dup ? `<div class="boot">⚠ There's already an open request for this call: ${esc(dup.id)} (${esc(SNAME[dup.status])}).</div>` : ""}
+      ${F.lines.map((l, i) => `<div class="sline" data-i="${i}"><div><div class="d">${esc(l.desc)}</div><div class="c">${esc(l.item || "no item code")}</div></div>
+        <div class="qbox"><button type="button" data-q="-1" aria-label="One less">−</button><b>${l.qty}</b><button type="button" data-q="1" aria-label="One more">+</button></div>
+        ${bootHtml(F.engineer, l.item, whose)}<button type="button" class="btn small ghost x" data-x="1">Remove</button></div>`).join("")}
+      <input class="f" id="f-item" type="search" placeholder="+ Add a spare (item code or description)" value="${esc(F.iq)}" autocomplete="off">
+      <div class="sugg" id="f-sugg"></div>
+      <div class="row"><span class="lbl">Urgent</span><span class="seg" id="f-urg"><button type="button" data-u="0" aria-pressed="${!F.urgent}">No</button><button type="button" data-u="1" aria-pressed="${F.urgent}" ${F.urgent ? 'style="background:var(--poor);color:#fff"' : ""}>Yes</button></span></div>
+      <label class="lbl">Note for the GL / stores (optional)<textarea class="f" id="f-note" maxlength="300">${esc(F.note)}</textarea></label>
+    </div>`;
+    const canSend = F.lines.length && F.call && F.call.so;
+    if (editing) h += `<div class="row"><button class="btn grow" id="f-cancel">Back</button>${isGL() && F.status === "GL" ? `<button class="btn grow" id="f-save">Save</button><button class="btn good grow" id="f-send"${canSend ? "" : " disabled"}>Save and send to stores</button>` : `<button class="btn primary grow" id="f-save"${canSend ? "" : " disabled"}>Save changes</button>`}</div>`;
+    else h += `<div class="row"><button class="btn grow" id="f-clear">Start again</button><button class="btn primary grow" id="f-send"${canSend ? "" : " disabled"}>${lead ? "Send to stores" : "Send to Group Leader"}</button></div>
+      ${lead ? "" : `<div class="small" style="text-align:center">Emergency? <button type="button" class="btn small ghost" id="f-emerg"${canSend ? "" : " disabled"}>Send straight to stores</button> (the GLs are told)</div>`}
+      <div class="small" style="text-align:center">${online() ? "Sending needs signal. You'll see “Sent” with a request number when it's through." : '<b style="color:var(--poor)">No signal: you can fill this in, but it can only be sent when you have signal.</b>'}</div>`;
+  }
+  h += `<div class="msg err" id="f-msg"></div>`;
+  $("v-new").innerHTML = h;
+  paintSugg();
+}
+function shipNames() { const s = new Set(); const B = board(); if (B) B.rows.forEach(r => s.add(r[3])); const L = ledger(); if (L) L.rows.forEach(r => r[10] && s.add(String(r[10]).trim())); return [...s].filter(Boolean).sort().slice(0, 1500); }
+function paintSugg() {
+  const box = $("f-sugg"); if (!box) return; const list = itemSugg(F.iq || "");
+  box.hidden = !F.iq || F.iq.trim().length < 2;
+  box.innerHTML = list.map((i, k) => `<button type="button" data-k="${k}"${i[3] ? ' class="mine"' : ""}>${esc(i[1])}<span class="c">${esc(i[0])}${i[3] ? " · in ledger" : ""}</span></button>`).join("") +
+    (F.iq && F.iq.trim().length >= 2 ? `<button type="button" data-k="free">Add “${esc(F.iq.trim())}” as typed (no item code)</button>` : "");
+  box._list = list;
+}
+$("v-new").addEventListener("input", e => {
+  const t = e.target;
+  if (t.id === "f-q") { F.q = t.value; const list = F.q ? searchCalls(F.q) : engCalls(F.engineer); $("f-calls").innerHTML = list.map(callHtml).join("") || '<div class="empty">No calls found.</div>'; saveDraft(); }
+  if (t.id === "f-item") { F.iq = t.value; paintSugg(); }
+  if (t.id === "f-note") { F.note = t.value; saveDraft(); }
+  if (t.id === "f-so" || t.id === "f-ship") { F.call = {so: $("f-so").value.trim().toUpperCase(), ship: $("f-ship").value.trim(), manual: true}; saveDraft(); const s = $("f-send"); if (s) s.disabled = !(F.lines.length && F.call.so); const em = $("f-emerg"); if (em) em.disabled = s && s.disabled; }
+});
+$("v-new").addEventListener("change", e => {
+  if (e.target.id === "f-eng") { F.engineer = e.target.value; F.call = null; F.q = ""; saveDraft(); renderForm(); }
+  if (e.target.id === "f-so" || e.target.id === "f-ship") renderForm();
+});
+$("v-new").addEventListener("click", async e => {
+  const t = e.target;
+  const c = t.closest(".call"); if (c) { const r = brow(board().rows.find(x => x[0] === c.dataset.so)); F.call = {so: r.so, ship: r.ship, ref: r.ref, mach: r.mach, res: r.res}; F.manual = false; saveDraft(); renderForm(); setTimeout(() => { const s = $("f-item"); if (s) s.scrollIntoView({block: "center"}); }, 30); return; }
+  if (t.id === "f-man") { F.manual = !F.manual; F.call = null; saveDraft(); renderForm(); return; }
+  const sg = t.closest("#f-sugg button"); if (sg) {
+    const k = sg.dataset.k, i = k === "free" ? ["", F.iq.trim()] : $("f-sugg")._list[+k];
+    const ex = F.lines.find(l => l.item && l.item === i[0]);
+    if (ex) ex.qty = Math.min(99, ex.qty + 1); else F.lines.push({item: i[0], desc: i[1], qty: 1});
+    F.iq = ""; saveDraft(); renderForm(); setTimeout(() => { const s = $("f-item"); if (s) s.focus(); }, 30); return;
+  }
+  const ln = t.closest(".sline"); if (ln) {
+    const l = F.lines[+ln.dataset.i];
+    if (t.dataset.q) { l.qty = Math.max(1, Math.min(99, l.qty + Number(t.dataset.q))); saveDraft(); renderForm(); }
+    if (t.dataset.x) { F.lines.splice(+ln.dataset.i, 1); saveDraft(); renderForm(); }
+    return;
+  }
+  const u = t.closest("#f-urg button"); if (u) { F.urgent = u.dataset.u === "1"; saveDraft(); renderForm(); return; }
+  if (t.id === "f-clear") { modal("<h3>Start again?</h3><div class='small'>This clears the request you're writing.</div>", async () => { F = blankForm(); ls.del("sr-draft"); renderForm(); }); return; }
+  if (t.id === "f-cancel") { history.back(); return; }
+  if (t.id === "f-emerg") { modal("<h3>Emergency – send straight to stores?</h3><div class='small'>It skips the GL check. The Group Leaders are told. Use it only when the call can't wait.</div>", async () => { await send(true); }); return; }
+  if (t.id === "f-send" && F.edit) { await saveEdit(true); return; }
+  if (t.id === "f-save") { await saveEdit(false); return; }
+  if (t.id === "f-send") { await send(false); return; }
+});
+async function saveEdit(andSend) {
+  const msg = $("f-msg"); msg.textContent = "";
+  const r = await act(F.edit, andSend ? "approve" : "edit", {lines: F.lines, urgent: F.urgent, note: F.note});
+  if (r) { F = null; history.back(); }
+  else msg.textContent = $("note").textContent;
+}
+async function send(emergency) {
+  const msg = $("f-msg"); msg.textContent = "";
+  if (!F.call || !F.call.so) { msg.textContent = "Choose the call first."; return; }
+  if (!F.lines.length) { msg.textContent = "Add at least one spare."; return; }
+  const btn = $("f-send"); if (btn) { btn.disabled = true; btn.textContent = "Sending..."; }
+  const onBoard = !F.manual && !!(board() && board().rows.find(x => x[0] === F.call.so));
+  const inBoot = F.lines.map(l => { const b = bootHas(F.engineer, l.item); return b ? `${l.item}: ${b.text}` : ""; }).filter(Boolean).join(" | ");
+  const req = {engineer: F.engineer, callRef: F.call.so, customer: F.call.ship, custRef: F.call.ref || "", machine: F.call.mach || "", onBoard, lines: F.lines, urgent: F.urgent, note: F.note, inBoot, emergency};
+  saveDraft();
+  let res;
+  try { res = await call("srSend", {clientId: F.clientId, req}, 30000); }
+  catch (e) { res = {net: true, timeout: e.timeout, error: e.message, login: e.login}; }
+  if (res.ok) {
+    REQS = [res.request].concat(REQS.filter(q => q.id !== res.request.id)); REV = ""; ls.set("sr-cache", {requests: REQS, at: Date.now(), user: me().code});
+    ls.del("sr-draft"); F = null; showSent(res); sync(true); return;
+  }
+  if (res.net || res.login) { showNotSent(res); return; }
+  if (btn) { btn.disabled = false; btn.textContent = "Try again"; }
+  msg.textContent = res.error || "That didn't work.";
+}
+function showSent(j) {
+  const q = j.request, toStores = q.status !== "GL";
+  CUR = q.id; VIEW = "sent"; render();
+  $("v-sent").innerHTML = `<div class="big ok"><div class="ic">✓</div><h3>${toStores ? "Sent – stores have it" : "Sent – the GL has it"}</h3><p>Server confirmed at <b>${esc(hm(j.serverTime))}</b>${j.already ? " (it had already gone through)" : ""}</p><div class="id">${esc(q.id)}</div></div>
+    <div class="card"><div class="small"><span class="mono">${esc(q.callRef)}</span> · ${esc(q.customer)}${q.urgent ? " · URGENT" : ""}</div>${linesHtml(q)}</div>
+    <div class="row"><button class="btn grow" data-go="track">Follow it</button><button class="btn primary grow" data-go="list">Done</button></div>`;
+}
+function showNotSent(res) {
+  VIEW = "sent"; render();
+  $("v-sent").innerHTML = `<div class="big no"><div class="ic">✕</div><h3>NOT SENT</h3><p><b>Nobody has this request.</b> ${res.login ? "You need to log in again on the BCX Field Apps page." : res.timeout ? "The server didn't answer, so treat it as NOT sent." : "There's no signal, so it didn't reach the server."}</p></div>
+    <div class="row"><button class="btn primary grow" data-go="retry">Try again</button><button class="btn grow" data-go="edit">Back to the request</button></div>
+    <div class="card small">If you can't get signal, <b>phone your Group Leader</b> to arrange the spares. Your request is kept on this phone so you don't retype it – it is <b>not</b> sent by itself later. ${res.timeout ? "If it did get through, trying again shows the same request number – it won't be sent twice." : ""}</div>`;
+}
+$("v-sent").addEventListener("click", async e => {
+  const g = e.target.closest("[data-go]"); if (!g) return;
+  if (g.dataset.go === "list") history.back();
+  if (g.dataset.go === "track") { VIEW = "view"; render(); }
+  if (g.dataset.go === "edit") { const d = ls.get("sr-draft"); F = d ? d.f : F; VIEW = "new"; render(); }
+  if (g.dataset.go === "retry") { const d = ls.get("sr-draft"); F = d ? d.f : F; g.disabled = true; g.textContent = "Sending..."; VIEW = "new"; renderForm(); await send(false); }
+});
+
+/* ---------- printing ---------- */
+const P = () => Object.assign({layout: "80", onPick: true, onArrive: false}, ls.get("sr-print") || {});
+function printReqs(list, layout) {
+  if (!list.length) return;
+  const pa = $("printarea"), st = $("pagestyle");
+  if (layout === "a4") {
+    const W = [15.29, 20.71, 17.43, 50.43], tot = W.reduce((a, b) => a + b, 0);
+    const blocks = [];
+    list.forEach(q => { for (let i = 0; i < Math.max(1, q.lines.length); i += 10) blocks.push({q, lines: q.lines.slice(i, i + 10), first: i === 0, part: q.lines.length > 10 ? `${i / 10 + 1}/${Math.ceil(q.lines.length / 10)}` : ""}); });
+    pa.innerHTML = `<div class="pa4">${blocks.map(({q, lines, first, part}) => `<table><colgroup>${W.map(w => `<col style="width:${(w / tot * 100).toFixed(1)}%">`).join("")}</colgroup>
+      <tr><th colspan="4" class="t">SPARES REQUEST${q.urgent ? ' <span class="u">URGENT</span>' : ""}<span class="r">${esc(q.id)}${part ? " (" + part + ")" : ""}${q.glName ? " · GL " + esc(q.glName.split(" ")[0]) + " " + esc(hm(q.glAt)) : q.route === "EMERGENCY" ? " · EMERGENCY" : ""}</span></th></tr>
+      <tr><th>CALL REF</th><th>CUSTOMER</th><th>ENGINEER</th><th>SPARES</th></tr>
+      ${Array.from({length: 10}, (_, i) => { const l = lines[i]; return `<tr><td class="so">${i === 0 ? esc(q.callRef) : ""}</td><td>${i === 0 ? esc(q.customer) : ""}</td><td>${i === 0 ? esc(q.engineerName) : ""}</td><td>${l ? `${l.qty} x ${esc(String(l.desc).toUpperCase())}${l.item ? " (" + esc(l.item) + ")" : ""}${l.out ? " – OUT OF STOCK" : ""}` : ""}</td></tr>`; }).join("")}</table>`).join("")}</div>`;
+    st.textContent = "@page { size: A4 portrait; margin: 7mm 10mm; }";
+  } else {
+    const w58 = layout === "58";
+    pa.innerHTML = list.map(q => `<div class="pslip${w58 ? " w58" : ""}"><div class="c"><b class="tt">SPARES REQUEST</b>${esc(board() ? "" : "")}DBN STORES · PICKING LIST</div>${q.urgent ? '<div class="u">URGENT</div>' : ""}
+      <div>REQ ${esc(q.id)}</div><div>CALL REF <b>${esc(q.callRef)}</b></div><div>CUSTOMER ${esc(q.customer)}</div><div>ENGINEER ${esc(q.engineerName)}</div>
+      <div>${q.glName ? "GL OK " + esc(q.glName.split(" ")[0]) + " " + esc(hm(q.glAt)) : q.route === "EMERGENCY" ? "EMERGENCY - NO GL CHECK" : ""}</div>
+      <hr><div class="ln"><b>QTY</b>SPARES</div><hr>
+      ${q.lines.map(l => `<div class="ln" style="margin-bottom:4px"><b>${l.qty}</b><span><span class="bx"></span>${esc(String(l.desc).toUpperCase())}${l.item ? "<br>&nbsp;&nbsp;&nbsp;" + esc(l.item) : ""}${l.out ? "<br>&nbsp;&nbsp;&nbsp;** OUT OF STOCK **" : ""}</span></div>`).join("")}
+      ${q.note ? `<hr><div>NOTE: ${esc(q.note)}</div>` : ""}<hr><div>BI NO. ____________________</div><div style="margin-top:9px">PICKED BY _________________</div>
+      <div class="c" style="margin-top:9px;font-size:10px">Printed ${new Date().toLocaleString("en-ZA", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"})}</div></div>`).join("");
+    st.textContent = `@page { size: ${w58 ? "58mm" : "80mm"} auto; margin: 0 2mm; } #printarea { width: ${w58 ? "54mm" : "76mm"}; }`;
+  }
+  const done = () => { pa.innerHTML = ""; window.removeEventListener("afterprint", done); };
+  window.addEventListener("afterprint", done);
+  setTimeout(() => window.print(), 60);
+}
+
+/* ---------- kitchen screen (stores) ---------- */
+let KT = null, SEEN = null, KSET = false; const FRESH = {};
+function enterKds() { VIEW = "kds"; history.pushState({sr: "kds"}, ""); document.body.classList.add("kds"); $("app").hidden = true; document.querySelector("header.top").hidden = true; $("kds").hidden = false; SEEN = null; sync(true); renderKds(); clearInterval(KT); KT = setInterval(() => { sync(); renderKds(); }, 10000); try { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {} }
+function exitKds() { clearInterval(KT); KT = null; VIEW = "list"; document.body.classList.remove("kds"); $("kds").hidden = true; $("kset").hidden = true; document.querySelector("header.top").hidden = false; try { document.fullscreenElement && document.exitFullscreen(); } catch (e) {} render(); }
+function beep() { try { const a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(), g = a.createGain(); o.connect(g); g.connect(a.destination); o.frequency.value = 880; g.gain.value = .15; o.start(); setTimeout(() => { o.frequency.value = 1320; }, 180); setTimeout(() => { o.stop(); a.close(); }, 420); } catch (e) {} }
+function onFresh(fresh) {
+  if (VIEW !== "kds") return;
+  const arrived = fresh.filter(q => q.status === "NEW");
+  if (SEEN === null) { SEEN = new Set(REQS.map(q => q.id)); return; }
+  const newOnes = arrived.filter(q => !SEEN.has(q.id)); REQS.forEach(q => SEEN.add(q.id));
+  if (!newOnes.length) return;
+  if (ls.get("sr-sound") !== false) beep();
+  newOnes.forEach(q => FRESH[q.id] = Date.now());
+  if (P().onArrive) { const printed = new Set(ls.get("sr-printed") || []), todo = newOnes.filter(q => !printed.has(q.id)); if (todo.length) { todo.forEach(q => printed.add(q.id)); ls.set("sr-printed", [...printed].slice(-300)); printReqs(todo, P().layout); } }
+}
+function lateOf(q) { const m = q.status === "PICKING" ? mins(q.pickingAt) : mins(q.glAt && q.status === "NEW" ? q.glAt : q.created); return q.status === "NEW" ? m > (q.urgent ? URGENT_LATE : NEW_LATE) : q.status === "PICKING" ? m > PICK_LATE : false; }
+function tkHtml(q) {
+  const since = q.status === "READY" ? q.bookedAt : q.status === "PICKING" ? q.pickingAt : (q.glAt || q.created);
+  const lines = q.lines.map((l, i) => q.status === "PICKING" && isStores() ? `<li class="${l.out ? "out" : ""}"><button data-act="lineout" data-line="${i}" title="Tap if this one is out of stock"><b>${l.qty}×</b><span>${esc(l.desc)} <span class="c">${esc(l.item)}</span></span></button></li>` : `<li class="${l.out ? "out" : ""}"><b>${l.qty}×</b><span>${esc(l.desc)} <span class="c">${esc(l.item)}</span></span></li>`).join("");
+  const f = q.status === "NEW" ? `<button data-act="print">🖨 Slip</button><button class="go" data-act="pick">Start picking</button>`
+    : q.status === "PICKING" ? `<button data-act="print">🖨</button><button data-act="unpick">Back</button><button data-act="nostock">Can't supply</button><button class="go" data-act="booked">Booked out → enter BI</button>`
+    : `<span class="bi">${esc(q.bi)}</span><span class="w">Waiting for Custody pick-up</span><button data-act="collected">Collected</button>`;
+  return `<div class="tk${q.urgent ? " u" : ""}${q.status === "READY" ? " rd" : ""}${lateOf(q) ? " late" : ""}${FRESH[q.id] && Date.now() - FRESH[q.id] < 30000 ? " fresh" : ""}" data-id="${esc(q.id)}">
+    <div class="t"><span class="eng">${esc(q.engineerName)}</span>${q.urgent ? '<span class="chip bad">Urgent</span>' : ""}${q.route === "EMERGENCY" ? '<span class="chip bad">Emergency</span>' : ""}<span class="age">${esc(ago(since))}</span></div>
+    <div class="s"><span class="mono">${esc(q.callRef)}</span> · ${esc(q.customer)}${q.glName ? " · GL " + esc(q.glName.split(" ")[0]) : ""}${q.status === "PICKING" ? " · " + esc(q.storesName.split(" ")[0]) : ""}</div>
+    <ul>${lines}</ul>${q.note ? `<div class="nt">Note: ${esc(q.note)}</div>` : ""}<div class="f">${isStores() ? f : q.status === "READY" ? `<span class="bi">${esc(q.bi)}</span>` : '<span class="w">stores will pick this</span>'}</div></div>`;
+}
+function renderKds() {
+  if (!$("kds") || VIEW !== "kds") return;
+  const by = s => REQS.filter(q => q.status === s).sort((a, b) => (b.urgent - a.urgent) || String(a.created).localeCompare(String(b.created)));
+  const n = by("NEW"), p = by("PICKING"), r = by("READY").sort((a, b) => String(b.bookedAt).localeCompare(String(a.bookedAt))), urg = n.concat(p).filter(q => q.urgent).length, gl = REQS.filter(q => q.status === "GL").length;
+  const now = new Date();
+  $("kds").innerHTML = `<div class="hd"><span class="ttl">SPARES – DBN STORES</span>${urg ? `<span class="pill r">${urg} urgent</span>` : ""}<span class="pill" id="k-live"></span>${gl ? `<span class="pill">${gl} waiting for a GL</span>` : ""}
+    <button class="pill" id="k-set">🖨 Printing: ${P().layout === "a4" ? "A4 form" : P().layout + " mm"}</button><button class="pill" id="k-snd">${ls.get("sr-sound") === false ? "🔇 Sound off" : "🔔 Sound on"}</button><button class="pill" id="k-exit">✕ Exit</button><span class="clk">${pad(now.getHours())}:${pad(now.getMinutes())}</span></div>
+    <div class="msg err" id="k-msg"></div>
+    <div class="cols"><div class="col"><h4>New <span>${n.length}</span></h4>${n.map(tkHtml).join("") || '<div class="none">Nothing new.</div>'}</div>
+    <div class="col"><h4>Picking <span>${p.length}</span></h4>${p.map(tkHtml).join("") || '<div class="none">Nothing being picked.</div>'}</div>
+    <div class="col"><h4>Ready to collect <span>${r.length}</span></h4>${r.map(tkHtml).join("") || '<div class="none">Nothing waiting.</div>'}</div></div>`;
+  paintSig();
+}
+$("kds").addEventListener("click", e => {
+  const t = e.target;
+  if (t.id === "k-exit") { history.back(); return; }
+  if (t.id === "k-snd") { ls.set("sr-sound", ls.get("sr-sound") === false); beep(); renderKds(); return; }
+  if (t.id === "k-set") { KSET = !KSET; paintKset(); return; }
+});
+function paintKset() {
+  const k = $("kset"), p = P(); k.hidden = !KSET; if (!KSET) return;
+  k.innerHTML = `<b style="font:700 21px/1 var(--display)">🖨 Printing on this PC</b>
+    <label class="small" style="display:grid;gap:6px">PRINT LAYOUT (saved on this PC)<select id="ks-l"><option value="80"${p.layout === "80" ? " selected" : ""}>Slip printer 80 mm</option><option value="58"${p.layout === "58" ? " selected" : ""}>Slip printer 58 mm</option><option value="a4"${p.layout === "a4" ? " selected" : ""}>A4 – 4 slips per page (the paper form)</option></select></label>
+    <label class="tg"><input type="checkbox" id="ks-p"${p.onPick ? " checked" : ""}> Print the picking slip when I tap <b>Start picking</b></label>
+    <label class="tg"><input type="checkbox" id="ks-a"${p.onArrive ? " checked" : ""}> Print as soon as a new request arrives</label>
+    <div class="row"><button class="btn good grow" id="ks-test">Print a test slip</button><button class="btn grow" id="ks-x">Close</button></div>
+    <div class="small">The printer itself is picked once in the print window – Chrome remembers it. For no print window at all, open this screen from a Chrome shortcut with --kiosk-printing and make the slip printer this PC's default printer.</div>`;
+}
+$("kset").addEventListener("change", () => { ls.set("sr-print", {layout: $("ks-l").value, onPick: $("ks-p").checked, onArrive: $("ks-a").checked}); renderKds(); });
+$("kset").addEventListener("click", e => {
+  if (e.target.id === "ks-x") { KSET = false; paintKset(); }
+  if (e.target.id === "ks-test") printReqs([{id: "SR-TEST", callRef: "SO0000000", customer: "TEST PRINT", engineerName: me().name, urgent: false, lines: [{qty: 1, desc: "Test line", item: "TEST"}], glName: "", route: "", note: ""}], P().layout);
+});
+
+/* ---------- drop zone: Dispatch Board, Item Ledger or Item list - worked out from the columns ---------- */
+const DROP = $("drop");
+["dragenter", "dragover"].forEach(ev => document.addEventListener(ev, e => { if (VIEW === "list" && isLead() && e.dataTransfer && [...e.dataTransfer.types].includes("Files")) { e.preventDefault(); DROP.classList.add("over"); } }));
+["dragleave", "drop"].forEach(ev => document.addEventListener(ev, e => { if (ev === "drop" || e.target === DROP) DROP.classList.remove("over"); }));
+document.addEventListener("drop", e => { if (VIEW !== "list" || !isLead()) return; e.preventDefault(); [...(e.dataTransfer.files || [])].forEach(handleFile); });
+DROP.addEventListener("click", () => $("drop-file").click());
+$("drop-file").addEventListener("change", e => { [...e.target.files].forEach(handleFile); e.target.value = ""; });
+function detOut(cls, h) { $("det").insertAdjacentHTML("afterbegin", `<div class="card det" style="border-left-color:${cls === "err" ? "var(--poor)" : cls === "warn" ? "#D9A23A" : "var(--good)"}">${h}</div>`); }
+async function handleFile(file) {
+  let sheets;
+  try { sheets = await readAnySheets(file); } catch (e) { return detOut("err", `<b>${esc(file.name)}</b>: couldn't be read (${esc(e.message)}). Drop the file exactly as exported.`); }
+  for (const sh of sheets) {
+    for (let hr = 0; hr < Math.min(6, sh.rows.length); hr++) {
+      const h = (sh.rows[hr] || []).map(v => String(v == null ? "" : v).trim());
+      if (h.includes("Resource Allocated") && h.includes("No.")) return takeBoard(file, sh, hr, h);
+      if (h.includes("Item No.") && h.includes("Location Code")) return takeLedger(file);
+      if (h.includes("Description") && (h.includes("Item Class") || h.includes("Class"))) return takeItems(file, sh, hr, h);
+    }
+  }
+  detOut("err", `<b>${esc(file.name)}</b>: not a Dispatch Board, Item Ledger Entries or Item list export.`);
+}
+const xmlDate = v => { const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(v || "")); return m ? {d: `${m[1]}-${m[2]}-${m[3]}`, t: `${m[4]}:${m[5]}`} : null; };
+function cellDate(v) { if (typeof v === "number") { const d = new Date(Math.round((v - 25569) * 864e5)); return {d: d.toISOString().slice(0, 10), t: d.toISOString().slice(11, 16)}; } return xmlDate(v); }
+async function takeBoard(file, sh, hr, h) {
+  const ix = n => h.indexOf(n), get = (r, n) => { const i = ix(n); return i < 0 || r[i] == null ? "" : r[i]; };
+  const rows = sh.rows.slice(hr + 1).filter(r => String(get(r, "No.")).trim()).map(r => {
+    const od = cellDate(get(r, "Order Date")), ot = cellDate(get(r, "Order Time")), sd = cellDate(get(r, "SLA Date")), stt = cellDate(get(r, "SLA Time"));
+    return [String(get(r, "No.")).trim(), String(get(r, "Customer Incident Ref. No.")).trim(), od ? od.d + (ot ? " " + ot.t : "") : "", String(get(r, "Ship-to Name")).trim(), String(get(r, "Ship-to Code")).trim(),
+      String(get(r, "Resource Allocated")).trim().toUpperCase(), String(get(r, "Machine Type")).trim(), String(get(r, "Repair Status Code")).trim(), String(get(r, "Technician Status")).trim(),
+      String(get(r, "Comment Text")).replace(/\s+/g, " ").trim().slice(0, 140), sd ? sd.d + (stt ? " " + stt.t : "") : ""];
+  });
+  const exported = sh.created || new Date(file.lastModified || Date.now()).toISOString();
+  const ex = new Date(exported), stamp = `${ex.getFullYear()}-${pad(ex.getMonth() + 1)}-${pad(ex.getDate())} ${pad(ex.getHours())}:${pad(ex.getMinutes())}`;
+  const B = {exported: stamp, area: sh.area || "", file: file.name, cols: BCOL, rows, by: me().name, at: new Date().toISOString()};
+  const known = new Set(people().map(u => u.code)), res = new Set(rows.map(r => r[5]).filter(Boolean));
+  const cur = board(); const older = cur && cur.exported > stamp;
+  let shared = "";
+  if (older) shared = `<span class="chip warn">Not used</span> <span class="small">this phone already has a newer one (${esc(ddmm(cur.exported))} ${esc(hm(cur.exported))})</span>`;
+  else {
+    ls.set("sr-board", Object.assign({stamp: "local"}, B));
+    try { const j = await call("srBoardPut", {board: B}, 45000); if (j.ok) { const b = board(); b.stamp = j.stamp; ls.set("sr-board", b); shared = `<span class="chip good">Shared with everyone</span> <span class="small">phones get it on their next refresh</span>`; } else shared = `<span class="chip warn">Only on this ${"PC"}</span> <span class="small">${esc(j.error)}</span>`; }
+    catch (e) { shared = `<span class="chip warn">Only on this device</span> <span class="small">${esc(e.net ? "no signal – drop it again to share it" : e.message)}</span>`; }
+  }
+  detOut(older ? "warn" : "ok", `<h2>✓ Dispatch Board<span class="aside">${esc(file.name)}</span></h2><div class="kv"><span>Exported</span><b>${esc(ddmm(stamp))} ${esc(hm(stamp))}</b>${sh.area ? `<span>Area</span><b>${esc(sh.area)}</b>` : ""}<span>Calls</span><b>${rows.length} (${rows.filter(r => r[5]).length} allocated, ${rows.filter(r => !r[5]).length} not allocated)</b><span>Engineers</span><b>${[...res].filter(c => known.has(c)).length} matched to Manage users${[...res].filter(c => !known.has(c)).length ? ` · not on Manage users: ${esc([...res].filter(c => !known.has(c)).join(", "))}` : ""}</b></div><div class="row">${shared}</div>`);
+  render();
+}
+async function takeLedger(file) {
+  const r = await importLedger(file); if (!r.ok) return detOut("err", `<b>${esc(file.name)}</b>: ${esc(r.error)}`);
+  let shared = "";
+  try { const b64 = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1]); fr.onerror = rej; fr.readAsDataURL(file); });
+    const j = await call("srLedgerPut", {name: file.name, b64}, 60000);
+    shared = j.ok ? (j.newest ? `<span class="chip good">Shared with everyone</span> <span class="small">“Get the latest ledger” on every phone now gets this one</span>` : `<span class="chip warn">Saved</span> <span class="small">the office already has a newer ledger (${esc(j.current)})</span>`) : `<span class="chip warn">Only on this device</span> <span class="small">${esc(j.error)}</span>`;
+  } catch (e) { shared = `<span class="chip warn">Only on this device</span> <span class="small">${esc(e.net ? "no signal" : e.message)}</span>`; }
+  const L = ledger(), bootsW = new Set(), bootsF = new Set(); L.rows.forEach(x => { const l = String(x[8] || "").toUpperCase(); if (Number(x[9]) > 0) { if (l[0] === "T") bootsW.add(l); if (l[0] === "F") bootsF.add(l); } });
+  detOut("ok", `<h2>✓ Item Ledger<span class="aside">${esc(file.name)}</span></h2><div class="kv"><span>Ledger date</span><b>${esc(L.date)}</b><span>Lines</span><b>${L.rows.length}</b><span>Boots</span><b>${bootsW.size} working · ${bootsF.size} faulty</b><span>Used for</span><b>“Already in the boot” notices, and all the apps on this device</b></div><div class="row">${shared}</div>`);
+  render();
+}
+async function takeItems(file, sh, hr, h) {
+  const ci = h.findIndex(x => /^(row labels|item no\.?|no\.|code|item)$/i.test(x)), di = h.indexOf("Description"), ki = h.indexOf("Item Class") >= 0 ? h.indexOf("Item Class") : h.indexOf("Class");
+  const list = sh.rows.slice(hr + 1).map(r => [String(r[ci < 0 ? 0 : ci] == null ? "" : r[ci < 0 ? 0 : ci]).trim(), String(r[di] || "").trim(), String(r[ki] || "").trim()]).filter(r => r[0] && !/^grand total$/i.test(r[0]));
+  if (ROLE() !== "ADMIN") return detOut("warn", `<h2>Item list<span class="aside">${esc(file.name)}</span></h2><div>${list.length} items. Only the Admin can change the item list (Manage users → Item list).</div>`);
+  modal(`<h3>Replace the item list?</h3><div class="small">${esc(file.name)}: ${list.length} items. Items you switched off stay off. Everyone's phone gets the new list.</div>`, async () => {
+    try { const j = await call("itemsSave", {op: "replace", items: list}, 90000); if (!j.ok) return j.error; ls.set("sr-items", {ver: j.ver, items: j.items.filter(i => i[3] && !(j.hide || []).includes(i[2])).map(i => i.slice(0, 3)), hide: j.hide});
+      detOut("ok", `<h2>✓ Item list<span class="aside">${esc(file.name)}</span></h2><div class="kv"><span>Items</span><b>${j.items.length}</b><span>Hidden classes</span><b>${esc((j.hide || []).join(", ") || "none")}</b></div><div class="row"><span class="chip good">Shared with everyone</span></div>`);
+    } catch (e) { return e.net ? "No signal – the item list was not changed." : e.message; }
+  });
+}
+// SpreadsheetML (.xml from Nav "Edit in Excel") or .xlsx (every sheet) or .txt / .csv (tab or comma separated)
+async function readAnySheets(file) {
+  const head = new Uint8Array(await file.slice(0, 4).arrayBuffer());
+  if (head[0] === 0x50 && head[1] === 0x4B) return XLSX_ALL(file);
+  const text = await file.text();
+  if (/urn:schemas-microsoft-com:office:spreadsheet/.test(text.slice(0, 3000))) {
+    const doc = new DOMParser().parseFromString(text, "application/xml"), all = (n, t) => Array.from(n.getElementsByTagNameNS("*", t));
+    const created = (all(doc, "Created")[0] || {}).textContent || "";
+    let area = "";
+    const sheets = all(doc, "Worksheet").map(ws => {
+      const rows = all(ws, "Row").map(r => { const row = []; let c = 0; all(r, "Cell").forEach(cell => { const ix = cell.getAttribute("ss:Index") || cell.getAttributeNS("urn:schemas-microsoft-com:office:spreadsheet", "Index"); if (ix) c = Number(ix) - 1; const d = all(cell, "Data")[0]; row[c] = d ? d.textContent : ""; c++; }); return row; });
+      rows.forEach(r => { if (String(r[0]).trim() === "Area Code" && r[1]) area = String(r[1]).trim(); });
+      return {name: ws.getAttribute("ss:Name") || "", rows};
+    });
+    sheets.forEach(s => { s.created = created; s.area = area; });
+    return sheets;
+  }
+  const sep = text.split("\n").slice(0, 5).join("").includes("\t") ? "\t" : ",";
+  return [{name: file.name, rows: text.replace(/\r/g, "").split("\n").map(l => l.split(sep).map(x => x.replace(/^"|"$/g, "")))}];
+}
+// the same reading as the home page, so every app gets exactly the rows it expects
+async function importLedger(file) {
+  let rows;
+  try { rows = await XLSX_MINI.read(file); } catch (e) { return {error: "That file couldn't be read."}; }
+  const h = (rows[0] || []).map(v => String(v || "").trim()), col = n => h.indexOf(n);
+  const need = ["Posting Date", "Document No.", "Service Order No.", "Job No.", "Item No.", "Description", "Serial No.", "Tag No.", "Location Code", "Remaining Quantity", "Ship-To Name"];
+  const ix = need.map(col);
+  if (ix[4] < 0 || ix[5] < 0 || ix[8] < 0) return {error: "This doesn't look like an Item Ledger Entries export."};
+  let maxD = 0;
+  const data = rows.slice(1).filter(r => r[ix[8]]).map(r => {
+    const v = ix.map(i => i < 0 || r[i] == null ? "" : r[i]);
+    let d = v[0];
+    if (typeof d === "number") { maxD = Math.max(maxD, d); d = XLSX_MINI.serialToDate(d).toISOString().slice(0, 10); }
+    v[0] = String(d); for (let i = 1; i < v.length; i++) if (i !== 9) v[i] = String(v[i]).trim();
+    v[9] = Number(v[9]) || 0;
+    return v;
+  });
+  const m = /(\d{4})-(\d{2})-(\d{2})T/.exec(file.name);
+  const date = m ? `${m[3]}/${m[2]}/${m[1]}` : (maxD ? ddmm(XLSX_MINI.serialToDate(maxD).toISOString()) : "");
+  ["ft-ledger", "ct-ledger", "ft-skip"].forEach(ls.del);
+  if (!ls.set("brl-ledger", {date, file: file.name, rows: data, importedAt: Date.now(), src: "home"})) return {error: "This device is out of storage space, so the ledger couldn't be saved."};
+  return {ok: true};
+}
+async function XLSX_ALL(file) {
+  // every worksheet (the Dispatch Board's calls are not on the first sheet)
+  const dec = new TextDecoder(), buf = await file.arrayBuffer(), u8 = new Uint8Array(buf), dv = new DataView(buf);
+  let e = u8.length - 22; while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--; if (e < 0) throw new Error("not a zip");
+  const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true); const files = {};
+  for (let i = 0; i < n; i++) { if (dv.getUint32(p, true) !== 0x02014b50) break; const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lho = dv.getUint32(p + 42, true); files[dec.decode(u8.subarray(p + 46, p + 46 + nl))] = {method, csize, lho}; p += 46 + nl + xl + cl; }
+  const text = async name => { const f = files[name]; if (!f) return null; const start = f.lho + 30 + dv.getUint16(f.lho + 26, true) + dv.getUint16(f.lho + 28, true), data = u8.subarray(start, start + f.csize); if (f.method === 0) return dec.decode(data); return new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text(); };
+  const xml = s => new DOMParser().parseFromString(s, "application/xml"), all = (nd, t) => Array.from(nd.getElementsByTagNameNS("*", t));
+  const sst = []; const ss = await text("xl/sharedStrings.xml"); if (ss) all(xml(ss), "si").forEach(si => sst.push(all(si, "t").map(t => t.textContent).join("")));
+  const rels = {}; const rt = await text("xl/_rels/workbook.xml.rels"); if (rt) all(xml(rt), "Relationship").forEach(r => rels[r.getAttribute("Id")] = r.getAttribute("Target"));
+  const core = await text("docProps/core.xml"); const created = core ? ((/<dcterms:modified[^>]*>([^<]+)</.exec(core) || /<dcterms:created[^>]*>([^<]+)</.exec(core) || [])[1] || "") : "";
+  const colIndex = ref => { let k = 0; for (const ch of ref.replace(/\d+/g, "")) k = k * 26 + (ch.charCodeAt(0) - 64); return k - 1; };
+  const out = [];
+  for (const s of all(xml(await text("xl/workbook.xml")), "sheet")) {
+    const rid = s.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id") || s.getAttribute("r:id"), t = rels[rid]; if (!t) continue;
+    const doc = await text(t.startsWith("/") ? t.slice(1) : "xl/" + t.replace(/^\.\//, "")); if (!doc) continue;
+    const rows = all(xml(doc), "row").map(r => { const row = []; all(r, "c").forEach((c, k) => { const ref = c.getAttribute("r"), idx = ref ? colIndex(ref) : k, ty = c.getAttribute("t"), v = all(c, "v")[0];
+      row[idx] = ty === "s" ? (v ? sst[+v.textContent] : "") : ty === "inlineStr" ? all(c, "t").map(x => x.textContent).join("") : ty === "str" || ty === "e" ? (v ? v.textContent : "") : v ? (v.textContent === "" ? "" : Number(v.textContent)) : null; }); return row; });
+    let area = ""; rows.forEach(r => { if (String(r[0]).trim() === "Area Code" && r[1]) area = String(r[1]).trim(); });
+    out.push({name: s.getAttribute("name"), rows, created, area});
+  }
+  const area = (out.find(s => s.area) || {}).area || ""; out.forEach(s => s.area = area);
+  return out;
+}
+
+/* ---------- start ---------- */
+$("b-new").onclick = () => startForm(null);
+$("b-kds").onclick = () => enterKds();
+$("b-board").onclick = async () => { note("Checking for a newer Dispatch Board and item list..."); await sync(true); const B = board(); try { const j = await call("srBoardGet", {have: B ? B.stamp : ""}); if (j.board) ls.set("sr-board", Object.assign({stamp: j.stamp}, j.board)); note(j.none ? "Nobody has shared a Dispatch Board yet." : j.same ? "You have the latest Dispatch Board." : "Dispatch Board updated.", j.none ? "err" : "ok"); } catch (e) { note(e.net ? "No signal." : e.message, "err"); } await getItems(); render(); };
+window.addEventListener("pageshow", () => { render(); sync(); });
+window.addEventListener("storage", e => { if (e.key === "ct-session" || e.key === "brl-ledger") render(); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden) sync(); });
+setInterval(() => { if (!document.hidden && VIEW !== "kds") { sync(); if (VIEW === "list") renderList(); if (VIEW === "view") renderView(); } paintSig(); }, 30000);
+setInterval(paintSig, 5000);
+if (/[?&]screen=1\b/.test(location.search)) { SESS = ls.get("ct-session"); if (valid(SESS) && isLead()) setTimeout(enterKds, 50); }
+render();
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+
+</script><script>
+/* Back button (all apps): one screen back inside the app; on the app's first screen, back to the BCX Field Apps page.
+   Each app can say what "back" means for it in window.BCX_BACK = {can(), go()}.
+   An app opened on its own (Store Visit for managers) only shows it when there's a screen to go back to. */
+(() => {
+  const ALWAYS = true;
+  let hub = ALWAYS; try { hub = hub || /[?&]hub=1\b/.test(location.search) || !!sessionStorage.getItem("bcx-hub"); } catch (e) {}
+  const w = document.querySelector("header.top .wrap"); if (!w) return;
+  const st = document.createElement("style");
+  st.textContent = `.bcx-back { display: inline-grid; place-items: center; width: 38px; height: 38px; padding: 0;
+    color: var(--accent, #D22432); background: var(--surface, #fff); border: 1px solid var(--line, #DED8D3); border-radius: 9px; flex: none; cursor: pointer; }
+    .bcx-back svg { width: 22px; height: 22px; } .bcx-back[hidden] { display: none; }`;
+  document.head.append(st);
+  const b = document.createElement("button"); b.type = "button"; b.className = "bcx-back"; b.setAttribute("aria-label", "Back one screen");
+  b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>'; b.title = "Back";
+  w.prepend(b);
+  const inner = () => { try { return !!(window.BCX_BACK && window.BCX_BACK.can()); } catch (e) { return false; } };
+  const upd = () => { b.hidden = !(inner() || hub); };
+  b.onclick = () => { if (inner()) window.BCX_BACK.go(); else location.href = "../"; setTimeout(upd, 60); };
+  ["click", "change", "popstate"].forEach(ev => window.addEventListener(ev, () => setTimeout(upd, 0), true));
+  setInterval(upd, 800); upd();
+})();
+</script>
+</body></html>
