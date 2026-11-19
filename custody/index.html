@@ -270,6 +270,7 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
     <h2><span class="n">2</span> What are you sending back? <span class="aside" id="r-count"></span></h2>
     <p class="hint">Tick each item you're sending back, from the faulty or working boot, and mark RTCs. <b>Selected</b> always shows everything you've ticked.</p>
     <label class="small" style="display:flex;gap:8px;align-items:center;font-size:15px;color:var(--ink)"><input type="checkbox" id="r-tags" checked style="width:20px;height:20px;accent-color:var(--good)"> Make fault tags for these items</label>
+    <div class="msg warn" id="r-tagblock" hidden></div>
     <input type="search" id="r-search" placeholder="Search description, serial, SO">
     <div class="seg" role="group" aria-label="Show"><button data-view="faulty" aria-pressed="true">Faulty boot</button><button data-view="working" aria-pressed="false">Working boot</button><button data-view="sel" aria-pressed="false">Selected</button></div>
     <div class="list" id="r-items"></div>
@@ -13548,7 +13549,13 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "4.9";
+const APP_VERSION = "4.10";
+/* v4.10: the waiting list never gets stuck - it retries by itself every minute while the app is open, and handovers,
+   collections and returns go into the custody log in the background (Android background sync) even when the app is
+   closed, as soon as there's signal. The script ignores a second copy of the same handover (Client ID), so the app
+   sending it again later to make the PDF is safe. "The server didn't answer properly" now shows on the waiting list.
+   Also v4.10: the Field Manager can switch electronic fault tags off for a person (Manage users, script v2.15). Then no
+   fault tags are made by them or for them here: the return still goes ahead, and they fill in paper tags themselves. */
 const DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const SITE = "https://geraldceb.github.io/custody/";
 const RES_DEFAULT = [["ARSMAH", "Arshad Mahomed", "148156", "TARSMAH", "FARSMAH"], ["ARVRAJ", "Arvin Rajcoomar", "149032", "TARVRAJ", "FARVRAJ"], ["BENFYN", "Bevan C Fynn", "152072", "TBENFYN", "FBENFYN"], ["BRAHIR", "Branden Harilal", "148249", "TBRAHIR", "FBRAHIR"], ["CALJON", "Caleb Jonah", "150263", "TCALJON", "FCALJON"], ["CLIMTH", "Clifford Bonga Mthiyane", "148224", "TCLIMTH", "FCLIMTH"], ["DALSTA", "Dale Eric Stadler", "148711", "TDALSTA", "FDALSTA"], ["DAMMUN", "Damien Munien", "154458", "TDAMMUN", "FDAMMUN"], ["DEVBUG", "Deven Bugwandeen", "148351", "TDEVBUG", "FDEVBUG"], ["DHINAI", "Dhilend Raj Naidu", "152921", "TDHINAI", "FDHINAI"], ["EUGCHE", "Eugene Chetty", "148204", "TEUGCHE", "FEUGCHE"], ["GERPAK", "Gerald Pakree", "148154", "TGERPAK", "FGERPAK"], ["GOPRAJ", "Gopaul Erald Rajendran", "148980", "TGOPRAJ", "FGOPRAJ"], ["JAHKHA", "Jahmeel Khan", "150978", "TJAHKHA", "FJAHKHA"], ["JERPAK", "Jeremy Christopher Pakree", "148748", "TJERPAK", "FJERPAK"], ["KEESTA", "Keegan Stapelfeldt", "148346", "TKEESTA", "FKEESTA"], ["KYLDAV", "Kylan David", "998025", "TKYLDAV", "FKYLDAV"], ["MAHYUS", "Mahomed Faheem Yusuf", "148362", "TMAHYUS", "FMAHYUS"], ["MAHPER", "Mahomed S Peroo", "152017", "TMAHPER", "FMAHPER"], ["MITSOO", "Mithesh Soomaroo", "153985", "TMITSOO", "FMITSOO"], ["MLUNZI", "Mlungisi Nzimande", "995154", "TMLUNZI", "FMLUNZI"], ["SAIKHA", "Mohammed Saif Khan", "153708", "TSAIKHA", "FSAIKHA"], ["MOHEBR", "Mohammed Z Ebrahim", "149013", "TMOHEBR", "FMOHEBR"], ["NADKHA", "Nadeem Khan", "151408", "TNADKHA", "FNADKHA"], ["NAEMAN", "Naeson Manikkam", "148350", "TNAEMAN", "FNAEMAN"], ["NELGOV", "Nelanthran Govinden", "148729", "TNELGOV", "FNELGOV"], ["NISNAI", "Nishay Naidoo", "998026", "TNISNAI", "FNISNAI"], ["NIVMAH", "Nivendra Maharaj", "148771", "TNIVMAH", "FNIVMAH"], ["PHENGW", "Phelelani Ndumiso Ngwane", "148388", "TPHENGW", "FPHENGW"], ["RAJNAI", "Raj Naidoo", "145998", "TRAJNAI", "FRAJNAI"], ["RIVMUR", "Rivasen B Muruvan", "148997", "TRIVMUR", "FRIVMUR"], ["RONHAR", "Ronesh Harilall", "148275", "TRONHAR", "FRONHAR"], ["SHAEBR", "Shaahid Ebrahim", "150189", "TSHAEBR", "FSHAEBR"], ["SIPNGE", "Siphesihle Ngeleka", "154054", "TSIPNGE", "FSIPNGE"], ["SIYKHU", "Siyabonga Khumalo", "154032", "TSIYKHU", "FSIYKHU"], ["SUGMAR", "Sugandren Mari", "148209", "TSUGMAR", "FSUGMAR"], ["SULISA", "Suleyman Isaacs", "998148", "TSULISA", "FSULISA"], ["UWACAS", "Uwais Syed Cassim", "155138", "TUWACAS", "FUWACAS"], ["UZAMAH", "Uzair Mahomed", "148813", "TUZAMAH", "FUZAMAH"], ["VENPIL", "Venay Pillay", "148142", "TVENPIL", "FVENPIL"], ["VERRAG", "Veron Raghoo", "148228", "TVERRAG", "FVERRAG"], ["VINJAC", "Vincent Jaku", "148352", "TVINJAC", "FVINJAC"], ["WASKHA", "Waseem Khan", "151827", "TWASKHA", "FWASKHA"], ["ZIABOB", "Zia Bobat", "154377", "TZIABOB", "FZIABOB"], ["ZUBKHA", "Zubair Khan", "149008", "TZUBKHA", "FZUBKHA"]];
@@ -13605,7 +13612,7 @@ async function api(action, data, opts) {
   try {
     res = await fetch(url, {method: "POST", body: JSON.stringify(Object.assign({action, token: SESSION && SESSION.token}, data || {})), redirect: "follow"});
   } catch (e) { throw new Offline("No connection."); }
-  let j; try { j = await res.json(); } catch (e) { throw new Offline("The server didn't answer properly."); }
+  let j; try { j = await res.json(); } catch (e) { const x = new Offline(`The server didn't answer properly (${res.status}).`); x.bad = true; throw x; }
   if (!j.ok) {
     if (/^LOGIN:/.test(j.error || "") && !(opts && opts.noLogout)) { logout(); throw new Error(j.error.slice(6).trim()); }
     throw new Error(j.error || "Something went wrong.");
@@ -14307,6 +14314,9 @@ function buildRetItems() {
   renderRetItems();
 }
 function renderRetItems() {
+  const bl = RET && tagBlock(RET.eng), tb = $("r-tagblock");
+  if (bl) { RET.tags = false; $("r-tags").checked = false; }
+  $("r-tags").disabled = !!bl; tb.hidden = !bl; tb.textContent = bl ? tagBlockText(bl) : "";
   soon(saveRetDraft);
   const q = RET.q.toLowerCase();
   const hit = it => !q || [it.description, it.serial, it.so, it.itemNo, it.tag, it.doc].join(" ").toLowerCase().includes(q);
@@ -14382,6 +14392,19 @@ function tagForm(it, t, cond) {
 const tagFields = (t, cond) => ({tagCall: t.call || "", customer: t.cust || "", location: t.loc || "", fault: String(t.fault || "").trim() || (cond === "Working" ? NOT_USED : ""), accessories: t.acc || "",
   urgent: cond === "RTC" ? "yes" : cond === "Working" ? "no" : (t.urgent || "no"), copies: Math.max(1, Math.min(99, Number(t.copies) || 1))});
 // tags for a trail's items (works for any phone, from what was saved)
+function tagBlock(code) {
+  const list = users(), mine = me() && (me().noTags || (list.find(u => u.code === me().code) || {}).noTags);
+  if (mine) return {me: true, who: me().name};
+  const u = code && list.find(x => x.code === code); return u && u.noTags ? {me: false, who: u.name} : null;
+}
+const tagBlockText = b => b.me ? "Electronic fault tags are switched off for you by the Field Manager. Fill in paper fault tags and stick them on yourself."
+  : `Electronic fault tags are switched off for ${b.who} by the Field Manager. ${String(b.who).split(" ")[0]} must fill in paper fault tags and stick them on himself.`;
+// v4.10: a background check (at most every 15 minutes) so a block on Manage users reaches this phone quickly
+async function usersCheck() {
+  if (!SESSION || !navigator.onLine || Date.now() - (ls.get("ct-users-chk", 0) || 0) < 15 * 60000) return;
+  ls.set("ct-users-chk", Date.now());
+  try { const j = await api("users", {}); if (j && Array.isArray(j.users)) { const x = ls.get("ct-session", null); if (x && x.token === SESSION.token) { x.users = j.users; const mine = j.users.find(u => u.code === x.user.code); if (mine) { x.user.noTags = !!mine.noTags; x.user.gl = !!mine.gl; } x.at = Date.now(); ls.set("ct-session", x); SESSION = x; if (current === "v-ret") renderRetItems(); } } } catch (e) {}
+}
 function tagsFor(items, engineer) {
   const d = new Date(), today = `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`, tags = [];
   items.filter(i => i.fault || i.customer || i.tagCall).forEach(i => {
@@ -14392,6 +14415,7 @@ function tagsFor(items, engineer) {
   return tags;
 }
 async function saveTags(items, engineer) {
+  const bl = tagBlock(engineer); if (bl) throw new Error(tagBlockText(bl));
   const tags = tagsFor(items, engineer);
   if (!tags.length) return null;
   const out = await FT.build(PDFLib, tags);
@@ -14824,14 +14848,38 @@ async function sharePdf(bytes, name) {
 
 /* ---------- offline queue ---------- */
 const Q = () => ls.get("ct-queue", []);
+/* ---------- background sending (v4.10) ----------
+   A copy of the waiting handovers is kept where the offline part of the app (sw.js) can read it. Android wakes it up
+   when there's signal, even with the app closed, and it puts them in the custody log. The PDF is made the next time
+   the app is open (sending the handover again only returns the saved result). */
+const BG = (() => {
+  const KINDS = {handover: "handover", takeover: "takeover", collect: "collect", handoverMany: "handoverMany"};
+  const open = () => new Promise((ok, no) => { const r = indexedDB.open("ct-bg", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); });
+  const put = async (k, v) => { const d = await open(); return new Promise((ok, no) => { const t = d.transaction("kv", "readwrite"); t.objectStore("kv").put(v, k); t.oncomplete = () => { d.close(); ok(); }; t.onerror = () => { d.close(); no(t.error); }; }); };
+  const get = async k => { const d = await open(); return new Promise((ok, no) => { const r = d.transaction("kv").objectStore("kv").get(k); r.onsuccess = () => { d.close(); ok(r.result); }; r.onerror = () => { d.close(); no(r.error); }; }); };
+  let SENT = {}, T = null;
+  async function mirror() {
+    if (!("indexedDB" in window) || !("serviceWorker" in navigator)) return;
+    try {
+      const items = Q().filter(x => KINDS[x.kind] && !x.error).map(x => ({id: x.id, action: KINDS[x.kind], payload: x.payload}));
+      await put("job", {url: API(), token: SESSION && SESSION.token, items, at: Date.now()});
+      SENT = (await get("sent")) || {};
+      if (!items.length) return;
+      const reg = await navigator.serviceWorker.ready;
+      if (reg.sync) await reg.sync.register("ct-queue");
+      if (reg.periodicSync) { try { const st = await navigator.permissions.query({name: "periodic-background-sync"}); if (st.state === "granted") await reg.periodicSync.register("ct-queue-p", {minInterval: 15 * 60000}); } catch (e) {} }
+    } catch (e) {}
+  }
+  return {kick() { clearTimeout(T); T = setTimeout(mirror, 400); }, sent: id => SENT[id], async load() { try { SENT = (await get("sent")) || {}; renderQueue(); } catch (e) {} }};
+})();
 function queueAdd(x) { const q = Q(); x.id = uid(); x.at = Date.now(); q.push(x); ls.set("ct-queue", q); renderQueue(); return x.id; }
 function queueSet(id, patch) { const q = Q(), it = q.find(y => y.id === id); if (it) { Object.assign(it, patch); ls.set("ct-queue", q); renderQueue(); } }
 function queueDel(id) { ls.set("ct-queue", Q().filter(x => x.id !== id)); renderQueue(); }
 function renderQueue() {
-  const q = Q(), b = $("queue-banner"); $("s-q").textContent = q.length;
+  const q = Q(), b = $("queue-banner"); $("s-q").textContent = q.length; BG.kick();
   if (!q.length) { b.hidden = true; return; }
   b.hidden = false;
-  b.innerHTML = `<b>${q.length} waiting to send</b>` + q.map(x => `<div class="row" style="justify-content:space-between"><span>${esc(x.label)}${x.error ? `<br><b style="color:var(--poor)">${/^DUPLICATE: /.test(x.error) ? "Not saved, it's a duplicate: " + esc(x.error.slice(11)) + " Discard this one." : esc(x.error)}</b>` : ""}</span>
+  b.innerHTML = `<b>${q.length} waiting to send</b>` + q.map(x => `<div class="row" style="justify-content:space-between"><span>${esc(x.label)}${!x.error && BG.sent(x.id) ? '<br><span style="color:var(--good)">✓ In the custody log (sent in the background). The PDF follows.</span>' : !x.error && x.offlineAt ? `<br><span class="small">Not sent yet – trying again by itself (last try ${new Date(x.offlineAt).toLocaleTimeString("en-ZA", {hour: "2-digit", minute: "2-digit"})}: ${esc(x.problem || "no signal")})</span>` : ""}${x.error ? `<br><b style="color:var(--poor)">${/^DUPLICATE: /.test(x.error) ? "Not saved, it's a duplicate: " + esc(x.error.slice(11)) + " Discard this one." : esc(x.error)}</b>` : ""}</span>
     ${x.error ? `<button class="btn small" data-qdel="${x.id}">Discard</button>` : ""}</div>`).join("") + `<div><button class="btn small" id="q-retry">Send now</button></div>`;
 }
 let qBusy = false;
@@ -14888,7 +14936,7 @@ async function processQueue() {
           queueDel(x.id);
         }
       } catch (e) {
-        if (e instanceof Offline) { const q = Q(), it = q.find(y => y.id === x.id); if (it) { it.offlineAt = Date.now(); ls.set("ct-queue", q); } break; }
+        if (e instanceof Offline) { const q = Q(), it = q.find(y => y.id === x.id); if (it) { it.offlineAt = Date.now(); it.problem = e.bad ? e.message : ""; ls.set("ct-queue", q); } break; }
         const q = Q(); const it = q.find(y => y.id === x.id); if (it) { it.error = e.message; ls.set("ct-queue", q); }
         if (x.fast && FASTQ === x.id && current === "v-done") msg("d-msg", `<b>Not saved:</b> ${esc(e.message)}<br>Nothing went to the log. Do the handover again (Discard the one in the waiting list on the home screen).`, "err");
       }
@@ -14896,6 +14944,11 @@ async function processQueue() {
   } finally { qBusy = false; renderQueue(); }
 }
 window.addEventListener("online", processQueue);
+// v4.10: retry by itself every minute while the app is open, and whenever it comes back to the screen
+setInterval(() => { if (!document.hidden && navigator.onLine && SESSION && Q().some(x => !x.error && !(x.notBefore && Date.now() < x.notBefore))) processQueue(); }, 60000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { BG.load(); processQueue(); usersCheck(); } });
+setTimeout(usersCheck, 4000);
+BG.load();
 
 /* ======================================================================
  * TRAIL VIEW + FIND + QR SCAN
@@ -15021,7 +15074,7 @@ function init() {
   $("t-multi-next").onclick = pickNext;
   $("d-multi").onclick = async e => { const i = e.target.dataset.mpdf, t = e.target.dataset.mtags; if (i != null && MULTI[i]) savePdf(MULTI[i].bytes, MULTI[i].name);
     if (t != null && MULTI[t]) { try { const r = await saveTags(MULTI[t].res.items, MULTI[t].res.trail.bookedTo); if (r) msg("d-msg", tagMsg(r), "ok"); } catch (er) { msg("d-msg", esc(er.message), "err"); } } };
-  $("queue-banner").onclick = e => { if (e.target.id === "q-retry") processQueue(); const d = e.target.dataset.qdel; if (d) queueDel(d); };
+  $("queue-banner").onclick = e => { if (e.target.id === "q-retry") { e.target.disabled = true; e.target.textContent = "Sending..."; const q = Q(); q.forEach(x => { if (x.kind === "pdf") x.notBefore = 0; }); ls.set("ct-queue", q); processQueue(); } const d = e.target.dataset.qdel; if (d) queueDel(d); };
   $("go-out").onclick = startOut; $("go-ret").onclick = startRet; $("go-scan").onclick = () => { msg("f-msg", ""); $("f-ref").value = ""; show("v-find"); };
   // outbound
   $("o-pdf").onchange = e => { const f = [...e.target.files]; e.target.value = ""; onPdfs(f); };
