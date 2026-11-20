@@ -5,6 +5,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
+<style>/* same header on every module: name, then version and "Developed by" */ header.top .mark .title > span { font: 700 20px/1.05 var(--display) !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--ink) !important; } header.top .mark .title small { font: 500 11.5px/1.2 var(--body) !important; color: var(--muted) !important; text-transform: none !important; letter-spacing: 0 !important; }</style>
 </head><body>
 <title>BCX Spares Custody</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -91,6 +92,18 @@ label.import input { position: absolute; inset: 0; opacity: 0; width: 100%; curs
 .multibar { position: sticky; bottom: 8px; display: grid; gap: 6px; background: var(--surface, #fff); border: 1px solid var(--line); border-radius: 10px; padding: 10px; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
 .grp { font: 600 13px/1.2 var(--mono); padding: 8px 2px 2px; border-top: 1px solid var(--line); display: flex; gap: 8px; align-items: center; }
 .grp:first-child { border-top: 0; padding-top: 0; }
+/* v4.11: each BI / trail in a list of several gets its own colour; its header sticks under the app header while scrolling */
+:root { --hdrh: 64px; }
+.gc0 { --gc: #2D5B8A; --gcs: #E2ECF6; } .gc1 { --gc: #A0620A; --gcs: #F7ECD4; } .gc2 { --gc: #1F7A4D; --gcs: #E1F1E8; } .gc3 { --gc: #7B3FA0; --gcs: #EFE4F5; } .gc4 { --gc: #B4261D; --gcs: #F8E2DF; }
+@media (prefers-color-scheme: dark) { .gc0 { --gcs: #1B2A3A; } .gc1 { --gcs: #3A2E15; } .gc2 { --gcs: #17352A; } .gc3 { --gcs: #2E1F38; } .gc4 { --gcs: #3D1D1B; } }
+.grp.gh { position: sticky; top: var(--hdrh); z-index: 3; background: var(--gcs); color: var(--gc); border: 0; border-left: 6px solid var(--gc); border-radius: 8px; padding: 9px 10px; margin-top: 10px; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+.grp.gh:first-child { margin-top: 0; padding-top: 9px; } .grp.gh { justify-content: space-between; } .grp.gh .gt { display: grid; gap: 3px; } .grp.gh .gt b { font: 700 17px/1 var(--mono); } .grp.gh .gs { font: 500 12.5px/1.25 var(--body); } .grp.gh .chip { background: var(--surface); color: var(--gc); }
+.item.gi { box-shadow: inset 6px 0 0 var(--gc); padding-left: 16px; }
+.party.gp { border-left: 6px solid var(--gc); }
+.party.gp .ihead { position: sticky; top: var(--hdrh); z-index: 3; background: var(--gcs); color: var(--gc); margin: -12px -12px 0 -12px; padding: 10px 12px; border-radius: var(--radius) var(--radius) 0 0; box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+.party.gp .ihead h3 { color: var(--gc); margin: 0; }
+.dtpair { display: grid; grid-template-columns: 1fr 104px; gap: 6px; }
+.dtpair input { font: 400 15px/1.2 var(--body); padding: 10px 8px; min-width: 0; }
 .empty { color: var(--muted); font-size: 14px; text-align: center; padding: 14px; }
 .item { border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 8px; background: var(--bg); padding: 10px 12px; display: grid; gap: 8px; }
 .item.sel { border-left-color: var(--good); } .item.rtc { border-left-color: var(--rtc); } .item.miss { border-left-color: var(--poor); opacity: .75; }
@@ -159,8 +172,9 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
 .homeled .hm { color: #2E7D4F; font-weight: 700; }
 </style>
 
+<!-- v4.11: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
 <header class="top"><div class="wrap">
-  <div class="mark" id="home-link"><img class="logo" src="data:image/jpeg;base64,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" alt="BCX"><div class="title"><span>CUSTODY</span><small>Developed by Gerald Pakree · v<span class="ver">3.9</span></small></div></div>
+  <div class="mark" id="home-link"><div class="title"><span>Spares Custody</span><small>v<span class="ver">4.11</span> · Developed by Gerald Pakree</small></div></div>
 </div></header>
 
 <main class="wrap">
@@ -13549,7 +13563,12 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "4.10";
+const APP_VERSION = "4.11";
+/* v4.11: "Posted" on a collection is picked from a calendar (date) and a clock (time) instead of typed - only on
+   issues typed in by hand; an issue picked from the ledger keeps Nav's date, locked;
+   "+ Add item" and "+ Add another issue" take you to the new line / issue instead of jumping to the top;
+   when several BIs (collection issues, or trails in one handover) are on one screen, each has its own colour
+   and its header stays at the top of the screen while you scroll through its items. */
 /* v4.10: the waiting list never gets stuck - it retries by itself every minute while the app is open, and handovers,
    collections and returns go into the custody log in the background (Android background sync) even when the app is
    closed, as soon as there's signal. The script ignores a second copy of the same handover (Client ID), so the app
@@ -14094,6 +14113,25 @@ function pickLedgerIssue(doc) {
   renderOut(true); renderLedgerPick();
 }
 
+// v4.11: "Posted" kept as "yyyy/mm/dd hh:mm" (or a ledger's dd/mm/yyyy) - split for the date and time pickers
+function postedParts(p) {
+  let m = /(\d{4})[\/-](\d{2})[\/-](\d{2})(?:[ T](\d{1,2}):(\d{2}))?/.exec(p || "");
+  if (m) return {d: `${m[1]}-${m[2]}-${m[3]}`, t: m[4] ? `${String(m[4]).padStart(2, "0")}:${m[5]}` : ""};
+  m = /(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/.exec(p || "");
+  if (m) return {d: `${m[3]}-${m[2]}-${m[1]}`, t: m[4] ? `${String(m[4]).padStart(2, "0")}:${m[5]}` : ""};
+  return {d: "", t: ""};
+}
+function isoToday() { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`; }
+function hdrH() { const h = document.querySelector("header.top"); if (h) document.documentElement.style.setProperty("--hdrh", h.offsetHeight + "px"); }
+window.addEventListener("resize", hdrH); setTimeout(hdrH, 300);
+// scroll a new line / issue into view (below the sticky headers) and put the cursor in it
+function goTo(el, focusSel) {
+  if (!el) return; hdrH();
+  const y = el.getBoundingClientRect().top + window.scrollY - (parseInt(getComputedStyle(document.documentElement).getPropertyValue("--hdrh")) || 64) - 70;
+  window.scrollTo({top: Math.max(0, y), behavior: "smooth"});
+  const f = focusSel && el.querySelector(focusSel); if (f) setTimeout(() => { try { f.focus({preventScroll: true}); } catch (e) {} }, 350);
+  el.animate && el.animate([{outline: "3px solid var(--accent)"}, {outline: "3px solid transparent"}], {duration: 1600});
+}
 function manualOut() { if (!OUT.issues.length) OUT.issues.push(blankIssue()); renderOut(); }
 
 function itemEditor(it, i, list) {
@@ -14157,11 +14195,12 @@ function issueCheck(iss) {
 function renderOut(noScroll) {
   soon(saveOutDraft);
   $("o-review").hidden = $("o-finish").hidden = !OUT.issues.length;
-  $("o-issues").innerHTML = OUT.issues.map((iss, k) => `<div class="party" data-iss="${k}">
-    <div class="row" style="justify-content:space-between"><h3>Issue ${k + 1}${iss.navDoc ? " · " + esc(iss.navDoc) : ""}${iss.pdfName ? `<br><span class="small" style="font-weight:400">${esc(iss.pdfName)}</span>` : ""}</h3>${OUT.issues.length > 1 ? `<button class="btn small" data-delissue="${k}">Remove issue</button>` : ""}</div>
+  const many = OUT.issues.length > 1;
+  $("o-issues").innerHTML = OUT.issues.map((iss, k) => `<div class="party${many ? " gp gc" + (k % 5) : ""}" data-iss="${k}">
+    <div class="row${many ? " ihead" : ""}" style="justify-content:space-between"><h3>Issue ${k + 1}${iss.navDoc ? " · " + esc(iss.navDoc) : ""}${many ? ` <span class="small" style="font-weight:600;color:inherit">· ${iss.items.length} item${iss.items.length === 1 ? "" : "s"}${iss.bookedTo ? " · " + esc(userName(iss.bookedTo) || iss.bookedTo) : ""}</span>` : ""}${iss.pdfName ? `<br><span class="small" style="font-weight:400">${esc(iss.pdfName)}</span>` : ""}</h3>${OUT.issues.length > 1 ? `<button class="btn small" data-delissue="${k}">Remove issue</button>` : ""}</div>
     <div class="grid2">
       <div class="field"><span class="lbl">Boot Stock Issue no.</span><input type="text" class="mono" data-if="navDoc" value="${esc(iss.navDoc)}" placeholder="BI......."></div>
-      <div class="field"><span class="lbl">Posted</span><input type="text" class="mono" style="font-size:14px" data-if="posted" value="${esc(iss.posted)}" placeholder="yyyy/mm/dd hh:mm"></div>
+      <div class="field"><span class="lbl">${iss.source === "ledger" ? "Posted (from the ledger)" : "Posted (date and time)"}</span>${iss.source === "ledger" ? `<div style="box-sizing:border-box;width:100%;min-width:0;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--sunk)" data-plock="1"><span class="mono">${esc(iss.posted || "-")}</span><span title="From the ledger - can't be changed">&#128274;</span></div>` : ((p) => `<div class="dtpair"><input type="date" data-pd="1" value="${p.d}" max="${isoToday()}" aria-label="Posted date"><input type="time" data-pt="1" value="${p.t}" aria-label="Posted time"></div>`)(postedParts(iss.posted))}</div>
     </div>
     <div class="field"><span class="lbl">Booked to (boot owner)</span><select data-if="bookedTo">${bookedOptions(iss.bookedTo)}</select></div>
     <div class="list">${iss.items.map((it, i) => itemEditor(it, i, "o")).join("")}</div>
@@ -14603,12 +14642,13 @@ function pinVis() {
   if (!absent && current === "v-hand" && PADS.g.empty()) PADS.g.resize();
 }
 function renderHandItems() {
-  let lastRef = null; const partial = HAND.list.some(i => HAND.received[i.k]);
+  let lastRef = null, gi = -1; const partial = HAND.list.some(i => HAND.received[i.k]);
   $("h-items").innerHTML = HAND.list.map(it => {
     const on = HAND.received[it.k];
-    const head = HAND.multi && it.ref !== lastRef ? (lastRef = it.ref, `<div class="grp">${esc(it.ref)} <span class="chip">${((n) => n + (n === 1 ? " item" : " items"))(HAND.list.filter(x => x.ref === it.ref).length)}</span></div>`) : "";
+    const tr = trailOf(it) || {};
+    const head = HAND.multi && it.ref !== lastRef ? (lastRef = it.ref, gi++, `<div class="grp gh gc${gi % 5}"><span class="gt"><b>${esc(tr.navDoc || it.ref)}</b><span class="gs">${tr.navDoc ? esc(it.ref) : ""}${tr.bookedToName ? (tr.navDoc ? " · " : "") + esc(tr.bookedToName) : ""}</span></span><span class="chip">${((n) => n + (n === 1 ? " item" : " items"))(HAND.list.filter(x => x.ref === it.ref).length)}</span></div>`) : "";
     const left = !on && partial && canLeave(it), owner = (trailOf(it) || {}).bookedToName || "the engineer";
-    return head + `<div class="item ${on ? (it.condition === "RTC" ? "rtc" : "sel") : ""}" data-k="${esc(it.k)}"><label class="ih"><input type="checkbox" ${on ? "checked" : ""}>
+    return head + `<div class="item ${on ? (it.condition === "RTC" ? "rtc" : "sel") : ""}${HAND.multi ? " gi gc" + (gi % 5) : ""}" data-k="${esc(it.k)}"><label class="ih"><input type="checkbox" ${on ? "checked" : ""}>
       <span><span class="desc">${esc(it.description || it.itemNo)}</span> ${it.condition ? `<span class="chip ${it.condition === "RTC" ? "rtc" : it.condition === "Faulty" ? "open" : ""}">${esc(it.condition)}</span>` : ""}<br>
       <span class="meta">${esc(it.itemNo)} · S/N ${esc(it.serial || "-")} · Tag ${esc(it.tag || "-")}${it.so ? " · " + esc(it.so) : ""}${it.qty > 1 ? " · Qty " + it.qty : ""}</span></span></label>
       ${left ? `<div class="small" style="margin-top:6px"><b>Left off this return.</b> It comes off the trail and stays in ${esc(owner)}'s boot.${needWhy(it) ? "" : " Working stock, so no reason needed."}</div>
@@ -15088,10 +15128,14 @@ function init() {
   $("o-led-list").addEventListener("click", e => { if (e.target.closest("[data-lmore]")) { LEDPICK.days = LEDPICK.days === 2 ? 30 : 2; return renderLedgerPick(); } const b = e.target.closest("[data-lbi]"); if (b) pickLedgerIssue(b.dataset.lbi); });
   $("o-led-import").onchange = async e => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; $("o-led-info").textContent = "Reading " + f.name + "..."; try { await readLedgerFile(f); renderLedgerPick(); } catch (er) { $("o-led-info").textContent = er.message; } };
   $("o-officebox").addEventListener("click", e => { if (e.target.closest("[data-oshowall]")) { OFFICE.all = !OFFICE.all; return renderOffice(); } const r = e.target.closest("[data-oid]"); if (r) pickOffice(r.dataset.oid); });
-  $("o-addiss").onclick = () => { OUT.issues.push(blankIssue()); renderOut(); };
+  $("o-addiss").onclick = () => { OUT.issues.push(blankIssue()); renderOut(true); goTo(document.querySelector(`#o-issues [data-iss="${OUT.issues.length - 1}"]`), "input[data-if=navDoc]"); };
   $("o-go").onclick = collectAll;
   $("o-issues").addEventListener("input", e => {
     const box = e.target.closest("[data-iss]"); if (!box) return; const iss = OUT.issues[Number(box.dataset.iss)];
+    if ((e.target.dataset.pd != null || e.target.dataset.pt != null) && iss.source !== "ledger") {
+      const d = box.querySelector("[data-pd]").value, t = box.querySelector("[data-pt]").value;
+      iss.posted = d ? d.replace(/-/g, "/") + (t ? " " + t : "") : ""; iss.done = null; soon(saveOutDraft); return;
+    }
     const fi = e.target.dataset.if; if (fi) { iss[fi] = fi === "navDoc" ? e.target.value.trim().toUpperCase() : e.target.value.trim(); iss.done = null; outSummary(); return; }
     const f = e.target.dataset.f; if (!f) return;
     const it = iss.items[Number(e.target.closest(".item").dataset.i)]; it[f] = f === "qty" ? Math.max(1, Number(e.target.value) || 1) : e.target.value.trim(); iss.done = null;
@@ -15107,7 +15151,8 @@ function init() {
     if (e.target.dataset.del != null) { const [it] = iss.items.splice(Number(e.target.dataset.del), 1); if (it && it.fromBI) iss.removed.push(it); iss.done = null; renderOut(true); }
     else if (e.target.dataset.restore != null) { const [it] = iss.removed.splice(Number(e.target.dataset.restore), 1); if (it) iss.items.push(it); iss.done = null; renderOut(true); }
     else if (e.target.dataset.ipdel != null) { iss.photos.splice(Number(e.target.dataset.ipdel), 1); iss.done = null; renderOut(true); }
-    else if (e.target.dataset.additem != null) { iss.items.push(blankItem("Working")); iss.done = null; renderOut(); }
+    else if (e.target.dataset.additem != null) { iss.items.push(blankItem("Working")); iss.done = null; renderOut(true);
+      const its = document.querySelectorAll(`#o-issues [data-iss="${k}"] .item`); goTo(its[its.length - 1], "input[data-f=description]"); }
     else if (e.target.dataset.delissue != null) { OUT.issues.splice(k, 1); renderOut(); }
   });
   $("c-list").onclick = e => { const i = e.target.dataset.cpdf; if (i != null && COLLECTED[i] && COLLECTED[i].bytes) savePdf(COLLECTED[i].bytes, COLLECTED[i].name); };
