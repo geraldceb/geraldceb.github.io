@@ -189,16 +189,25 @@ body.kds { background: #141213; }
 .pslip .ln { display: flex; gap: 6px; } .pslip .ln b { min-width: 22px; } .pslip .bx { display: inline-block; width: 11px; height: 11px; border: 1.5px solid #000; margin-right: 5px; vertical-align: -2px; }
 .pslip.w58 { font-size: 10.5px; } .pslip.w58 .tt { font-size: 14px; }
 @media (min-width: 900px) { .wrap { max-width: 900px; } #list-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; } }
+
+/* v1.2: FMX screenshot + history */
+.fmxbox { border: 1px dashed var(--info); background: var(--info-soft); border-radius: 9px; padding: 9px 11px; display: grid; gap: 8px; }
+.call .fx { font-size: 12.5px; color: var(--info); font-weight: 600; }
+.hsum { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.hsum div { background: var(--sunk); border-radius: 9px; padding: 9px 10px; display: grid; gap: 2px; } .hsum b { font: 700 24px/1 var(--display); } .hsum span { font-size: 12px; color: var(--muted); }
+table.ht { width: 100%; border-collapse: collapse; font-size: 13.5px; } table.ht th { text-align: left; font: 600 11.5px/1.2 var(--body); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding: 6px 6px; border-bottom: 1px solid var(--line); }
+table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-align: top; } table.ht td.n { text-align: right; font-weight: 700; white-space: nowrap; } table.ht tr[data-eng] { cursor: pointer; }
+.hrow { display: grid; gap: 3px; border-bottom: 1px solid var(--line); padding: 8px 2px; font-size: 13.5px; } .hrow .t { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; } .hrow .t .d { margin-left: auto; color: var(--muted); font-size: 12px; }
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <img class="logo" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAA8AIMDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDuPiB8WbbwDrFtp1xpU1208AnDxyhAPmIxyPauT/4aV03/AKFy7/8AAlf8K5f9pD/kd9L/AOwcP/Rslc74K+EmseONEfVLC+soIlnMJWYtnIAOeAfWgD0r/hpXTf8AoXLv/wACV/wqez/aQ0OSdVu9EvoIieXSRZMfhxXI/wDDOHib/oK6V+cn/wATWZr/AMC/Fmh6bJfRtaX6RKWkjtmJcDuQCBn8OaAPpTw74n0jxVp4vdHvUuYejAcMh9GB5BrZr4o8DeLr3wZ4lt9TtZG8ncFuYQeJou4Pv6e9fZ0d5bzWKXqyr9meISiQnA2EZz+VAE5YKCSQAOpNefeIvjN4O8PyNB9ve/uE4MdivmAH/eyF/WvHPij8WrvxReTaTo9w9vokZKllOGuvc/7PoPz9uE8O+ENe8V3PkaNp01ztOHkHCJ9WPAoA9vf9pPSwxC+Hrxl7EzqD/Ktbwr8c7LxT4nstEi0S4t5LtiolecELgE9Me1ecQ/s8eL5EDSXWlRE/wmZyR+S103gT4J+I/DHjXTNZvLvTXt7WQtIsMjljlSOMoPWgD0TxH8QB4c1Q2U+kTyKVDRyrIAHHqKj0T4mWOr6rFYPZy2pl4R5HBBbsPxrU8aeGV8SaK0cYAu4MvbsfX+79D/hXgxEkEpBDRyxvyOhUj+tctWpOE/I+my3AYPHYZ2Vqi31f3n1B1pa5LwL4nHiDRwJmX7bb4SYevo34/wA81k/Frx2vgzww6Wrj+1r4GO1GeYx3k/Dt74rpi1JXR87Woyo1HTnujI8VfHTSPDXiG50iLTptQNsdss0UoVQ/dRx2/nVvwT8XV8c66NMsfDtzEqqZJp2nBWJfU8dzxivlmOOe9uliiR5riaQKoHzM7E/qSa+v/hp4Hj8D+Fo7V1U6jcYlvJF7v2UH0Xp+Z70zM7eiiigD5k/aQ/5HfS/+wcP/AEbJXoH7O/8AyTu4/wCv+T/0FK8//aQ/5HfS/wDsHD/0bJXA6F4+8T+GrA2WjatLa2pkMpjWNCNxxk8g+goA+2ailmjt4XlkdUjQFmZjgADqTXx+PjD49H/MxTf9+o//AIms/WfiL4t8QWTWepa5cTWzfeiAVA312gZ/GgDI16e1ufEWqT2QC2kt3K8KjtGXJH6Yr3T4heI7rw/8EPDejhzHeanZQxSYPIiWNSw/HKj8TXlPw28LQeLvG1npt3cRxW4/fSq7YaVF5KL6k/yya7j9o1yPFGj2yjEUVjlAOgy5H9BQB5/4B8Iy+NfFdtpSMY4P9ZcyhfuRDr+J4A9zX2Lo+jWGhaZDp2m26W9tCMKij9T6n3rxH9mu0ix4gvTjzh5MQ9h85P8AT8q9/oAKKKKAEryP4m+F/s0/9u2qfupSFuVA6N2b8ehr1zIqreWkF7azWtwoeKVSrqe4NROmpqx14HGTwlZVI7dfQ+e/DutzeHtahv4slR8s0f8AfQ9R/hXnPj3xLfeKfFt5qN6rR4by4YSf9VGOi/1+pNeg65pyaTrd5YRzCdIHKrIPT0PuOhrEXwtaeI/FGk2k11HaC5uBFK7HBYddo/2uMD6rXLQnyvkZ9LneDhXorF0+i+9HUfAXwB59x/wl2pR/uoiUsFYfeboZPw6D3z6V9D1WsbO202xgsrSJYbeBBHFGnRVHAFWa7T48KKKKAPmT9pD/AJHfS/8AsHD/ANGyVq/B74b+GPFvg2XUNYsZJ7lLt4gwmZflCqRwD7msr9pD/kd9L/7Bw/8ARsldf8CNe0bS/Ac0F/qtlazG9kYRzXCocbU5wTQB03/CjvAP/QJl/wDAqX/GsnX/AIB+FrzTJV0ZJrC+CkxSNO0iE9gwOePpXoP/AAmPhn/oYdK/8C4/8ax9f+J3hTw/psl4+sWl3KFJjtraYPJIewwOn1NAHyHDPfaBriyxs0F9Yz5BHVZEP+Ir2H47wHWNF8K+LIV/c3Ntskx/CWAkX+b/AJV45d3FxrOs3Fz5e65vbhpNqjqztnA/E19e3vgm31j4Y23hS8YB47GKJZeuyVFGG/MflmgDxH4BeJodH8Xz6TcOEi1SNVQk8eauSo/EFh9cV9RV8K6tpOo+Gdbm06+ie3vbWTsccjowPp3Br2zwN8fYY7SKw8WpL5iDaL+Fd2//AH1659x+VAHv1FchD8UPBE0QdfE2ngf7Um0/keauWHjvwtql7FZWOvWNxdSnEcUcoLMcZ4FAHQ4rk/HXiZfD2jEQuv264ykA9PVvw/niujvbyCwspbu4cJDCpd2PYCvnrxFrc3iDWZr6XIU/LCh/gQdB/jWFeryqy3PXybL/AK1W5pfDH8fIzVWSeYIoaSWRsAdSxP8AWvP9d1SefWCV8yH7K+2MdGQg9fY5FfQ3wx8L+fcf29dp+6iJW2Rh1bu34dBXHfHjwB9ivf8AhLNOi/0a4YLeoo+5J2f6Hv7/AFqMPSsuZnbn2Yc8vq1N6Lf17fI9P+FXjuPxt4YRpmX+1LTEV2nqez/Q/wA8131fFHgTxddeCvFFtqsG94c+Xcwhv9bEeo+vce4r7M03ULXVtOt9QspRLa3CCSKQdwa6j5st0UUUAfOP7QOk6nqPjLTpLLT7u6RNPCs0ELOFPmScZAryP/hGdf8A+gHqX/gJJ/hX3VRQB8K/8Izr/wD0A9S/8BJP8Kt2PgrxPfziG28PanI5/wCnVwPxJGBX2/RQB4n8LvgzLoOoQ674kEbXseGt7RDuETf3mPQn0A6V7ZRRQBx3jf4eaL48slS+jMN5GMQ3kQ+dPY+o9j+lfPfiH4I+MNDldrazGqWw6S2hyce6Hn8s19a0UAfDEnhTxFE5R9B1RWHUG0k/wrsPhToOsWvxN0Oa50m+hhWV90klu6qP3bdSRX1vRQB5T8StT1LUJ10exs7t7WMhpnjhYiRuy5x0H8/pXH6D4U1HWNYhtJbW4t4Cd00skRQKo69e9fQLAbugpRjJwBWMqHNLmbPZw+dPD0PYUoW8/PuRWdpDY2sVtAgSKJQqKOwFM1HT7XVtOuNPvYhLa3CGOWM/xA1borY8Zycndnxr4v8Ah3rnhrxJdabBp95eWqtvgnigZg8Z6cgdex9xXqHwN17W9KlbwxrGm6hHZyEyWc0ts4WJupQkjgHqPf6173RQAUUUUAf/2Q==" alt="BCX" width="61" height="28"><div class="mark"><b>Spares Request</b><small id="sub">v1.1</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <img class="logo" src="data:image/jpeg;base64,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" alt="BCX" width="61" height="28"><div class="mark"><b>Spares Request</b><small id="sub">v1.2</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
       <div class="row"><span id="who" style="flex:1"></span><button class="btn small" id="b-board" title="Check for a newer Dispatch Board and item list">⟳ Refresh</button></div>
       <div class="status" id="st"></div>
-      <div class="row"><button class="btn primary grow" id="b-new">+ New request</button><button class="btn grow" id="b-kds" hidden>Stores screen</button></div>
+      <div class="row"><button class="btn primary grow" id="b-new">+ New request</button><button class="btn grow" id="b-kds" hidden>Stores screen</button><button class="btn grow" id="b-hist">History</button></div>
       <div class="msg" id="note" hidden></div>
     </div>
     <div class="card" id="dropcard" hidden>
@@ -217,7 +226,9 @@ body.kds { background: #141213; }
   <section id="v-new" hidden style="display:grid;gap:14px"></section>
   <section id="v-sent" hidden style="display:grid;gap:14px"></section>
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
-  <div class="foot">Spares Request v1.1 · Developed by Gerald Pakree</div>
+  <section id="v-hist" hidden style="display:grid;gap:14px"></section>
+  <input type="file" id="fmx-file" accept="image/*" hidden>
+  <div class="foot">Spares Request v1.2 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -297,7 +308,11 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v1.1 (v1.1: says "emailed by" when the Dispatch Board came in by email - script v2.14)
+/* BCX Spares Request v1.2
+   v1.2: the engineer can pick his call from a screenshot of his FMX job list (read by Google's text reading on the
+         script), so he doesn't have to wait for the Dispatch Board; History of past requests by engineer and period
+         (with a CSV download for Excel). Needs script v2.16.
+   v1.1: says "emailed by" when the Dispatch Board came in by email - script v2.14
    An engineer (or a Group Leader for him) asks for spares on a call; a GL checks it and sends it to stores; stores pick it,
    book it out on a BI, and it closes when Spares Custody records that BI being collected.
    - Sending is LIVE ONLY: a request counts once the Google script has saved it. The phone shows "Sent" with the request
@@ -306,7 +321,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "1.1", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "1.2", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -361,7 +376,22 @@ window.addEventListener("offline", paintSig);
 
 /* ---------- local copies: Dispatch Board, Item list, Item Ledger ---------- */
 const board = () => ls.get("sr-board");
-const items = () => ls.get("sr-items");
+// v1.2: the item list (6000+ items) is kept in IndexedDB, not localStorage, so it never fails for lack of space
+// alongside the ledger; it's read once into memory.
+let ITEMS_C = null, ITEMS_SRV = null, ITEMS_ERR = "", ITEMS_BUSY = false;
+const items = () => ITEMS_C;
+const kvOpen = () => new Promise((ok, no) => { const r = indexedDB.open("sr-db", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); });
+const kvGet = async k => { const d = await kvOpen(); return new Promise((ok, no) => { const r = d.transaction("kv").objectStore("kv").get(k); r.onsuccess = () => { d.close(); ok(r.result); }; r.onerror = () => { d.close(); no(r.error); }; }); };
+const kvPut = async (k, v) => { const d = await kvOpen(); return new Promise((ok, no) => { const t = d.transaction("kv", "readwrite"); t.objectStore("kv").put(v, k); t.oncomplete = () => { d.close(); ok(); }; t.onerror = () => { d.close(); no(t.error); }; }); };
+function setItems(x) { ITEMS_C = x; ITEMS_ERR = ""; kvPut("items", x).catch(() => {}); ls.del("sr-items"); }
+const ITEMS_READY = (async () => { try { ITEMS_C = (await kvGet("items")) || ls.get("sr-items") || null; } catch (e) { ITEMS_C = ls.get("sr-items"); } })();
+function itemsLine() {
+  if (ITEMS_C) return "";
+  if (ITEMS_BUSY) return '<div>Downloading the item list...</div>';
+  if (ITEMS_SRV === "") return `<div class="old">No item list on the system yet${ROLE() === "ADMIN" ? " – load it on Manage users → Item list → Replace the whole list" : " – the Admin loads it on Manage users"}. You can still type spares in.</div>`;
+  if (ITEMS_ERR) return `<div class="old">The item list couldn't be downloaded (${esc(ITEMS_ERR)}) – tap Refresh. You can still type spares in.</div>`;
+  return '<div class="old">Item list not downloaded yet – tap Refresh. You can still type spares in.</div>';
+}
 function ledger() { return ["brl-ledger", "ft-ledger", "ct-ledger"].map(ls.get).filter(L => L && L.rows).sort((a, b) => (b.importedAt || 0) - (a.importedAt || 0))[0] || null; }
 const BCOL = ["so", "ref", "date", "ship", "code", "res", "mach", "rep", "tech", "note", "sla"];
 const brow = r => { const o = {}; BCOL.forEach((k, i) => o[k] = r[i] == null ? "" : r[i]); return o; };
@@ -407,7 +437,7 @@ async function sync(force) {
       const fresh = REQS.filter(q => !before.has(q.id + q.status));
       onFresh(fresh);
       const B = board(); if (j.board && j.board.stamp && (!B || B.stamp !== j.board.stamp)) getBoard();
-      const I = items(); if (j.itemsVer && (!I || I.ver !== j.itemsVer)) getItems();
+      ITEMS_SRV = j.itemsVer || ""; await ITEMS_READY; const I = items(); if (j.itemsVer && (!I || I.ver !== j.itemsVer)) getItems();
       if (!j.board || !j.board.stamp) { /* nobody has shared one yet */ }
       render();
     }
@@ -418,8 +448,13 @@ async function getBoard() {
   try { const j = await call("srBoardGet", {have: (board() || {}).stamp || ""}); if (j.board) { ls.set("sr-board", Object.assign({stamp: j.stamp}, j.board)); render(); } } catch (e) {}
 }
 async function getItems() {
-  try { const j = await call("itemsGet", {have: (items() || {}).ver || ""}, 45000); if (j.items) { if (!ls.set("sr-items", {ver: j.ver, items: j.items, hide: j.hide})) ls.del("sr-items"); if (VIEW === "list") renderList(); } } catch (e) {}
+  if (ITEMS_BUSY) return; ITEMS_BUSY = true; if (VIEW === "list") renderList();
+  try { await ITEMS_READY; const j = await call("itemsGet", {have: (items() || {}).ver || ""}, 90000);
+    if (!j.ok) ITEMS_ERR = j.error || "the server said no"; else if (j.items) setItems({ver: j.ver, items: j.items, hide: j.hide}); else if (j.same) ITEMS_ERR = ""; }
+  catch (e) { ITEMS_ERR = e.net ? (e.timeout ? "it took too long" : "no signal") : e.message; }
+  ITEMS_BUSY = false; if (VIEW === "list") renderList();
 }
+
 function note(t, k) { const m = $("note"); if (m) { m.textContent = t || ""; m.className = "msg" + (k ? " " + k : ""); m.hidden = !t; } const km = $("k-msg"); if (km) km.textContent = k === "err" ? t || "" : ""; }
 
 /* ---------- screens ---------- */
@@ -436,11 +471,12 @@ function render() {
   $("gate").hidden = true;
   if (VIEW === "kds") return renderKds();
   $("app").hidden = false;
-  $("sub").textContent = `v${VER} · ${me().name.split(" ").filter((w, i, a) => i === 0 || i === a.length - 1).join(" ")}${isGL() ? " · Group Leader" : isStores() ? " · " + (ROLE() === "ADMIN" ? "Admin" : "Stores") : ""}`;
-  ["list", "new", "sent", "view"].forEach(v => $("v-" + v).hidden = VIEW !== v);
+  $("sub").textContent = `v${VER} · ${me().name.split(" ").filter((w, i, a) => i === 0 || i === a.length - 1).join(" ")}${ROLE() === "ADMIN" ? " · Admin" : isGL() ? " · Group Leader" : isStores() ? " · Stores" : ""}`;
+  ["list", "new", "sent", "view", "hist"].forEach(v => $("v-" + v).hidden = VIEW !== v);
   if (VIEW === "list") renderList();
   if (VIEW === "new") renderForm();
   if (VIEW === "view") renderView();
+  if (VIEW === "hist") renderHist();
 }
 
 /* ---------- list ---------- */
@@ -459,7 +495,7 @@ function tabsFor() {
 function renderList() {
   const L = ledger(), I = items();
   $("who").innerHTML = `Logged in as <b>${esc(me().name)}</b> (${esc(me().code)})`;
-  $("st").innerHTML = `<div>${boardLine()}</div><div>${L ? `Item Ledger <b>${esc(L.date || "")}</b> – used for the "already in the boot" notices` : '<span class="old">No Item Ledger on this phone – the "already in the boot" notices are off. Get it on the home page.</span>'}</div>${I ? "" : '<div class="old">Item list not downloaded yet – you can still type spares in.</div>'}`;
+  $("st").innerHTML = `<div>${boardLine()}</div><div>${L ? `Item Ledger <b>${esc(L.date || "")}</b> – used for the "already in the boot" notices` : '<span class="old">No Item Ledger on this phone – the "already in the boot" notices are off. Get it on the home page.</span>'}</div>${itemsLine()}`;
   $("b-kds").hidden = !isLead();
   $("dropcard").hidden = !isLead();
   $("b-board").hidden = !navigator.onLine;
@@ -498,7 +534,7 @@ function cardHtml(q) {
   const who = q.createdBy !== q.engineer ? ` · by ${esc(q.createdByName)}` : "";
   const st = q.status === "READY" ? `Booked out on <b class="mono">${esc(q.bi)}</b> – collect from stores` : q.status === "COLLECTED" ? `Collected ${q.collectedRef ? "(" + esc(q.collectedRef) + ")" : ""}` : q.status === "PICKING" ? `Being picked by ${esc(q.storesName)}` : q.status === "NEW" && q.glName ? `At stores · checked by ${esc(q.glName)}` : SNAME[q.status] || q.status;
   return `<div class="req${q.urgent && !dead && q.status !== "COLLECTED" ? " urg" : ""}${q.status === "COLLECTED" || q.status === "READY" ? " done" : ""}${dead ? " dead" : ""}" data-id="${esc(q.id)}">
-    <div class="t">${isLead() ? `<label class="pick"><input type="checkbox" data-act="sel"${SEL.has(q.id) ? " checked" : ""} aria-label="Tick to print"></label>` : ""}<b>${esc(q.engineerName)}</b>${q.urgent ? '<span class="chip bad">Urgent</span>' : ""}${q.route === "EMERGENCY" ? '<span class="chip bad">Emergency</span>' : ""}${q.onBoard ? "" : '<span class="chip warn">Not on the Dispatch Board</span>'}<span class="ago">${esc(ago(q.created))}</span></div>
+    <div class="t">${isLead() ? `<label class="pick"><input type="checkbox" data-act="sel"${SEL.has(q.id) ? " checked" : ""} aria-label="Tick to print"></label>` : ""}<b>${esc(q.engineerName)}</b>${q.urgent ? '<span class="chip bad">Urgent</span>' : ""}${q.route === "EMERGENCY" ? '<span class="chip bad">Emergency</span>' : ""}${q.source === "FMX screenshot" && !q.onBoard ? '<span class="chip info">From FMX screenshot</span>' : q.onBoard ? "" : '<span class="chip warn">Not on the Dispatch Board</span>'}<span class="ago">${esc(ago(q.created))}</span></div>
     <div class="s"><span class="mono">${esc(q.callRef)}</span> · ${esc(q.customer)}${q.custRef ? " · ref " + esc(q.custRef) : ""}${who}</div>
     ${linesHtml(q)}
     ${q.inBoot && !dead && q.status !== "COLLECTED" ? `<div class="boot" style="font-size:12.5px">⚠ Already in ${q.engineer === me().code ? "your" : "his"} boot: ${esc(q.inBoot)}</div>` : ""}
@@ -613,6 +649,9 @@ function renderForm() {
         ${board() ? `<input class="f" id="f-q" type="search" placeholder="Search SO, site or customer ref..." value="${esc(F.q)}" autocomplete="off">
         <div class="small">${F.q ? `${list.length} call${list.length === 1 ? "" : "s"} found (all engineers)` : `${whose === "your" ? "Your" : esc(nameOf(F.engineer)) + "'s"} calls on the Dispatch Board (${esc(F.engineer)}) – ${mine.length}`}</div>
         <div class="calls" id="f-calls">${list.map(callHtml).join("") || '<div class="empty">No calls. Search, or type the call in.</div>'}</div>` : ""}
+        <div class="fmxbox"><div class="row"><b style="flex:1">📷 From an FMX screenshot</b><button type="button" class="btn small" id="f-fmx"${online() ? "" : " disabled"}>${F.fmxBusy ? "Reading..." : F.fmx ? "Another screenshot" : "Choose screenshot"}</button></div>
+          ${F.fmx ? (F.fmx.length ? `<div class="small">${F.fmx.length} call${F.fmx.length === 1 ? "" : "s"} on your screenshot – tap the one you need spares for</div>${F.fmx.map(fmxHtml).join("")}` : '<div class="small" style="color:var(--poor)">No calls found on that picture. Take the screenshot of your FMX job list with the call showing, or type the call in.</div>') : `<div class="small">${online() ? "Screenshot your FMX job list with the call on it, then choose it here. The app reads the SO and site for you." : "Needs signal."}</div>`}
+          ${F.fmxErr ? `<div class="small" style="color:var(--poor)">${esc(F.fmxErr)}</div>` : ""}</div>
         <button type="button" class="btn small" id="f-man" style="justify-self:start">${F.manual ? "Pick from the Dispatch Board instead" : "Call not on the list? Type it in"}</button>
         ${F.manual ? `<label class="lbl">Call ref (SO)<input class="f mono" id="f-so" autocapitalize="characters" value="${esc(F.call ? F.call.so : "")}" placeholder="SO3827304"></label>
           <label class="lbl">Customer / site<input class="f" id="f-ship" list="f-ships" value="${esc(F.call ? F.call.ship : "")}" placeholder="e.g. MARKHAM - BALLITO"></label><datalist id="f-ships">${shipNames().map(s => `<option value="${esc(s)}">`).join("")}</datalist>
@@ -664,6 +703,11 @@ $("v-new").addEventListener("change", e => {
 });
 $("v-new").addEventListener("click", async e => {
   const t = e.target;
+  if (t.id === "f-fmx") { $("fmx-file").click(); return; }
+  const fx = t.closest(".call[data-fmx]"); if (fx) { const r = F.fmx.find(x => x.so === fx.dataset.fmx); const b = board() && board().rows.map(brow).find(x => x.so === r.so);
+    F.call = {so: r.so, ship: b ? b.ship : r.ship, ref: b ? b.ref : "", mach: r.mach || (b ? b.mach : ""), fmx: true}; F.manual = false;
+    if (!F.note && (r.fault || r.loc)) F.note = [r.fault ? "Fault: " + r.fault : "", r.loc ? "Location: " + r.loc : ""].filter(Boolean).join(" · ");
+    saveDraft(); renderForm(); setTimeout(() => { const s = $("f-item"); if (s) s.scrollIntoView({block: "center"}); }, 30); return; }
   const c = t.closest(".call"); if (c) { const r = brow(board().rows.find(x => x[0] === c.dataset.so)); F.call = {so: r.so, ship: r.ship, ref: r.ref, mach: r.mach, res: r.res}; F.manual = false; saveDraft(); renderForm(); setTimeout(() => { const s = $("f-item"); if (s) s.scrollIntoView({block: "center"}); }, 30); return; }
   if (t.id === "f-man") { F.manual = !F.manual; F.call = null; saveDraft(); renderForm(); return; }
   const sg = t.closest("#f-sugg button"); if (sg) {
@@ -699,7 +743,8 @@ async function send(emergency) {
   const btn = $("f-send"); if (btn) { btn.disabled = true; btn.textContent = "Sending..."; }
   const onBoard = !F.manual && !!(board() && board().rows.find(x => x[0] === F.call.so));
   const inBoot = F.lines.map(l => { const b = bootHas(F.engineer, l.item); return b ? `${l.item}: ${b.text}` : ""; }).filter(Boolean).join(" | ");
-  const req = {engineer: F.engineer, callRef: F.call.so, customer: F.call.ship, custRef: F.call.ref || "", machine: F.call.mach || "", onBoard, lines: F.lines, urgent: F.urgent, note: F.note, inBoot, emergency};
+  const source = F.call.fmx ? "FMX" : F.manual ? "TYPED" : "BOARD";
+  const req = {source, engineer: F.engineer, callRef: F.call.so, customer: F.call.ship, custRef: F.call.ref || "", machine: F.call.mach || "", onBoard, lines: F.lines, urgent: F.urgent, note: F.note, inBoot, emergency};
   saveDraft();
   let res;
   try { res = await call("srSend", {clientId: F.clientId, req}, 30000); }
@@ -886,7 +931,7 @@ async function takeItems(file, sh, hr, h) {
   const list = sh.rows.slice(hr + 1).map(r => [String(r[ci < 0 ? 0 : ci] == null ? "" : r[ci < 0 ? 0 : ci]).trim(), String(r[di] || "").trim(), String(r[ki] || "").trim()]).filter(r => r[0] && !/^grand total$/i.test(r[0]));
   if (ROLE() !== "ADMIN") return detOut("warn", `<h2>Item list<span class="aside">${esc(file.name)}</span></h2><div>${list.length} items. Only the Admin can change the item list (Manage users → Item list).</div>`);
   modal(`<h3>Replace the item list?</h3><div class="small">${esc(file.name)}: ${list.length} items. Items you switched off stay off. Everyone's phone gets the new list.</div>`, async () => {
-    try { const j = await call("itemsSave", {op: "replace", items: list}, 90000); if (!j.ok) return j.error; ls.set("sr-items", {ver: j.ver, items: j.items.filter(i => i[3] && !(j.hide || []).includes(i[2])).map(i => i.slice(0, 3)), hide: j.hide});
+    try { const j = await call("itemsSave", {op: "replace", items: list}, 90000); if (!j.ok) return j.error; setItems({ver: j.ver, items: j.items.filter(i => i[3] && !(j.hide || []).includes(i[2])).map(i => i.slice(0, 3)), hide: j.hide}); ITEMS_SRV = j.ver;
       detOut("ok", `<h2>✓ Item list<span class="aside">${esc(file.name)}</span></h2><div class="kv"><span>Items</span><b>${j.items.length}</b><span>Hidden classes</span><b>${esc((j.hide || []).join(", ") || "none")}</b></div><div class="row"><span class="chip good">Shared with everyone</span></div>`);
     } catch (e) { return e.net ? "No signal – the item list was not changed." : e.message; }
   });
@@ -959,9 +1004,114 @@ async function XLSX_ALL(file) {
   return out;
 }
 
+/* ---------- FMX screenshot (v1.2) ---------- */
+function fmxHtml(r) {
+  const sel = F.call && F.call.so === r.so, onB = board() && board().rows.some(x => x[0] === r.so);
+  return `<button type="button" class="call${sel ? " sel" : ""}" data-fmx="${esc(r.so)}"><span class="h"><span class="so">${esc(r.so)}</span>${r.when ? `<span class="chip">${esc(r.when)}</span>` : ""}${onB ? '<span class="chip good">On the Dispatch Board</span>' : ""}${r.mach ? `<span class="chip" style="margin-left:auto">${esc(r.mach)}</span>` : ""}</span>
+    <span class="st">${esc(r.ship || "(site not read)")}</span>${r.fault || r.sla ? `<span class="fx">${esc([r.fault, r.loc, r.sla ? "SLA " + r.sla : ""].filter(Boolean).join(" · "))}</span>` : ""}</button>`;
+}
+// FMX job list: "[16 Nov 11:43] - IR SO3824957 PICK N PAY - UMHLANGA CRESCENT (C)" and, for the opened call,
+// "Fault 2: ...", "Location: ...", "Machine Type: ...", "SLA: ..."
+function parseFmx(text) {
+  const t = String(text || "").replace(/\r/g, ""), re = /\b[S5][O0]\s?(\d{7})\b/g, hits = []; let m;
+  while ((m = re.exec(t))) hits.push({so: "SO" + m[1], i: m.index, end: re.lastIndex});
+  const out = [], seen = new Set();
+  hits.forEach((h, k) => {
+    const seg = t.slice(h.end, k + 1 < hits.length ? hits[k + 1].i : t.length);
+    let site = seg.split(/\n\s*\n|\d+\s+of\s+\d+\s+job|\[Click|\n\s*\[/i)[0].replace(/\s+/g, " ").trim();
+    const suf = /^(.*?\([A-Z]{1,2}\))/.exec(site); if (suf) site = suf[1];
+    site = site.replace(/^[-–\s]+|[-–\s]+$/g, "");
+    const dates = [...t.slice(Math.max(0, h.i - 60), h.i).matchAll(/\[(\d{1,2} [A-Za-z]{3} \d{1,2}:\d{2})\]/g)];
+    const g = rx => { const x = rx.exec(seg); return x ? x[1].trim() : ""; };
+    const c = {so: h.so, ship: site.toUpperCase().slice(0, 80), when: dates.length ? dates[dates.length - 1][1] : "",
+      fault: g(/Fault 2:\s*([^\n]+)/i) || g(/Fault 1:\s*([^\n]+)/i), loc: g(/Location:\s*([^\n]+)/i), mach: g(/Machine Type:\s*([^\s\n]+)/i), sla: g(/SLA:\s*([^\n]+)/i).replace(/:\d{2}$/, "")};
+    if (!seen.has(c.so)) { seen.add(c.so); out.push(c); }
+  });
+  return out;
+}
+async function shrink(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = url; });
+    const k = Math.min(1, 1400 / Math.max(img.width, img.height) * (img.height > img.width * 1.6 ? 1.6 : 1)), c = document.createElement("canvas");
+    c.width = Math.round(img.width * Math.min(1, k)); c.height = Math.round(img.height * Math.min(1, k)); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL("image/jpeg", .9).split(",")[1];
+  } finally { URL.revokeObjectURL(url); }
+}
+$("fmx-file").addEventListener("change", async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f || !F) return;
+  F.fmxBusy = true; F.fmxErr = ""; renderForm();
+  try { const b64 = await shrink(f); const j = await call("ocr", {image: b64, mime: "image/jpeg"}, 90000); F.fmx = parseFmx(j.text); if (!j.ok) F.fmxErr = j.error || ""; }
+  catch (er) { F.fmxErr = er.net ? "No signal – the screenshot couldn't be read. Try again when you have signal, or type the call in." : er.message; }
+  F.fmxBusy = false; saveDraft(); renderForm();
+});
+
+/* ---------- History (v1.2) ---------- */
+let H = {eng: "", period: "30", from: "", to: "", data: null, busy: false, err: ""};
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+function histRange() {
+  const n = new Date(), y = n.getFullYear(), m = n.getMonth();
+  if (H.period === "custom") return [H.from || iso(new Date(Date.now() - 30 * 864e5)), H.to || iso(n)];
+  if (H.period === "month") return [iso(new Date(y, m, 1)), iso(n)];
+  if (H.period === "last") return [iso(new Date(y, m - 1, 1)), iso(new Date(y, m, 0))];
+  return [iso(new Date(Date.now() - (Number(H.period) - 1) * 864e5)), iso(n)];
+}
+async function loadHist() {
+  if (!isLead()) H.eng = me().code;
+  const [from, to] = histRange(); H.busy = true; H.err = ""; renderHist();
+  try { const j = await call("srHistory", {engineer: H.eng, from, to}, 60000); if (!j.ok) throw new Error(j.error); H.data = j; }
+  catch (e) { H.err = e.net ? "No signal – history needs signal." : e.old || /Unknown action/i.test(e.message) ? "The Google script needs updating to v2.16 for History." : e.message; }
+  H.busy = false; renderHist();
+}
+function renderHist() {
+  const lead = isLead(), d = H.data, [from, to] = histRange();
+  const per = [["7", "7 days"], ["30", "30 days"], ["90", "90 days"], ["month", "This month"], ["last", "Last month"], ["custom", "Pick dates"]];
+  let h = `<div class="card"><h2>${lead ? "Spares history" : "My spares history"}</h2>
+    ${lead ? `<select class="f" id="h-eng"><option value="">Everyone</option>${people().filter(u => u.role === "ENG" || u.gl).map(u => `<option value="${esc(u.code)}"${H.eng === u.code ? " selected" : ""}>${esc(u.name)} (${esc(u.code)})</option>`).join("")}</select>` : ""}
+    <div class="tabs" id="h-per">${per.map(([k, l]) => `<button data-p="${k}" aria-pressed="${H.period === k}">${l}</button>`).join("")}</div>
+    ${H.period === "custom" ? `<div class="row"><input class="f grow" type="date" id="h-from" value="${esc(H.from || from)}"><input class="f grow" type="date" id="h-to" value="${esc(H.to || to)}"></div>` : ""}
+    <div class="small">${esc(ddmm(from))} to ${esc(ddmm(to))}${H.busy ? " · loading..." : ""}</div>${H.err ? `<div class="msg err">${esc(H.err)}</div>` : ""}</div>`;
+  if (d && !H.busy) {
+    const L = d.requests, by = s => L.filter(q => q.status === s).length, open = L.filter(q => ["GL", "NEW", "PICKING", "READY"].includes(q.status)).length;
+    const qty = L.reduce((n, q) => n + q.lines.reduce((m, l) => m + (Number(l.qty) || 0), 0), 0);
+    h += `<div class="card"><h2>${esc(d.engineer ? nameOf(d.engineer) : "Everyone")}<span class="aside">${L.length} request${L.length === 1 ? "" : "s"}${d.total > L.length ? " (first " + L.length + ")" : ""}</span></h2>
+      <div class="hsum"><div><b>${L.length}</b><span>requests</span></div><div><b>${qty}</b><span>spares asked for</span></div><div><b>${by("COLLECTED")}</b><span>collected</span></div><div><b>${open}</b><span>still open</span></div><div><b>${by("REJECTED")}</b><span>rejected</span></div><div><b>${by("CANCELLED")}</b><span>cancelled</span></div><div><b>${L.filter(q => q.urgent).length}</b><span>urgent</span></div><div><b>${L.filter(q => q.route === "EMERGENCY").length}</b><span>emergency</span></div></div>
+      ${L.length ? `<button class="btn small" id="h-csv" style="justify-self:start">⬇ Download for Excel (CSV)</button>` : ""}</div>`;
+    if (L.length) {
+      const top = {}; L.forEach(q => { if (q.status === "CANCELLED") return; q.lines.forEach(l => { const k = (l.item || l.desc).toUpperCase(); const t = top[k] || (top[k] = {desc: l.desc, item: l.item, n: 0, qty: 0}); t.n++; t.qty += Number(l.qty) || 0; }); });
+      const tl = Object.values(top).sort((a, b) => b.qty - a.qty || b.n - a.n).slice(0, 12);
+      h += `<div class="card"><h2>Most asked-for spares</h2><table class="ht"><tr><th>Spare</th><th style="text-align:right">Times</th><th style="text-align:right">Qty</th></tr>${tl.map(t => `<tr><td>${esc(t.desc)}<div class="small mono">${esc(t.item || "")}</div></td><td class="n">${t.n}</td><td class="n">${t.qty}</td></tr>`).join("")}</table></div>`;
+      if (!d.engineer && lead) {
+        const pe = {}; L.forEach(q => { const p = pe[q.engineer] || (pe[q.engineer] = {name: q.engineerName, n: 0, qty: 0, rej: 0}); p.n++; p.qty += q.lines.reduce((m, l) => m + (Number(l.qty) || 0), 0); if (q.status === "REJECTED") p.rej++; });
+        h += `<div class="card"><h2>By engineer <span class="aside">tap one to see his requests</span></h2><table class="ht"><tr><th>Engineer</th><th style="text-align:right">Requests</th><th style="text-align:right">Qty</th><th style="text-align:right">Rejected</th></tr>${Object.entries(pe).sort((a, b) => b[1].n - a[1].n).map(([c, p]) => `<tr data-eng="${esc(c)}"><td>${esc(p.name)}</td><td class="n">${p.n}</td><td class="n">${p.qty}</td><td class="n">${p.rej || ""}</td></tr>`).join("")}</table></div>`;
+      }
+      h += `<div class="card"><h2>Requests</h2>${L.map(q => `<div class="hrow"><div class="t"><b class="mono">${esc(q.callRef)}</b>${lead && !d.engineer ? esc(q.engineerName) : ""}<span class="chip${q.status === "COLLECTED" ? " good" : q.status === "REJECTED" || q.status === "CANCELLED" ? " bad" : ""}">${esc(SNAME[q.status] ? SNAME[q.status].split(" – ")[0] : q.status)}</span>${q.urgent ? '<span class="chip bad">Urgent</span>' : ""}<span class="d">${esc(ddmm(q.created))} ${esc(hm(q.created))}</span></div>
+        <div class="small">${esc(q.customer)}${q.bi ? " · " + esc(q.bi) : ""}${q.reason ? " · " + esc(q.reason) : ""}</div><div>${q.lines.map(l => `<b>${l.qty}</b> ${esc(l.desc)}`).join(" · ")}</div></div>`).join("")}</div>`;
+    } else h += `<div class="card"><div class="empty">No requests in this period.</div></div>`;
+  }
+  $("v-hist").innerHTML = h;
+}
+function histCsv() {
+  const L = H.data.requests, q = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
+  const rows = [["Request", "Sent", "Engineer", "Engineer code", "Call ref", "Customer", "Status", "Urgent", "Emergency", "Item code", "Spare", "Qty", "Out of stock", "GL", "BI", "Booked out", "Collected", "Reason", "Source"]];
+  L.forEach(r => r.lines.forEach(l => rows.push([r.id, r.created, r.engineerName, r.engineer, r.callRef, r.customer, SNAME[r.status] || r.status, r.urgent ? "Yes" : "No", r.route === "EMERGENCY" ? "Yes" : "No", l.item, l.desc, l.qty, l.out ? "Yes" : "", r.glName, r.bi, r.bookedAt, r.collectedAt, r.reason, r.source])));
+  const blob = new Blob(["﻿" + rows.map(r => r.map(q).join(",")).join("\r\n")], {type: "text/csv"}), a = document.createElement("a");
+  const [from, to] = histRange(); a.href = URL.createObjectURL(blob); a.download = `Spares requests ${H.data.engineer || "DBN"} ${from} to ${to}.csv`; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+$("v-hist").addEventListener("click", e => {
+  const p = e.target.closest("[data-p]"); if (p) { H.period = p.dataset.p; if (H.period === "custom") { renderHist(); return; } loadHist(); return; }
+  const r = e.target.closest("tr[data-eng]"); if (r) { H.eng = r.dataset.eng; loadHist(); window.scrollTo(0, 0); return; }
+  if (e.target.id === "h-csv") histCsv();
+});
+$("v-hist").addEventListener("change", e => {
+  if (e.target.id === "h-eng") { H.eng = e.target.value; loadHist(); }
+  if (e.target.id === "h-from" || e.target.id === "h-to") { H.from = $("h-from").value; H.to = $("h-to").value; if (H.from && H.to) loadHist(); }
+});
+
 /* ---------- start ---------- */
 $("b-new").onclick = () => startForm(null);
 $("b-kds").onclick = () => enterKds();
+$("b-hist").onclick = () => { H.data = null; if (!isLead()) H.eng = me().code; go("hist"); loadHist(); };
 $("b-board").onclick = async () => { note("Checking for a newer Dispatch Board and item list..."); await sync(true); const B = board(); try { const j = await call("srBoardGet", {have: B ? B.stamp : ""}); if (j.board) ls.set("sr-board", Object.assign({stamp: j.stamp}, j.board)); note(j.none ? "Nobody has shared a Dispatch Board yet." : j.same ? "You have the latest Dispatch Board." : "Dispatch Board updated.", j.none ? "err" : "ok"); } catch (e) { note(e.net ? "No signal." : e.message, "err"); } await getItems(); render(); };
 window.addEventListener("pageshow", () => { render(); sync(); });
 window.addEventListener("storage", e => { if (e.key === "ct-session" || e.key === "brl-ledger") render(); });
@@ -969,6 +1119,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) sync
 setInterval(() => { if (!document.hidden && VIEW !== "kds") { sync(); if (VIEW === "list") renderList(); if (VIEW === "view") renderView(); } paintSig(); }, 30000);
 setInterval(paintSig, 5000);
 if (/[?&]screen=1\b/.test(location.search)) { SESS = ls.get("ct-session"); if (valid(SESS) && isLead()) setTimeout(enterKds, 50); }
+ITEMS_READY.then(() => render());
 render();
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 
