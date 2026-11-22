@@ -208,7 +208,7 @@ footer.bar #share { min-height: 48px; flex: none; }
 
 <!-- v2.12: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
 <header class="top"><div class="wrap">
-  <div class="mark"><div class="title"><span>Fault Tags</span><small>v2.12 · Developed by Gerald Pakree</small></div></div>
+  <div class="mark"><div class="title"><span>Fault Tags</span><small>v2.13 · Developed by Gerald Pakree</small></div></div>
   <div class="status" aria-live="polite">
     <span class="pill" id="pill-tags">0 tags</span>
     <span class="pill" id="pill-pages">0 pages</span>
@@ -541,6 +541,9 @@ function buildItems() {
   ["faulty", "working"].forEach(k => ITEMS[k].sort((a, b) => a.desc.localeCompare(b.desc) || String(a.serial).localeCompare(String(b.serial))));
 }
 const homeMark = (el, L) => { if (!el) return; const on = !!(L && L.src === "home"); el.classList.toggle("homeled", on); if (on) el.insertAdjacentHTML("afterbegin", '<span class="hm">&#10003; From the home page</span> · '); };   // green when the ledger came from the BCX Field Apps home page
+// v2.13: the ledger can be the whole branch (site stock, repairs...). The apps keep only the boots
+// (T... working, F... faulty) and the branch maintenance stock (MAINT_...): smaller, quicker, and nothing else shows up.
+const keepLoc = c => { c = String(c == null ? "" : c).trim().toUpperCase(); return /^[TF][A-Z0-9]{3,9}$/.test(c) || c.startsWith("MAINT_"); };
 async function importFile(file) {
   setMsg("Reading " + file.name + "...");
   let rows;
@@ -558,7 +561,7 @@ async function importFile(file) {
   const ix = need.map(col);
   if (ix[4] < 0 || ix[5] < 0 || ix[8] < 0) { setMsg("This doesn't look like an Item Ledger Entries or Resource List export.", "err"); return; }
   let maxD = 0;
-  const data = rows.slice(1).filter(r => r[ix[8]]).map(r => {
+  const data = rows.slice(1).filter(r => keepLoc(r[ix[8]])).map(r => {
     const v = ix.map(i => i < 0 || r[i] == null ? "" : r[i]);
     let d = v[0]; if (typeof d === "number") { maxD = Math.max(maxD, d); d = XLSX_MINI.serialToDate(d).toISOString().slice(0, 10); }
     v[0] = String(d); for (let i = 1; i < v.length; i++) if (i !== 9) v[i] = String(v[i]).trim();
@@ -933,7 +936,7 @@ const BCXUsers = (() => {
    One login per phone covers Boot Recon, Fault Tags and Spares Custody: Nav code + PIN checked by the Google script,
    kept for 30 days. Engineers are locked to their own boot; Admin and Stores can pick anyone. */
 (() => {
-  const APP = "BCX Fault Tags", VER = "2.12", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+  const APP = "BCX Fault Tags", VER = "2.13", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
   const g = id => document.getElementById(id);
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },

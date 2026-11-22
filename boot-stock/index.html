@@ -66,7 +66,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
 </style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">My Boot Stock</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <!-- v1.7: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
-<header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a><div class="mark"><b>My Boot Stock</b><small>v1.7 · Developed by Gerald Pakree</small></div></div></header>
+<header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a><div class="mark"><b>My Boot Stock</b><small>v1.8 · Developed by Gerald Pakree</small></div></div></header>
 <main class="wrap" id="app" hidden>
   <section class="card">
     <div class="row"><span id="who" style="flex:1"></span></div>
@@ -101,7 +101,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
       <div class="list" id="det"></div>
     </section>
   </div>
-  <div class="foot">My Boot Stock v1.7 · Developed by Gerald Pakree<br>Working-boot maint stock (BI) may stay 30 days. Faulty stock should go back: 0-2 days fine, 3-7 days due, 8+ days late.</div>
+  <div class="foot">My Boot Stock v1.8 · Developed by Gerald Pakree<br>Working-boot maint stock (BI) may stay 30 days. Faulty stock should go back: 0-2 days fine, 3-7 days due, 8+ days late.</div>
 </main>
 <script>
 /* Minimal offline .xlsx reader: first worksheet -> array of rows (arrays of cell values).
@@ -178,7 +178,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 </script>
 <script>
 const RES_DEFAULT = [["ARSMAH", "Arshad Mahomed", "148156", "TARSMAH", "FARSMAH"], ["ARVRAJ", "Arvin Rajcoomar", "149032", "TARVRAJ", "FARVRAJ"], ["BENFYN", "Bevan C Fynn", "152072", "TBENFYN", "FBENFYN"], ["BRAHIR", "Branden Harilal", "148249", "TBRAHIR", "FBRAHIR"], ["CALJON", "Caleb Jonah", "150263", "TCALJON", "FCALJON"], ["CLIMTH", "Clifford Bonga Mthiyane", "148224", "TCLIMTH", "FCLIMTH"], ["DALSTA", "Dale Eric Stadler", "148711", "TDALSTA", "FDALSTA"], ["DAMMUN", "Damien Munien", "154458", "TDAMMUN", "FDAMMUN"], ["DEVBUG", "Deven Bugwandeen", "148351", "TDEVBUG", "FDEVBUG"], ["DHINAI", "Dhilend Raj Naidu", "152921", "TDHINAI", "FDHINAI"], ["EUGCHE", "Eugene Chetty", "148204", "TEUGCHE", "FEUGCHE"], ["GERPAK", "Gerald Pakree", "148154", "TGERPAK", "FGERPAK"], ["GOPRAJ", "Gopaul Erald Rajendran", "148980", "TGOPRAJ", "FGOPRAJ"], ["JAHKHA", "Jahmeel Khan", "150978", "TJAHKHA", "FJAHKHA"], ["JERPAK", "Jeremy Christopher Pakree", "148748", "TJERPAK", "FJERPAK"], ["KEESTA", "Keegan Stapelfeldt", "148346", "TKEESTA", "FKEESTA"], ["KYLDAV", "Kylan David", "998025", "TKYLDAV", "FKYLDAV"], ["MAHYUS", "Mahomed Faheem Yusuf", "148362", "TMAHYUS", "FMAHYUS"], ["MAHPER", "Mahomed S Peroo", "152017", "TMAHPER", "FMAHPER"], ["MITSOO", "Mithesh Soomaroo", "153985", "TMITSOO", "FMITSOO"], ["MLUNZI", "Mlungisi Nzimande", "995154", "TMLUNZI", "FMLUNZI"], ["SAIKHA", "Mohammed Saif Khan", "153708", "TSAIKHA", "FSAIKHA"], ["MOHEBR", "Mohammed Z Ebrahim", "149013", "TMOHEBR", "FMOHEBR"], ["NADKHA", "Nadeem Khan", "151408", "TNADKHA", "FNADKHA"], ["NAEMAN", "Naeson Manikkam", "148350", "TNAEMAN", "FNAEMAN"], ["NELGOV", "Nelanthran Govinden", "148729", "TNELGOV", "FNELGOV"], ["NISNAI", "Nishay Naidoo", "998026", "TNISNAI", "FNISNAI"], ["NIVMAH", "Nivendra Maharaj", "148771", "TNIVMAH", "FNIVMAH"], ["PHENGW", "Phelelani Ndumiso Ngwane", "148388", "TPHENGW", "FPHENGW"], ["RAJNAI", "Raj Naidoo", "145998", "TRAJNAI", "FRAJNAI"], ["RIVMUR", "Rivasen B Muruvan", "148997", "TRIVMUR", "FRIVMUR"], ["RONHAR", "Ronesh Harilall", "148275", "TRONHAR", "FRONHAR"], ["SHAEBR", "Shaahid Ebrahim", "150189", "TSHAEBR", "FSHAEBR"], ["SIPNGE", "Siphesihle Ngeleka", "154054", "TSIPNGE", "FSIPNGE"], ["SIYKHU", "Siyabonga Khumalo", "154032", "TSIYKHU", "FSIYKHU"], ["SUGMAR", "Sugandren Mari", "148209", "TSUGMAR", "FSUGMAR"], ["SULISA", "Suleyman Isaacs", "998148", "TSULISA", "FSULISA"], ["UWACAS", "Uwais Syed Cassim", "155138", "TUWACAS", "FUWACAS"], ["UZAMAH", "Uzair Mahomed", "148813", "TUZAMAH", "FUZAMAH"], ["VENPIL", "Venay Pillay", "148142", "TVENPIL", "FVENPIL"], ["VERRAG", "Veron Raghoo", "148228", "TVERRAG", "FVERRAG"], ["VINJAC", "Vincent Jaku", "148352", "TVINJAC", "FVINJAC"], ["WASKHA", "Waseem Khan", "151827", "TWASKHA", "FWASKHA"], ["ZIABOB", "Zia Bobat", "154377", "TZIABOB", "FZIABOB"], ["ZUBKHA", "Zubair Khan", "149008", "TZUBKHA", "FZUBKHA"]];
-const VER = "1.7", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "1.8", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const WORK_MAX = 30;                      // working (maint) stock: older than this is overdue
 const FBANDS = [[0, 2, "0-2 days", ""], [3, 7, "3-7 days", "warn"], [8, 1e9, "8+ days", "bad"]];
 const WBANDS = [[0, 7, "0-7 days", ""], [8, 14, "8-14 days", ""], [15, 30, "15-30 days", "warn"], [31, 60, "31-60 days", "bad"], [61, 1e9, "60+ days", "bad"]];
@@ -292,6 +292,9 @@ function renderDetails() {
 
 // ---- ledger: latest office copy (Drive) or own import ----
 function ledMsg(t, k) { const m = $("led-msg"); m.innerHTML = t; m.className = "msg" + (k ? " " + k : ""); }
+// v1.8: the ledger can be the whole branch (site stock, repairs...). The apps keep only the boots
+// (T... working, F... faulty) and the branch maintenance stock (MAINT_...): smaller, quicker, and nothing else shows up.
+const keepLoc = c => { c = String(c == null ? "" : c).trim().toUpperCase(); return /^[TF][A-Z0-9]{3,9}$/.test(c) || c.startsWith("MAINT_"); };
 async function importFile(file) {
   let rows;
   try { rows = await XLSX_MINI.read(file); } catch (e) { return ledMsg("That file couldn't be read. Import the .xlsx exactly as exported from Nav.", "err"); }
@@ -300,7 +303,7 @@ async function importFile(file) {
   const ix = need.map(col);
   if (ix[4] < 0 || ix[5] < 0 || ix[8] < 0) return ledMsg("This doesn't look like an Item Ledger Entries export.", "err");
   let maxD = 0;
-  const data = rows.slice(1).filter(r => r[ix[8]]).map(r => {
+  const data = rows.slice(1).filter(r => keepLoc(r[ix[8]])).map(r => {
     const v = ix.map(i => i < 0 || r[i] == null ? "" : r[i]); let d = v[0];
     if (typeof d === "number") { maxD = Math.max(maxD, d); d = XLSX_MINI.serialToDate(d).toISOString().slice(0, 10); }
     v[0] = String(d); for (let i = 1; i < v.length; i++) if (i !== 9) v[i] = String(v[i]).trim(); v[9] = Number(v[9]) || 0; return v;

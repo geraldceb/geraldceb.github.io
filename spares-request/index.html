@@ -201,7 +201,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <div class="mark"><b>Spares Request</b><small id="sub">v1.3 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <div class="mark"><b>Spares Request</b><small id="sub">v1.5 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
@@ -228,7 +228,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
   <section id="v-hist" hidden style="display:grid;gap:14px"></section>
   <input type="file" id="fmx-file" accept="image/*" hidden>
-  <div class="foot">Spares Request v1.3 · Developed by Gerald Pakree</div>
+  <div class="foot">Spares Request v1.5 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -308,7 +308,12 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v1.3
+/* BCX Spares Request v1.5
+   v1.5: DBN branch maintenance stock (MAINT_DBN on the Item Ledger) shows on every spare - when he adds it, on the
+         GL check, on the stores screen and in the WhatsApp message. The ledger keeps only boots + MAINT_ lines.
+   v1.4: WhatsApp - after a request is sent, one tap shares it to the WhatsApp group (already written out); and when
+         it could NOT be sent (no signal), the engineer can send what he already picked on WhatsApp instead, clearly
+         marked "not in the app". Request cards have a WhatsApp button too.
    v1.3: cleaner header - no BCX logo (home page only); module name, version and "Developed by"
    v1.2: the engineer can pick his call from a screenshot of his FMX job list (read by Google's text reading on the
          script), so he doesn't have to wait for the Dispatch Board; History of past requests by engineer and period
@@ -322,7 +327,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "1.3", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "1.5", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -404,6 +409,19 @@ function boardLine() {
 }
 
 // what an engineer already has: working boot T<code>, faulty boot F<code>
+/* ---------- DBN branch stock (v1.5): MAINT_DBN lines on the Item Ledger ---------- */
+const BRANCH_LOC = "MAINT_DBN";
+const keepLoc = c => { c = String(c == null ? "" : c).trim().toUpperCase(); return /^[TF][A-Z0-9]{3,9}$/.test(c) || c.startsWith("MAINT_"); };
+let BR_CACHE = null;
+function branchStock() {
+  const L = ledger(); if (!L) return null;
+  const key = (L.importedAt || 0) + "|" + L.rows.length; if (BR_CACHE && BR_CACHE.key === key) return BR_CACHE.m;
+  const m = {}; let any = false;
+  L.rows.forEach(x => { if (String(x[8]).trim().toUpperCase() !== BRANCH_LOC) return; any = true; const k = String(x[4] || "").trim().toUpperCase(); if (k) m[k] = (m[k] || 0) + (Number(x[9]) || 0); });
+  BR_CACHE = {key, m: any ? m : null}; return BR_CACHE.m;
+}
+const brQty = item => { const m = branchStock(); return m && item ? (m[String(item).trim().toUpperCase()] || 0) : null; };
+function brChip(item) { const n = brQty(item); return n == null ? "" : n ? ` <span class="chip good">DBN branch: ${n} in stock</span>` : ' <span class="chip">none in DBN branch</span>'; }
 function bootHas(code, item) {
   const L = ledger(); if (!L || !item) return null;
   const want = String(item).trim().toUpperCase(), w = [], f = [];
@@ -413,13 +431,15 @@ function bootHas(code, item) {
     (loc[0] === "F" ? f : w).push({doc: x[1], qty: Number(x[9]) || 1, days: dayAge(x[0])});
   });
   if (!w.length && !f.length) return null;
+  const merge = a => { const m = {}; a.forEach(i => { const k = i.doc; if (m[k]) m[k].qty += i.qty; else m[k] = Object.assign({}, i); }); return Object.values(m); };
+  w.splice(0, w.length, ...merge(w)); f.splice(0, f.length, ...merge(f));
   const q = a => a.reduce((n, i) => n + i.qty, 0);
   return {w, f, wq: q(w), fq: q(f), text: [w.length ? `${q(w)} working (${w.map(i => `${i.doc} ${daysTxt(i.days)}`).join(", ")})` : "", f.length ? `${q(f)} in the faulty boot (${f.map(i => i.doc).join(", ")})` : ""].filter(Boolean).join("; ")};
 }
 function bootHtml(code, item, whose) {
   const b = bootHas(code, item); if (!b) return "";
   let h = "";
-  if (b.wq) h += `<div class="boot">⚠ Already in ${whose} boot: ${b.wq} working (${b.w.map(i => `${esc(i.doc)} ${daysTxt(i.days)}`).join(", ")}). Still needed?</div>`;
+  if (b.wq) h += `<div class="boot">⚠ Already in ${whose} boot: ${b.wq} working (${b.w.map(i => `${i.qty > 1 ? i.qty + " on " : ""}${esc(i.doc)} ${daysTxt(i.days)}`).join(", ")}). Still needed?</div>`;
   if (b.fq) h += `<div class="boot f">ℹ ${b.fq} in ${whose} FAULTY boot (${b.f.map(i => esc(i.doc)).join(", ")}) – not usable</div>`;
   return h;
 }
@@ -496,7 +516,7 @@ function tabsFor() {
 function renderList() {
   const L = ledger(), I = items();
   $("who").innerHTML = `Logged in as <b>${esc(me().name)}</b> (${esc(me().code)})${ROLE() === "ADMIN" ? " · Admin" : isGL() ? " · Group Leader" : isStores() ? " · Stores" : ""}`;
-  $("st").innerHTML = `<div>${boardLine()}</div><div>${L ? `Item Ledger <b>${esc(L.date || "")}</b> – used for the "already in the boot" notices` : '<span class="old">No Item Ledger on this phone – the "already in the boot" notices are off. Get it on the home page.</span>'}</div>${itemsLine()}`;
+  $("st").innerHTML = `<div>${boardLine()}</div><div>${L ? `Item Ledger <b>${esc(L.date || "")}</b> – used for the "already in the boot" notices${branchStock() ? ` and DBN branch stock (${Object.keys(branchStock()).length} items)` : ' <span class="old">(no DBN branch stock on it)</span>'}` : '<span class="old">No Item Ledger on this phone – the "already in the boot" notices are off. Get it on the home page.</span>'}</div>${itemsLine()}`;
   $("b-kds").hidden = !isLead();
   $("dropcard").hidden = !isLead();
   $("b-board").hidden = !navigator.onLine;
@@ -520,7 +540,7 @@ function trk(q) {
   if (q.status === "REJECTED" || q.status === "CANCELLED") return "";
   const n = STEP[q.status] || 0; return `<div class="trk">${[1, 2, 3, 4, 5].map(i => `<span class="${i < n || q.status === "COLLECTED" ? "d" : i === n ? "c" : ""}"></span>`).join("")}</div>`;
 }
-function linesHtml(q) { return q.lines.map(l => `<div class="sp${l.out ? " out" : ""}"><b>${l.qty}</b> ${esc(l.desc)} ${l.item ? `<span class="small mono">${esc(l.item)}</span>` : ""}${l.out ? ' <span class="chip bad">out of stock</span>' : ""}</div>`).join(""); }
+function linesHtml(q, noStock) { const live = !noStock && ["GL", "NEW", "PICKING"].includes(q.status); return q.lines.map(l => `<div class="sp${l.out ? " out" : ""}"><b>${l.qty}</b> ${esc(l.desc)} ${l.item ? `<span class="small mono">${esc(l.item)}</span>` : ""}${l.out ? ' <span class="chip bad">out of stock</span>' : live ? brChip(l.item) : ""}</div>`).join(""); }
 function cardHtml(q) {
   const mine = q.engineer === me().code || q.createdBy === me().code, dead = q.status === "REJECTED" || q.status === "CANCELLED";
   const a = [];
@@ -532,6 +552,7 @@ function cardHtml(q) {
   if (q.status === "PICKING" && isStores()) a.push(`<button class="btn small" data-act="unpick">Back to new</button><button class="btn small" data-act="nostock">Can't supply</button><button class="btn small good r" data-act="booked">Booked out → BI</button>`);
   if (q.status === "READY" && isLead()) a.push(`<button class="btn small r" data-act="collected">Mark collected</button>`);
   if (isLead()) a.push(`<button class="btn small" data-act="print">🖨 Print</button>`);
+  if (!dead && (mine || isLead())) a.push(`<button class="btn small" data-act="wa" title="Share on WhatsApp">WhatsApp</button>`);
   const who = q.createdBy !== q.engineer ? ` · by ${esc(q.createdByName)}` : "";
   const st = q.status === "READY" ? `Booked out on <b class="mono">${esc(q.bi)}</b> – collect from stores` : q.status === "COLLECTED" ? `Collected ${q.collectedRef ? "(" + esc(q.collectedRef) + ")" : ""}` : q.status === "PICKING" ? `Being picked by ${esc(q.storesName)}` : q.status === "NEW" && q.glName ? `At stores · checked by ${esc(q.glName)}` : SNAME[q.status] || q.status;
   return `<div class="req${q.urgent && !dead && q.status !== "COLLECTED" ? " urg" : ""}${q.status === "COLLECTED" || q.status === "READY" ? " done" : ""}${dead ? " dead" : ""}" data-id="${esc(q.id)}">
@@ -581,6 +602,7 @@ async function doAct(id, op) {
     async m => { const v = m.querySelector("#m-in").value.trim().toUpperCase().replace(/\s+/g, ""); if (!/^[A-Z]{1,4}\d{4,10}$/.test(v)) return "Enter the document number, e.g. BI1608231."; await act(id, "booked", {bi: v}); });
   if (op === "edit") { startForm(q); return; }
   if (op === "print") return printReqs([q], isStores() ? P().layout : "a4");
+  if (op === "wa") return openWa(waText(q, false));
 }
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-act]"); if (!b) return;
@@ -665,7 +687,7 @@ function renderForm() {
     h += `<div class="card"><h2>${editing ? "Spares" : "2. Spares"}</h2>
       ${editing ? "" : `<div class="fill"><span>Call ref</span><b class="mono">${esc(F.call.so || "–")}</b><span>Customer</span><b>${esc(F.call.ship || "–")}</b><span>Engineer</span><b>${esc(nameOf(F.engineer))}</b></div>`}
       ${dup ? `<div class="boot">⚠ There's already an open request for this call: ${esc(dup.id)} (${esc(SNAME[dup.status])}).</div>` : ""}
-      ${F.lines.map((l, i) => `<div class="sline" data-i="${i}"><div><div class="d">${esc(l.desc)}</div><div class="c">${esc(l.item || "no item code")}</div></div>
+      ${F.lines.map((l, i) => `<div class="sline" data-i="${i}"><div><div class="d">${esc(l.desc)}</div><div class="c">${esc(l.item || "no item code")}</div>${l.item ? `<div>${brChip(l.item)}</div>` : ""}</div>
         <div class="qbox"><button type="button" data-q="-1" aria-label="One less">−</button><b>${l.qty}</b><button type="button" data-q="1" aria-label="One more">+</button></div>
         ${bootHtml(F.engineer, l.item, whose)}<button type="button" class="btn small ghost x" data-x="1">Remove</button></div>`).join("")}
       <input class="f" id="f-item" type="search" placeholder="+ Add a spare (item code or description)" value="${esc(F.iq)}" autocomplete="off">
@@ -687,7 +709,7 @@ function shipNames() { const s = new Set(); const B = board(); if (B) B.rows.for
 function paintSugg() {
   const box = $("f-sugg"); if (!box) return; const list = itemSugg(F.iq || "");
   box.hidden = !F.iq || F.iq.trim().length < 2;
-  box.innerHTML = list.map((i, k) => `<button type="button" data-k="${k}"${i[3] ? ' class="mine"' : ""}>${esc(i[1])}<span class="c">${esc(i[0])}${i[3] ? " · in ledger" : ""}</span></button>`).join("") +
+  box.innerHTML = list.map((i, k) => `<button type="button" data-k="${k}"${i[3] ? ' class="mine"' : ""}>${esc(i[1])}<span class="c">${esc(i[0])}${i[3] ? " · in ledger" : ""}${((n) => n == null ? "" : n ? " · DBN " + n : " · DBN 0")(brQty(i[0]))}</span></button>`).join("") +
     (F.iq && F.iq.trim().length >= 2 ? `<button type="button" data-k="free">Add “${esc(F.iq.trim())}” as typed (no item code)</button>` : "");
   box._list = list;
 }
@@ -758,25 +780,55 @@ async function send(emergency) {
   if (btn) { btn.disabled = false; btn.textContent = "Try again"; }
   msg.textContent = res.error || "That didn't work.";
 }
+/* ---------- WhatsApp (v1.4) ---------- */
+function waText(q, notInApp) {
+  const st = {GL: "waiting for GL check", NEW: "at stores", PICKING: "being picked", READY: "booked out" + (q.bi ? " on " + q.bi : ""), COLLECTED: "collected", REJECTED: "rejected", CANCELLED: "cancelled"}[q.status] || "";
+  return [notInApp ? "*SPARES REQUEST – NOT IN THE APP (no signal)*" : `*SPARES REQUEST* ${q.id || ""}${q.urgent ? " (URGENT)" : ""}`,
+    notInApp && q.urgent ? "*URGENT*" : "",
+    `Engineer: ${q.engineerName || nameOf(q.engineer)}`,
+    `Call: ${q.callRef} – ${q.customer || ""}`,
+    ...q.lines.map(l => `${l.qty} x ${String(l.desc).toUpperCase()}${l.item ? " (" + l.item + ")" : ""}${((n) => n == null ? "" : n ? " – DBN stock: " + n : " – none in DBN stock")(brQty(l.item))}`),
+    q.note ? q.note : "",
+    notInApp ? "Please request it in the Spares Request app for me / phone me." : st ? `Status: ${st}` : ""].filter(Boolean).join("\n");
+}
+function openWa(text) {
+  const enc = encodeURIComponent(text);
+  let left = false; const mark = () => { left = true; }; document.addEventListener("visibilitychange", mark, {once: true});
+  location.href = "whatsapp://send?text=" + enc;
+  // no WhatsApp (or a PC): the phone's share sheet, or WhatsApp Web
+  setTimeout(() => { document.removeEventListener("visibilitychange", mark); if (left || document.hidden) return;
+    if (navigator.share) navigator.share({text}).catch(() => {}); else window.open("https://wa.me/?text=" + enc, "_blank"); }, 1600);
+}
+function draftAsReq() {
+  const d = (ls.get("sr-draft") || {}).f || F; if (!d || !d.call) return null;
+  return {engineer: d.engineer, engineerName: nameOf(d.engineer), callRef: d.call.so, customer: d.call.ship, lines: d.lines, urgent: d.urgent, note: d.note, status: ""};
+}
 function showSent(j) {
   const q = j.request, toStores = q.status !== "GL";
   CUR = q.id; VIEW = "sent"; render();
   $("v-sent").innerHTML = `<div class="big ok"><div class="ic">✓</div><h3>${toStores ? "Sent – stores have it" : "Sent – the GL has it"}</h3><p>Server confirmed at <b>${esc(hm(j.serverTime))}</b>${j.already ? " (it had already gone through)" : ""}</p><div class="id">${esc(q.id)}</div></div>
     <div class="card"><div class="small"><span class="mono">${esc(q.callRef)}</span> · ${esc(q.customer)}${q.urgent ? " · URGENT" : ""}</div>${linesHtml(q)}</div>
+    <button class="btn good" data-go="wa" style="font-size:16px">Share on WhatsApp</button>
     <div class="row"><button class="btn grow" data-go="track">Follow it</button><button class="btn primary grow" data-go="list">Done</button></div>`;
+  $("v-sent")._req = q;
 }
 function showNotSent(res) {
   VIEW = "sent"; render();
   $("v-sent").innerHTML = `<div class="big no"><div class="ic">✕</div><h3>NOT SENT</h3><p><b>Nobody has this request.</b> ${res.login ? "You need to log in again on the BCX Field Apps page." : res.timeout ? "The server didn't answer, so treat it as NOT sent." : "There's no signal, so it didn't reach the server."}</p></div>
     <div class="row"><button class="btn primary grow" data-go="retry">Try again</button><button class="btn grow" data-go="edit">Back to the request</button></div>
-    <div class="card small">If you can't get signal, <b>phone your Group Leader</b> to arrange the spares. Your request is kept on this phone so you don't retype it – it is <b>not</b> sent by itself later. ${res.timeout ? "If it did get through, trying again shows the same request number – it won't be sent twice." : ""}</div>`;
+    <button class="btn good" data-go="wa-not" style="font-size:16px">Send it on WhatsApp instead</button>
+    <div class="small" style="text-align:center">WhatsApp sends it when you get signal – check it gets its ticks. It's marked “not in the app”, so a GL can put it in for you.</div>
+    <div class="card small"><div>If you can't get signal, send it on WhatsApp or <b>phone your Group Leader</b> to arrange the spares. Your request is kept on this phone so you don't retype it – it is <b>not</b> sent by itself later. ${res.timeout ? "If it did get through, trying again shows the same request number – it won't be sent twice." : ""}</div></div>`;
 }
 $("v-sent").addEventListener("click", async e => {
   const g = e.target.closest("[data-go]"); if (!g) return;
   if (g.dataset.go === "list") history.back();
+  if (g.dataset.go === "wa" && $("v-sent")._req) openWa(waText($("v-sent")._req, false));
+  if (g.dataset.go === "wa-not") { const q = draftAsReq(); if (q) { const d = ls.get("sr-draft"); if (d) { d.f.waAt = Date.now(); ls.set("sr-draft", d); } openWa(waText(q, true)); } }
   if (g.dataset.go === "track") { VIEW = "view"; render(); }
   if (g.dataset.go === "edit") { const d = ls.get("sr-draft"); F = d ? d.f : F; VIEW = "new"; render(); }
-  if (g.dataset.go === "retry") { const d = ls.get("sr-draft"); F = d ? d.f : F; g.disabled = true; g.textContent = "Sending..."; VIEW = "new"; renderForm(); await send(false); }
+  if (g.dataset.go === "retry") { const d = ls.get("sr-draft"); F = d ? d.f : F;
+    if (F && F.waAt && !confirm("You already sent this on WhatsApp. Put it in the app as well? (Tell the group, so a GL doesn't put it in a second time.)")) return; g.disabled = true; g.textContent = "Sending..."; VIEW = "new"; renderForm(); await send(false); }
 });
 
 /* ---------- printing ---------- */
@@ -825,9 +877,10 @@ function onFresh(fresh) {
   if (P().onArrive) { const printed = new Set(ls.get("sr-printed") || []), todo = newOnes.filter(q => !printed.has(q.id)); if (todo.length) { todo.forEach(q => printed.add(q.id)); ls.set("sr-printed", [...printed].slice(-300)); printReqs(todo, P().layout); } }
 }
 function lateOf(q) { const m = q.status === "PICKING" ? mins(q.pickingAt) : mins(q.glAt && q.status === "NEW" ? q.glAt : q.created); return q.status === "NEW" ? m > (q.urgent ? URGENT_LATE : NEW_LATE) : q.status === "PICKING" ? m > PICK_LATE : false; }
+function kStock(l, q) { if (q.status === "READY" || l.out) return ""; const n = brQty(l.item); return n == null ? "" : n ? ` · <b style="color:#1F7A4D">${n} in branch</b>` : ' · <b style="color:#B4261D">none in branch</b>'; }
 function tkHtml(q) {
   const since = q.status === "READY" ? q.bookedAt : q.status === "PICKING" ? q.pickingAt : (q.glAt || q.created);
-  const lines = q.lines.map((l, i) => q.status === "PICKING" && isStores() ? `<li class="${l.out ? "out" : ""}"><button data-act="lineout" data-line="${i}" title="Tap if this one is out of stock"><b>${l.qty}×</b><span>${esc(l.desc)} <span class="c">${esc(l.item)}</span></span></button></li>` : `<li class="${l.out ? "out" : ""}"><b>${l.qty}×</b><span>${esc(l.desc)} <span class="c">${esc(l.item)}</span></span></li>`).join("");
+  const lines = q.lines.map((l, i) => q.status === "PICKING" && isStores() ? `<li class="${l.out ? "out" : ""}"><button data-act="lineout" data-line="${i}" title="Tap if this one is out of stock"><b>${l.qty}×</b><span>${esc(l.desc)} <span class="c">${esc(l.item)}${kStock(l, q)}</span></span></button></li>` : `<li class="${l.out ? "out" : ""}"><b>${l.qty}×</b><span>${esc(l.desc)} <span class="c">${esc(l.item)}${kStock(l, q)}</span></span></li>`).join("");
   const f = q.status === "NEW" ? `<button data-act="print">🖨 Slip</button><button class="go" data-act="pick">Start picking</button>`
     : q.status === "PICKING" ? `<button data-act="print">🖨</button><button data-act="unpick">Back</button><button data-act="nostock">Can't supply</button><button class="go" data-act="booked">Booked out → enter BI</button>`
     : `<span class="bi">${esc(q.bi)}</span><span class="w">Waiting for Custody pick-up</span><button data-act="collected">Collected</button>`;
@@ -966,7 +1019,7 @@ async function importLedger(file) {
   const ix = need.map(col);
   if (ix[4] < 0 || ix[5] < 0 || ix[8] < 0) return {error: "This doesn't look like an Item Ledger Entries export."};
   let maxD = 0;
-  const data = rows.slice(1).filter(r => r[ix[8]]).map(r => {
+  const data = rows.slice(1).filter(r => keepLoc(r[ix[8]])).map(r => {
     const v = ix.map(i => i < 0 || r[i] == null ? "" : r[i]);
     let d = v[0];
     if (typeof d === "number") { maxD = Math.max(maxD, d); d = XLSX_MINI.serialToDate(d).toISOString().slice(0, 10); }
