@@ -198,10 +198,11 @@ body.kds { background: #141213; }
 table.ht { width: 100%; border-collapse: collapse; font-size: 13.5px; } table.ht th { text-align: left; font: 600 11.5px/1.2 var(--body); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding: 6px 6px; border-bottom: 1px solid var(--line); }
 table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-align: top; } table.ht td.n { text-align: right; font-weight: 700; white-space: nowrap; } table.ht tr[data-eng] { cursor: pointer; }
 .hrow { display: grid; gap: 3px; border-bottom: 1px solid var(--line); padding: 8px 2px; font-size: 13.5px; } .hrow .t { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; } .hrow .t .d { margin-left: auto; color: var(--muted); font-size: 12px; }
+.boot.p { background: var(--good-soft); color: var(--good); }
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <div class="mark"><b>Spares Request</b><small id="sub">v1.5 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <div class="mark"><b>Spares Request</b><small id="sub">v1.6 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
@@ -228,7 +229,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
   <section id="v-hist" hidden style="display:grid;gap:14px"></section>
   <input type="file" id="fmx-file" accept="image/*" hidden>
-  <div class="foot">Spares Request v1.5 · Developed by Gerald Pakree</div>
+  <div class="foot">Spares Request v1.6 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -308,7 +309,10 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v1.5
+/* BCX Spares Request v1.6
+   v1.6: DBN branch stock is only shown to GLs, stores and the Admin (not engineers). Pods: engineers in the same pod
+         (Manage users > Pod, e.g. PMB, RB, SC) see each other's boot stock on every spare - "Waseem has 1 working".
+         Needs script v2.18 for pods.
    v1.5: DBN branch maintenance stock (MAINT_DBN on the Item Ledger) shows on every spare - when he adds it, on the
          GL check, on the stores screen and in the WhatsApp message. The ledger keeps only boots + MAINT_ lines.
    v1.4: WhatsApp - after a request is sent, one tap shares it to the WhatsApp group (already written out); and when
@@ -327,7 +331,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "1.5", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "1.6", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -420,8 +424,17 @@ function branchStock() {
   L.rows.forEach(x => { if (String(x[8]).trim().toUpperCase() !== BRANCH_LOC) return; any = true; const k = String(x[4] || "").trim().toUpperCase(); if (k) m[k] = (m[k] || 0) + (Number(x[9]) || 0); });
   BR_CACHE = {key, m: any ? m : null}; return BR_CACHE.m;
 }
-const brQty = item => { const m = branchStock(); return m && item ? (m[String(item).trim().toUpperCase()] || 0) : null; };
+const brQty = item => { if (!isLead()) return null; const m = branchStock(); return m && item ? (m[String(item).trim().toUpperCase()] || 0) : null; };
 function brChip(item) { const n = brQty(item); return n == null ? "" : n ? ` <span class="chip good">DBN branch: ${n} in stock</span>` : ' <span class="chip">none in DBN branch</span>'; }
+/* ---------- pods (v1.6): engineers in the same pod see each other's boot stock ---------- */
+function podOf(code) { const u = people().find(x => x.code === code); return u && u.pod ? u.pod : ""; }
+function podMates(code) { const p = podOf(code); return p ? people().filter(u => u.pod === p && u.code !== code) : []; }
+function podLine() { const m = SESS && podMates(me().code); return m && m.length ? `<div>Pod <b>${esc(podOf(me().code))}</b>: you also see ${esc(m.map(u => u.name.split(" ")[0]).join(", "))}'s boot stock</div>` : ""; }
+function podHtml(code, item) {
+  if (!item) return "";
+  return podMates(code).map(u => { const b = bootHas(u.code, item); if (!b || !b.wq) return "";
+    return `<div class="boot p">🤝 ${esc(u.name.split(" ")[0])} (pod ${esc(u.pod)}) has ${b.wq} working: ${b.w.map(i => `${i.qty > 1 ? i.qty + " on " : ""}${esc(i.doc)} ${daysTxt(i.days)}`).join(", ")}</div>`; }).join("");
+}
 function bootHas(code, item) {
   const L = ledger(); if (!L || !item) return null;
   const want = String(item).trim().toUpperCase(), w = [], f = [];
@@ -516,7 +529,7 @@ function tabsFor() {
 function renderList() {
   const L = ledger(), I = items();
   $("who").innerHTML = `Logged in as <b>${esc(me().name)}</b> (${esc(me().code)})${ROLE() === "ADMIN" ? " · Admin" : isGL() ? " · Group Leader" : isStores() ? " · Stores" : ""}`;
-  $("st").innerHTML = `<div>${boardLine()}</div><div>${L ? `Item Ledger <b>${esc(L.date || "")}</b> – used for the "already in the boot" notices${branchStock() ? ` and DBN branch stock (${Object.keys(branchStock()).length} items)` : ' <span class="old">(no DBN branch stock on it)</span>'}` : '<span class="old">No Item Ledger on this phone – the "already in the boot" notices are off. Get it on the home page.</span>'}</div>${itemsLine()}`;
+  $("st").innerHTML = `<div>${boardLine()}</div><div>${L ? `Item Ledger <b>${esc(L.date || "")}</b> – used for the "already in the boot" notices${branchStock() && isLead() ? ` and DBN branch stock (${Object.keys(branchStock()).length} items)` : isLead() ? ' <span class="old">(no DBN branch stock on it)</span>' : ""}${podLine()}` : '<span class="old">No Item Ledger on this phone – the "already in the boot" notices are off. Get it on the home page.</span>'}</div>${itemsLine()}`;
   $("b-kds").hidden = !isLead();
   $("dropcard").hidden = !isLead();
   $("b-board").hidden = !navigator.onLine;
@@ -560,6 +573,7 @@ function cardHtml(q) {
     <div class="s"><span class="mono">${esc(q.callRef)}</span> · ${esc(q.customer)}${q.custRef ? " · ref " + esc(q.custRef) : ""}${who}</div>
     ${linesHtml(q)}
     ${q.inBoot && !dead && q.status !== "COLLECTED" ? `<div class="boot" style="font-size:12.5px">⚠ Already in ${q.engineer === me().code ? "your" : "his"} boot: ${esc(q.inBoot)}</div>` : ""}
+    ${!dead && ["GL", "NEW", "PICKING"].includes(q.status) ? q.lines.map(l => podHtml(q.engineer, l.item)).join("") : ""}
     ${q.note ? `<div class="small">Note: ${esc(q.note)}</div>` : ""}
     ${trk(q)}<div class="trkl">${st}</div>
     ${dead ? `<div class="why">${q.status === "REJECTED" ? "Rejected" : "Cancelled"}${q.reason ? ": " + esc(q.reason) : ""}${q.status === "REJECTED" && q.glName ? " – " + esc(q.glName) : ""}</div>` : ""}
@@ -689,7 +703,7 @@ function renderForm() {
       ${dup ? `<div class="boot">⚠ There's already an open request for this call: ${esc(dup.id)} (${esc(SNAME[dup.status])}).</div>` : ""}
       ${F.lines.map((l, i) => `<div class="sline" data-i="${i}"><div><div class="d">${esc(l.desc)}</div><div class="c">${esc(l.item || "no item code")}</div>${l.item ? `<div>${brChip(l.item)}</div>` : ""}</div>
         <div class="qbox"><button type="button" data-q="-1" aria-label="One less">−</button><b>${l.qty}</b><button type="button" data-q="1" aria-label="One more">+</button></div>
-        ${bootHtml(F.engineer, l.item, whose)}<button type="button" class="btn small ghost x" data-x="1">Remove</button></div>`).join("")}
+        ${bootHtml(F.engineer, l.item, whose)}${podHtml(F.engineer, l.item)}<button type="button" class="btn small ghost x" data-x="1">Remove</button></div>`).join("")}
       <input class="f" id="f-item" type="search" placeholder="+ Add a spare (item code or description)" value="${esc(F.iq)}" autocomplete="off">
       <div class="sugg" id="f-sugg"></div>
       <div class="row"><span class="lbl">Urgent</span><span class="seg" id="f-urg"><button type="button" data-u="0" aria-pressed="${!F.urgent}">No</button><button type="button" data-u="1" aria-pressed="${F.urgent}" ${F.urgent ? 'style="background:var(--poor);color:#fff"' : ""}>Yes</button></span></div>

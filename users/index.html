@@ -91,8 +91,8 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
 .stick { position: sticky; bottom: 0; background: linear-gradient(transparent, var(--bg) 30%); padding: 14px 0 6px; display: grid; gap: 8px; }
 </style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Manage users</b><p class="small" id="gate-t" style="margin:0">Only the Admin can manage users. Log in on the BCX Field Apps page with your Admin login.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
-<!-- v1.6: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
-<header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a><div class="mark"><b>Manage users</b><small>v1.6 · Developed by Gerald Pakree</small></div></div></header>
+<!-- v1.7: Pod field (PMB, RB, SC...) for Spares Request. v1.6: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
+<header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a><div class="mark"><b>Manage users</b><small>v1.7 · Developed by Gerald Pakree</small></div></div></header>
 
 <main class="wrap" id="v-list" hidden>
   <div class="row"><button class="btn primary big" id="add" style="flex:2">+ Add a person</button><button class="btn big" id="items" style="flex:1">Item list</button></div>
@@ -107,7 +107,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
   <div class="msg" id="lmsg"></div>
   <div class="list" id="list"><div class="empty">Loading...</div></div>
   <div class="row" style="justify-content:space-between"><button class="btn small" id="reload">Refresh</button><button class="btn small" id="csv">Download the list (CSV)</button></div>
-  <div class="foot">Manage users v1.6 · Developed by Gerald Pakree<br>The same logins work in all the BCX field apps.</div>
+  <div class="foot">Manage users v1.7 · Developed by Gerald Pakree<br>The same logins work in all the BCX field apps.</div>
 </main>
 
 <main class="wrap" id="v-edit" hidden>
@@ -119,6 +119,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
     <div class="field"><span class="lbl">Name</span><input id="e-name" autocomplete="off" placeholder="e.g. Waseem Khan"></div>
     <div class="field"><span class="lbl">Nav code</span><input id="e-code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. WASKHA"></div>
     <div class="field"><span class="lbl">Role</span><div class="seg3" id="e-role"><button data-r="ENG">Engineer</button><button data-r="STORES">Stores</button><button data-r="ADMIN">Admin</button></div></div>
+    <div class="field"><span class="lbl">Pod (optional) – engineers in the same pod see each other's boot stock in Spares Request</span><input id="e-pod" list="e-pods" autocomplete="off" autocapitalize="characters" maxlength="12" placeholder="e.g. PMB, RB, SC"><datalist id="e-pods"><option value="PMB"><option value="RB"><option value="SC"></datalist></div>
     <div class="field"><span class="lbl">Email (optional, for custody emails)</span><input id="e-email" type="email" autocomplete="off" placeholder="name@bcx.co.za"></div>
     <label class="toggle"><span><b>Group Leader</b><br><span class="small">Checks spares requests and sends them to stores (Spares Request)</span></span><input type="checkbox" id="e-gl"></label>
     <label class="toggle"><span><b>Fault tags switched off</b><br><span class="small">No electronic fault tags by or for this person (Fault Tags and Spares Custody). They fill in paper tags themselves.</span></span><input type="checkbox" id="e-notags"></label>
@@ -241,7 +242,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-const VER = "1.6", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "1.7", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const APP_URL = "https://geraldceb.github.io/";
 const ROLE = {ENG: "Engineer", STORES: "Stores", ADMIN: "Admin"};
 const $ = id => document.getElementById(id);
@@ -284,7 +285,7 @@ function renderList() {
   const on = USERS.filter(u => u.active), locked = USERS.filter(u => u.locked).length;
   $("count").textContent = `${on.length} active: ${on.filter(u => u.role === "ENG").length} engineers, ${on.filter(u => u.role === "STORES").length} stores, ${on.filter(u => u.role === "ADMIN").length} admin` + (USERS.length - on.length ? ` · ${USERS.length - on.length} switched off` : "") + (locked ? ` · ${locked} locked out` : "");
   $("list").innerHTML = list.map(u => `<button class="ucard ${u.active ? "" : "off"}" data-code="${esc(u.code)}"><span class="av ${u.role}">${esc(initials(u.name))}</span>
-      <span><span class="nm">${esc(u.name)}</span><span class="sub"><span class="mono">${esc(u.code)}</span><span class="chip ${u.role === "ADMIN" ? "bad" : u.role === "STORES" ? "info" : ""}">${ROLE[u.role] || u.role}</span>${u.gl ? '<span class="chip ok">Group Leader</span>' : ""}${u.noTags ? '<span class="chip bad">Fault tags off</span>' : ""}
+      <span><span class="nm">${esc(u.name)}</span><span class="sub"><span class="mono">${esc(u.code)}</span><span class="chip ${u.role === "ADMIN" ? "bad" : u.role === "STORES" ? "info" : ""}">${ROLE[u.role] || u.role}</span>${u.gl ? '<span class="chip ok">Group Leader</span>' : ""}${u.noTags ? '<span class="chip bad">Fault tags off</span>' : ""}${u.pod ? `<span class="chip info">Pod ${esc(u.pod)}</span>` : ""}
       ${u.active ? "" : '<span class="chip">Switched off</span>'}${u.locked ? '<span class="chip bad">Locked out</span>' : ""}${u.trailsHeld ? `<span class="chip warn">${u.trailsHeld} trail${u.trailsHeld === 1 ? "" : "s"}</span>` : ""}
       <span>${u.lastLogin ? "Last login " + esc(u.lastLogin.slice(0, 10).split("/").reverse().join("/")) : "Never logged in"}</span></span></span><span class="go">&#8250;</span></button>`).join("")
     || `<div class="empty">${q ? "No one matches “" + esc(q) + "”." : "No one here."}</div>`;
@@ -298,7 +299,7 @@ function openEdit(code) {
   const u = code ? USERS.find(x => x.code === code) : null; CUR = u;
   $("e-title").textContent = u ? u.name : "Add a person";
   $("e-name").value = u ? u.name : ""; $("e-code").value = u ? u.code : ""; $("e-code").readOnly = !!u;
-  $("e-email").value = u ? u.email || "" : ""; $("e-active").checked = u ? u.active : true; $("e-gl").checked = !!(u && u.gl); $("e-notags").checked = !!(u && u.noTags); setRole(u ? u.role : "ENG");
+  $("e-email").value = u ? u.email || "" : ""; $("e-active").checked = u ? u.active : true; $("e-gl").checked = !!(u && u.gl); $("e-notags").checked = !!(u && u.noTags); $("e-pod").value = u ? u.pod || "" : ""; setRole(u ? u.role : "ENG");
   $("e-newpin").value = ""; $("e-newpin-l").textContent = u ? "New PIN (4-8 digits)" : "PIN (4-8 digits, or leave empty for a random one)";
   $("e-newpin").placeholder = u ? "Leave empty to keep it" : "Leave empty for a random PIN";
   $("e-pinbox").hidden = !u; $("e-pin").textContent = "••••"; $("e-show").textContent = "Show";
@@ -312,7 +313,7 @@ function openEdit(code) {
   msg("emsg", ""); show("v-edit"); if (!u) setTimeout(() => $("e-name").focus(), 50);
 }
 async function save() {
-  const isNew = !CUR, u = {code: $("e-code").value.trim().toUpperCase(), name: $("e-name").value.trim(), role: ROLEV, email: $("e-email").value.trim(), active: $("e-active").checked, gl: $("e-gl").checked, noTags: $("e-notags").checked, pin: $("e-newpin").value.trim()};
+  const isNew = !CUR, u = {code: $("e-code").value.trim().toUpperCase(), name: $("e-name").value.trim(), role: ROLEV, email: $("e-email").value.trim(), active: $("e-active").checked, gl: $("e-gl").checked, noTags: $("e-notags").checked, pod: $("e-pod").value.trim().toUpperCase(), pin: $("e-newpin").value.trim()};
   if (!u.name) return msg("emsg", "Enter the person's name.", "err");
   if (!/^[A-Z0-9_]{2,12}$/.test(u.code)) return msg("emsg", "The Nav code must be 2-12 letters or numbers, e.g. WASKHA.", "err");
   if (u.pin && !/^\d{4,8}$/.test(u.pin)) return msg("emsg", "The PIN must be 4 to 8 digits.", "err");
