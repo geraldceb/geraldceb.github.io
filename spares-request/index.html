@@ -233,10 +233,11 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
 .pslip hr.dbl { border-top: 3px double #000; }
 .tk li > span { flex: 1 1 0; min-width: 0; } .tk li > button[data-act="lineout"] { flex: 1 1 0; width: auto; min-width: 0; } .tk .kw { flex-basis: 100%; } .tk .ksw { align-self: flex-start; }
 .pbk .off { border: 2px solid #000; padding: 2px 6px; font-weight: 700; margin-bottom: 2mm; text-align: center; }
+.chip.brc { white-space: normal; height: auto; line-height: 1.35; padding-top: 3px; padding-bottom: 3px; }
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <div class="mark"><b>Spares Request</b><small id="sub">v1.9 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <div class="mark"><b>Spares Request</b><small id="sub">v2.0 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
@@ -263,7 +264,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
   <section id="v-hist" hidden style="display:grid;gap:14px"></section>
   <input type="file" id="fmx-file" accept="image/*" hidden>
-  <div class="foot">Spares Request v1.9 · Developed by Gerald Pakree</div>
+  <div class="foot">Spares Request v2.0 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -344,7 +345,9 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v1.9
+/* BCX Spares Request v2.0
+   v2.0: DBN branch stock counts MAINT_DBN and the MT_DBN_ locations (e.g. MT_DBN_UC); anything with OBS is ignored.
+         Shows where it is when it's in more than one place. A ledger saved with the old filter is fetched again on Refresh.
    v1.9 (c): "Refresh" on the Dispatch Board also gets the latest office Item Ledger, so GLs see the DBN branch stock.
    v1.9 (b): group leaders can bulk print too (anything not yet collected), and it works with no signal from the
          saved copy - the paper says "printed offline" so stores know it may not be in the system yet.
@@ -379,7 +382,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "1.9", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "2.0", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -463,17 +466,21 @@ function boardLine() {
 // what an engineer already has: working boot T<code>, faulty boot F<code>
 /* ---------- DBN branch stock (v1.5): MAINT_DBN lines on the Item Ledger ---------- */
 const BRANCH_LOC = "MAINT_DBN";
-const keepLoc = c => { c = String(c == null ? "" : c).trim().toUpperCase(); return /^[TF][A-Z0-9]{3,9}$/.test(c) || c.startsWith("MAINT_"); };
+const keepLoc = c => { c = String(c == null ? "" : c).trim().toUpperCase(); return /^[TF][A-Z0-9]{3,9}$/.test(c) || ((c.startsWith("MAINT_") || c.startsWith("MT_")) && !c.includes("OBS")); };
+// branch stock: MAINT_DBN and MT_DBN_... (never OBS)
+const isBranchLoc = c => { c = String(c || "").trim().toUpperCase(); return !c.includes("OBS") && (c === BRANCH_LOC || c.startsWith("MT_DBN")); };
 let BR_CACHE = null;
 function branchStock() {
   const L = ledger(); if (!L) return null;
   const key = (L.importedAt || 0) + "|" + L.rows.length; if (BR_CACHE && BR_CACHE.key === key) return BR_CACHE.m;
-  const m = {}; let any = false;
-  L.rows.forEach(x => { if (String(x[8]).trim().toUpperCase() !== BRANCH_LOC) return; any = true; const k = String(x[4] || "").trim().toUpperCase(); if (k) m[k] = (m[k] || 0) + (Number(x[9]) || 0); });
-  BR_CACHE = {key, m: any ? m : null}; return BR_CACHE.m;
+  const m = {}, w = {}; let any = false;
+  L.rows.forEach(x => { const loc = String(x[8]).trim().toUpperCase(); if (!isBranchLoc(loc)) return; any = true; const k = String(x[4] || "").trim().toUpperCase(), q = Number(x[9]) || 0; if (!k) return; m[k] = (m[k] || 0) + q; if (q) { w[k] = w[k] || {}; w[k][loc] = (w[k][loc] || 0) + q; } });
+  BR_CACHE = {key, m: any ? m : null, w}; return BR_CACHE.m;
 }
+// where the branch stock sits, when it's not all in MAINT_DBN: "MAINT 3 · MT_DBN_UC 2"
+function brWhere(item) { if (!branchStock()) return ""; const w = BR_CACHE.w[String(item || "").trim().toUpperCase()]; if (!w) return ""; const k = Object.keys(w); return k.length === 1 && k[0] === BRANCH_LOC ? "" : k.map(l => (l === BRANCH_LOC ? "MAINT" : l) + " " + w[l]).join(" · "); }
 const brQty = item => { if (!isLead()) return null; const m = branchStock(); return m && item ? (m[String(item).trim().toUpperCase()] || 0) : null; };
-function brChip(item) { const n = brQty(item); return n == null ? "" : n ? ` <span class="chip good">DBN branch: ${n} in stock</span>` : ' <span class="chip">none in DBN branch</span>'; }
+function brChip(item) { const n = brQty(item); return n == null ? "" : n ? ` <span class="chip good brc">DBN branch: ${n} in stock${brWhere(item) ? " (" + esc(brWhere(item)) + ")" : ""}</span>` : ' <span class="chip">none in DBN branch</span>'; }
 /* ---------- pods (v1.6): engineers in the same pod see each other's boot stock ---------- */
 function podOf(code) { const u = people().find(x => x.code === code); return u && u.pod ? u.pod : ""; }
 function podMates(code) { const p = podOf(code); return p ? people().filter(u => u.pod === p && u.code !== code) : []; }
@@ -1111,7 +1118,7 @@ function onFresh(fresh) {
   if (P().onArrive) { const printed = new Set(ls.get("sr-printed") || []), todo = newOnes.filter(q => !printed.has(q.id)); if (todo.length) { todo.forEach(q => printed.add(q.id)); ls.set("sr-printed", [...printed].slice(-300)); printReqs(todo, P().layout); } }
 }
 function lateOf(q) { const m = q.status === "PICKING" ? mins(q.pickingAt) : mins(q.glAt && q.status === "NEW" ? q.glAt : q.created); return q.status === "NEW" ? m > (q.urgent ? URGENT_LATE : NEW_LATE) : q.status === "PICKING" ? m > PICK_LATE : false; }
-function kStock(l, q) { if (q.status === "READY" || l.out) return ""; const n = brQty(l.item); return n == null ? "" : n ? ` · <b style="color:#1F7A4D">${n} in branch</b>` : ' · <b style="color:#B4261D">none in branch</b>'; }
+function kStock(l, q) { if (q.status === "READY" || l.out) return ""; const n = brQty(l.item); return n == null ? "" : n ? ` · <b style="color:#1F7A4D">${n} in branch${brWhere(l.item) ? " (" + esc(brWhere(l.item)) + ")" : ""}</b>` : ' · <b style="color:#B4261D">none in branch</b>'; }
 function kSwap(q, l, i) { return (canSwap(q) ? `<button class="ksw" data-act="swap" data-line="${i}">Swap</button>` : "") + (l.was ? `<div class="kw">↺ ${esc(wasTxt(l))}${l.why ? " – " + esc(l.why) : ""}</div>` : ""); }
 function tkHtml(q) {
   const since = q.status === "READY" ? q.bookedAt : q.status === "PICKING" ? q.pickingAt : (q.glAt || q.created);
@@ -1267,7 +1274,7 @@ async function importLedger(file) {
   const m = /(\d{4})-(\d{2})-(\d{2})T/.exec(file.name);
   const date = m ? `${m[3]}/${m[2]}/${m[1]}` : (maxD ? ddmm(XLSX_MINI.serialToDate(maxD).toISOString()) : "");
   ["ft-ledger", "ct-ledger", "ft-skip"].forEach(ls.del);
-  if (!ls.set("brl-ledger", {date, file: file.name, rows: data, importedAt: Date.now(), src: "home"})) return {error: "This device is out of storage space, so the ledger couldn't be saved."};
+  if (!ls.set("brl-ledger", {date, file: file.name, rows: data, importedAt: Date.now(), src: "home", kv: 2})) return {error: "This device is out of storage space, so the ledger couldn't be saved."};
   return {ok: true};
 }
 async function XLSX_ALL(file) {
@@ -1408,12 +1415,12 @@ $("b-board").onclick = async () => {
   try { const j = await call("srBoardGet", {have: B ? B.stamp : ""}); if (j.board) ls.set("sr-board", Object.assign({stamp: j.stamp}, j.board)); msg.push(j.none ? "Nobody has shared a Dispatch Board yet." : j.same ? "Dispatch Board is the latest." : "Dispatch Board updated."); if (j.none) bad = true; }
   catch (e) { note(e.net ? "No signal." : e.message, "err"); return; }
   // v1.9: the item ledger comes along (the same office copy as "Get the latest ledger" on the home page)
-  try { const L = ledger(), j = await call("latestLedger", {have: L && L.file || ""}, 90000);
+  try { const L = ledger(), j = await call("latestLedger", {have: L && L.kv === 2 && L.file || ""}, 90000);
     if (!j.name) msg.push("No office ledger yet – drop one in.");
     else if (j.same) msg.push("Item Ledger is the latest (" + (L.date || j.name) + ").");
     else { const bin = atob(j.b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
       const r = await importLedger(new File([u8], j.name)); if (r.ok) { BR_CACHE = null; msg.push("Item Ledger updated to " + (ledger().date || j.name) + "."); } else { msg.push("Item Ledger: " + r.error); bad = true; } }
-    if (isLead() && ledger() && !branchStock()) { msg.push("That ledger has no " + BRANCH_LOC + " lines, so there's no branch stock to show – export it with the " + BRANCH_LOC + " location included."); bad = true; }
+    if (isLead() && ledger() && !branchStock()) { msg.push("That ledger has no " + BRANCH_LOC + " lines, so there's no branch stock to show – export it with the " + BRANCH_LOC + " / MT_DBN locations included."); bad = true; }
   } catch (e) { msg.push("Item Ledger: " + (e.net ? "no signal." : e.message)); bad = true; }
   note(msg.join(" "), bad ? "err" : "ok"); await getItems(); render();
 };

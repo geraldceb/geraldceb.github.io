@@ -1,5 +1,5 @@
 // Offline support for Spares Request. The version changes whenever the app changes.
-const CACHE = "spares-request-v1-9c-20261123";
+const CACHE = "spares-request-v2-0-20261123";
 const EXCLUDE = []; // other apps in sub-folders of this site keep their own offline copy
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 const BASE = new URL("./", self.registration.scope).pathname;

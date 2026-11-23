@@ -208,7 +208,7 @@ footer.bar #share { min-height: 48px; flex: none; }
 
 <!-- v2.12: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
 <header class="top"><div class="wrap">
-  <div class="mark"><div class="title"><span>Fault Tags</span><small>v2.13 · Developed by Gerald Pakree</small></div></div>
+  <div class="mark"><div class="title"><span>Fault Tags</span><small>v2.14 · Developed by Gerald Pakree</small></div></div>
   <div class="status" aria-live="polite">
     <span class="pill" id="pill-tags">0 tags</span>
     <span class="pill" id="pill-pages">0 pages</span>
@@ -543,7 +543,8 @@ function buildItems() {
 const homeMark = (el, L) => { if (!el) return; const on = !!(L && L.src === "home"); el.classList.toggle("homeled", on); if (on) el.insertAdjacentHTML("afterbegin", '<span class="hm">&#10003; From the home page</span> · '); };   // green when the ledger came from the BCX Field Apps home page
 // v2.13: the ledger can be the whole branch (site stock, repairs...). The apps keep only the boots
 // (T... working, F... faulty) and the branch maintenance stock (MAINT_...): smaller, quicker, and nothing else shows up.
-const keepLoc = c => { c = String(c == null ? "" : c).trim().toUpperCase(); return /^[TF][A-Z0-9]{3,9}$/.test(c) || c.startsWith("MAINT_"); };
+// v2.14: the stock locations kept are MAINT_ and MT_ (e.g. MT_DBN_UC); anything with OBS (obsolete) is left out.
+const keepLoc = c => { c = String(c == null ? "" : c).trim().toUpperCase(); return /^[TF][A-Z0-9]{3,9}$/.test(c) || ((c.startsWith("MAINT_") || c.startsWith("MT_")) && !c.includes("OBS")); };
 async function importFile(file) {
   setMsg("Reading " + file.name + "...");
   let rows;
@@ -568,7 +569,7 @@ async function importFile(file) {
     v[9] = Number(v[9]) || 0; return v;
   });
   const m = /(\d{4})-(\d{2})-(\d{2})T/.exec(file.name);
-  LEDGER = {date: m ? `${m[3]}/${m[2]}/${m[1]}` : (maxD ? ddmmyyyy(XLSX_MINI.serialToDate(maxD).toISOString()) : ""), file: file.name, rows: data, importedAt: Date.now()};
+  LEDGER = {date: m ? `${m[3]}/${m[2]}/${m[1]}` : (maxD ? ddmmyyyy(XLSX_MINI.serialToDate(maxD).toISOString()) : ""), file: file.name, rows: data, importedAt: Date.now(), kv: 2};
   if (!ls.set("ft-ledger", LEDGER)) setMsg("Ledger loaded, but this phone couldn't keep a copy. Re-import it if the page reloads.", "err");
   buildItems(); renderAll();
   setMsg(resByNo() ? `Ledger loaded: ${ITEMS.faulty.length} faulty and ${ITEMS.working.length} working boot items for ${S.engineer}.` : `Ledger loaded (${data.length} lines). Now pick the engineer.`, "ok");
@@ -936,7 +937,7 @@ const BCXUsers = (() => {
    One login per phone covers Boot Recon, Fault Tags and Spares Custody: Nav code + PIN checked by the Google script,
    kept for 30 days. Engineers are locked to their own boot; Admin and Stores can pick anyone. */
 (() => {
-  const APP = "BCX Fault Tags", VER = "2.13", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+  const APP = "BCX Fault Tags", VER = "2.14", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
   const g = id => document.getElementById(id);
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },

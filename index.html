@@ -71,7 +71,7 @@ h2 { margin: 0; font: 700 19px/1.15 var(--display); }
     <label>PIN<input id="l-pin" name="bcx-pin-x" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></label>
     <button id="l-go" type="submit">Log in</button>
     <div class="m" id="l-msg"></div>
-    <div class="dev">BCX Field Apps v1.8 · Developed by Gerald Pakree</div>
+    <div class="dev">BCX Field Apps v1.9 · Developed by Gerald Pakree</div>
   </form>
 </div>
 
@@ -95,7 +95,7 @@ h2 { margin: 0; font: 700 19px/1.15 var(--display); }
     <a class="tile" href="store-visit/?hub=1"><span class="ic">SV</span><div><b>Store Visit</b><span>Site visit report</span></div><span class="go">&#8250;</span></a>
     <a class="tile" id="t-users" href="users/" hidden><span class="ic">MU</span><div><b>Manage users</b><span>Admin: logins, PINs, roles, lock-outs</span></div><span class="go">&#8250;</span></a>
   </nav>
-  <div class="foot">BCX Field Apps v1.8 · Developed by Gerald Pakree</div>
+  <div class="foot">BCX Field Apps v1.9 · Developed by Gerald Pakree</div>
 </main>
 
 <script>
@@ -179,7 +179,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Login: same Google script and same saved login ("ct-session") as every app, so logging in here logs you into all of them.
    - Ledger: imported once here and saved where all the apps read it ("brl-ledger"; Fault Tags and Custody read that too).
      Older per-app copies are cleared so every app uses this one. */
-const VER = "1.8", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "1.9", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = {
@@ -222,7 +222,8 @@ function ledMsg(t, k) { const m = $("led-msg"); m.textContent = t; m.className =
 // same reading as Boot Recon's import, so every app gets exactly the rows it expects
 // v1.8: the ledger can be the whole branch (site stock, repairs...). The apps keep only the boots
 // (T... working, F... faulty) and the branch maintenance stock (MAINT_...): smaller, quicker, and nothing else shows up.
-const keepLoc = c => { c = String(c == null ? "" : c).trim().toUpperCase(); return /^[TF][A-Z0-9]{3,9}$/.test(c) || c.startsWith("MAINT_"); };
+// v1.9: the stock locations kept are MAINT_ and MT_ (e.g. MT_DBN_UC); anything with OBS (obsolete) is left out.
+const keepLoc = c => { c = String(c == null ? "" : c).trim().toUpperCase(); return /^[TF][A-Z0-9]{3,9}$/.test(c) || ((c.startsWith("MAINT_") || c.startsWith("MT_")) && !c.includes("OBS")); };
 async function importLedger(file) {
   ledMsg("Reading " + file.name + "...");
   let rows;
@@ -242,7 +243,7 @@ async function importLedger(file) {
   });
   const m = /(\d{4})-(\d{2})-(\d{2})T/.exec(file.name);
   const date = m ? `${m[3]}/${m[2]}/${m[1]}` : (maxD ? ddmmyyyy(XLSX_MINI.serialToDate(maxD).toISOString()) : "");
-  const L = {date, file: file.name, rows: data, importedAt: Date.now(), src: "home"};   // src: the apps show it green
+  const L = {date, file: file.name, rows: data, importedAt: Date.now(), kv: 2, src: "home"};   // src: the apps show it green
   ["ft-ledger", "ct-ledger", "ft-skip"].forEach(ls.del);   // one copy for all apps
   if (!ls.set("brl-ledger", L)) return ledMsg("This phone is out of storage space, so the ledger couldn't be saved. Free some space and try again.", "err");
   const me = (ls.get("ct-session") || {}).user, mine = me && me.role === "ENG" ? data.filter(r => String(r[8]).toUpperCase().slice(1) === me.code).length : null;
@@ -271,7 +272,7 @@ $("led-latest").addEventListener("click", async () => {
   const b = $("led-latest"), s = ls.get("ct-session"), have = currentLedger();
   b.disabled = true; ledMsg("Getting the latest ledger...");
   try {
-    const r = await fetch(api(), {method: "POST", body: JSON.stringify({action: "latestLedger", token: s && s.token, have: have && have.file}), redirect: "follow"});
+    const r = await fetch(api(), {method: "POST", body: JSON.stringify({action: "latestLedger", token: s && s.token, have: have && have.kv === 2 && have.file}), redirect: "follow"});
     const j = await r.json();
     if (!j.ok) throw new Error(/^LOGIN:/.test(j.error || "") ? "Please log in again." : /Unknown action/i.test(j.error || "") ? "The office ledger needs the Google script updated to v2.8. Import your own copy instead." : j.error);
     if (!j.name) return ledMsg("There's no office ledger yet. Import your own copy instead.", "err");

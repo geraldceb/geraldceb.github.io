@@ -174,7 +174,7 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
 
 <!-- v4.11: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
 <header class="top"><div class="wrap">
-  <div class="mark" id="home-link"><div class="title"><span>Spares Custody</span><small>v<span class="ver">4.12</span> · Developed by Gerald Pakree</small></div></div>
+  <div class="mark" id="home-link"><div class="title"><span>Spares Custody</span><small>v<span class="ver">4.13</span> · Developed by Gerald Pakree</small></div></div>
 </div></header>
 
 <main class="wrap">
@@ -13563,7 +13563,7 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "4.12";
+const APP_VERSION = "4.13";
 /* v4.12: the ledger keeps only boots and the branch maintenance stock (MAINT_...), so a whole-branch ledger works. */
 /* v4.11: "Posted" on a collection is picked from a calendar (date) and a clock (time) instead of typed - only on
    issues typed in by hand; an issue picked from the ledger keeps Nav's date, locked;
@@ -14495,7 +14495,8 @@ async function retPrepare() {
 const homeMark = (el, L) => { if (!el) return; const on = !!(L && L.src === "home"); el.classList.toggle("homeled", on); if (on) el.insertAdjacentHTML("afterbegin", '<span class="hm">&#10003; From the home page</span> · '); };   // green when the ledger came from the BCX Field Apps home page
 // v4.12: the ledger can be the whole branch (site stock, repairs...). The apps keep only the boots
 // (T... working, F... faulty) and the branch maintenance stock (MAINT_...): smaller, quicker, and nothing else shows up.
-const keepLoc = c => { c = String(c == null ? "" : c).trim().toUpperCase(); return /^[TF][A-Z0-9]{3,9}$/.test(c) || c.startsWith("MAINT_"); };
+// v4.13: the stock locations kept are MAINT_ and MT_ (e.g. MT_DBN_UC); anything with OBS (obsolete) is left out.
+const keepLoc = c => { c = String(c == null ? "" : c).trim().toUpperCase(); return /^[TF][A-Z0-9]{3,9}$/.test(c) || ((c.startsWith("MAINT_") || c.startsWith("MT_")) && !c.includes("OBS")); };
 async function readLedgerFile(file) {
   let rows;
   try { rows = await XLSX_MINI.read(file); } catch (e) { throw new Error("That file couldn't be read. Import the .xlsx exactly as exported from Nav."); }
@@ -14511,7 +14512,7 @@ async function readLedgerFile(file) {
     v[9] = Number(v[9]) || 0; return v;
   });
   const m = /(\d{4})-(\d{2})-(\d{2})T/.exec(file.name);
-  const L = {date: m ? `${m[3]}/${m[2]}/${m[1]}` : (maxD ? ddmmyyyy(XLSX_MINI.serialToDate(maxD).toISOString()) : ""), file: file.name, rows: data, importedAt: Date.now()};
+  const L = {date: m ? `${m[3]}/${m[2]}/${m[1]}` : (maxD ? ddmmyyyy(XLSX_MINI.serialToDate(maxD).toISOString()) : ""), file: file.name, rows: data, importedAt: Date.now(), kv: 2};
   const kept = ls.set("ct-ledger", L); if (!kept) window.__ledger = L;
   return {L, kept};
 }
@@ -14519,7 +14520,7 @@ async function readLedgerFile(file) {
 async function getOfficeLedger(show, after) {
   show('<span class="spinner"></span> Getting the latest ledger...', "");
   try {
-    const have = loadLedger(), j = await api("latestLedger", {have: have && have.file});
+    const have = loadLedger(), j = await api("latestLedger", {have: have && have.kv === 2 && have.file});
     if (!j.name) return show("There's no office ledger yet. Import your own copy below.", "warn");
     if (j.same) { after(); return show(`You already have the latest: <b>${esc(j.name)}</b>.`, "ok"); }
     const {kept} = await readLedgerFile(new File([CTPDF.b64ToBytes(j.b64)], j.name));
