@@ -234,10 +234,14 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
 .tk li > span { flex: 1 1 0; min-width: 0; } .tk li > button[data-act="lineout"] { flex: 1 1 0; width: auto; min-width: 0; } .tk .kw { flex-basis: 100%; } .tk .ksw { align-self: flex-start; }
 .pbk .off { border: 2px solid #000; padding: 2px 6px; font-weight: 700; margin-bottom: 2mm; text-align: center; }
 .chip.brc { white-space: normal; height: auto; line-height: 1.35; padding-top: 3px; padding-bottom: 3px; }
+/* v2.1 */
+#kds .pill.on, .kds .pill.on { background: #1F7A4D; color: #fff; border-color: #1F7A4D; }
+.ksteps { font-size: 14px; line-height: 1.45; } .ksteps ol { margin: 6px 0; padding-left: 20px; } .ksteps li { margin-bottom: 5px; }
+.tk .prn { font: 600 12px/1 var(--body); color: #5b5653; margin-left: 6px; }
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <div class="mark"><b>Spares Request</b><small id="sub">v2.0 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <div class="mark"><b>Spares Request</b><small id="sub">v2.1 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
@@ -264,7 +268,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
   <section id="v-hist" hidden style="display:grid;gap:14px"></section>
   <input type="file" id="fmx-file" accept="image/*" hidden>
-  <div class="foot">Spares Request v2.0 · Developed by Gerald Pakree</div>
+  <div class="foot">Spares Request v2.1 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -345,7 +349,12 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v2.0
+/* BCX Spares Request v2.1
+   v2.1: calls - the engineer's own calls first, then "Other calls on the board" (stale calls moved to someone else)
+         with a search across the whole board (SO, site, ref, engineer, machine). A call on someone else's name
+         shows who it's under, on the request too. Stores screen: Auto print on/off button in the top bar; it also
+         prints what came in while the screen was closed (since auto print was switched on); printed tickets say so;
+         a "set up this PC" download makes a shortcut that prints with no print window.
    v2.0: DBN branch stock counts MAINT_DBN and the MT_DBN_ locations (e.g. MT_DBN_UC); anything with OBS is ignored.
          Shows where it is when it's in more than one place. A ledger saved with the old filter is fetched again on Refresh.
    v1.9 (c): "Refresh" on the Dispatch Board also gets the latest office Item Ledger, so GLs see the DBN branch stock.
@@ -382,7 +391,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "2.0", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "2.1", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -631,7 +640,7 @@ const wasHtml = l => l.was ? `<div class="swp">↺ ${esc(wasTxt(l))}${l.why ? " 
 const canSwap = q => isStores() && ["NEW", "PICKING"].includes(q.status);
 function linesHtml(q, noStock) {
   const live = !noStock && ["GL", "NEW", "PICKING"].includes(q.status), G = groupLines(q);
-  return G.map(g => `<div class="cgh">📞 <b class="mono">${g.so === "NO CALL" ? "No call" : esc(g.so)}</b> · ${esc(g.ship)}</div>` + g.items.map(({l, i}) => `<div class="sp${l.out ? " out" : ""}"><b>${l.qty}</b> ${esc(l.desc)} ${l.item ? `<span class="small mono">${esc(l.item)}</span>` : ""}${G.length > 1 ? ` <span class="chip">${g.so === "NO CALL" ? "no call" : esc(g.so)}</span>` : ""}${l.out ? ' <span class="chip bad">out of stock</span>' : live ? brChip(l.item) : ""}${canSwap(q) ? ` <button class="btn small ghost" data-act="swap" data-line="${i}">Swap</button>` : ""}</div>${wasHtml(l)}`).join("")).join("");
+  return G.map(g => `<div class="cgh">📞 <b class="mono">${g.so === "NO CALL" ? "No call" : esc(g.so)}</b> · ${esc(g.ship)}${live && g.so !== "NO CALL" ? underHtml(q, g.so) : ""}</div>` + g.items.map(({l, i}) => `<div class="sp${l.out ? " out" : ""}"><b>${l.qty}</b> ${esc(l.desc)} ${l.item ? `<span class="small mono">${esc(l.item)}</span>` : ""}${G.length > 1 ? ` <span class="chip">${g.so === "NO CALL" ? "no call" : esc(g.so)}</span>` : ""}${l.out ? ' <span class="chip bad">out of stock</span>' : live ? brChip(l.item) : ""}${canSwap(q) ? ` <button class="btn small ghost" data-act="swap" data-line="${i}">Swap</button>` : ""}</div>${wasHtml(l)}`).join("")).join("");
 }
 function cardHtml(q) {
   const mine = q.engineer === me().code || q.createdBy === me().code, dead = q.status === "REJECTED" || q.status === "CANCELLED";
@@ -768,13 +777,18 @@ function saveDraft() { if (F && !F.edit) ls.set("sr-draft", {user: me().code, f:
 function engCalls(code) { const B = board(); return B ? B.rows.map(brow).filter(r => r.res === code).sort((a, b) => String(b.date).localeCompare(String(a.date))) : []; }
 function searchCalls(q) {
   const B = board(); if (!B) return []; const t = q.toUpperCase().split(/\s+/).filter(Boolean);
-  return B.rows.map(brow).filter(r => { const s = `${r.so} ${r.ref} ${r.ship} ${r.res} ${r.mach}`.toUpperCase(); return t.every(x => s.includes(x)); }).slice(0, 40);
+  const hit = B.rows.map(brow).filter(r => { const s = `${r.so} ${r.ref} ${r.ship} ${r.res} ${nameOf(r.res)} ${r.mach} ${r.rep}`.toUpperCase(); return t.every(x => s.includes(x)); });
+  return hit.sort((a, b) => ((b.res === F.engineer) - (a.res === F.engineer)) || String(b.date).localeCompare(String(a.date))).slice(0, 80);
 }
+function otherCalls(code) { const B = board(); return B ? B.rows.map(brow).filter(r => r.res !== code).sort((a, b) => String(b.date).localeCompare(String(a.date))) : []; }
+// whose name a call is under on the Dispatch Board (for "on the board under ...")
+let BIDX = null; function boardRes(so) { const B = board(); if (!B) return null; if (!BIDX || BIDX.k !== B.stamp + B.rows.length) { const m = {}; B.rows.forEach(r => { const x = brow(r); m[x.so] = x.res; }); BIDX = {k: B.stamp + B.rows.length, m}; } return so in BIDX.m ? BIDX.m[so] : null; }
+function underHtml(q, so) { const r = boardRes(so); if (r == null || r === q.engineer) return ""; return ` <span class="chip warn">on the board under ${r ? esc(nameOf(r)) : "nobody"}</span>`; }
 function callHtml(r) {
   const sel = F.call && F.call.so === r.so;
   const tech = r.tech && r.tech !== "Unassigned" ? `<span class="chip${r.tech === "Arrived" ? " good" : ""}">${esc(r.tech)}</span>` : "";
   return `<button type="button" class="call${sel ? " sel" : ""}" data-so="${esc(r.so)}"><span class="h"><span class="so">${esc(r.so)}</span><span class="chip warn">${esc(title(r.rep))}</span>${tech}<span class="chip" style="margin-left:auto">${esc(r.mach)}</span></span>
-    <span class="st">${esc(r.ship)}</span><span class="m">${r.ref ? "Ref " + esc(r.ref) + " · " : ""}${r.res && r.res !== F.engineer ? esc(nameOf(r.res)) + " · " : !r.res ? "Not allocated · " : ""}${esc(r.note)}</span></button>`;
+    <span class="st">${esc(r.ship)}</span><span class="m">${r.ref ? "Ref " + esc(r.ref) + " · " : ""}${r.res && r.res !== F.engineer ? "<b>Under " + esc(nameOf(r.res)) + "</b> · " : !r.res ? "<b>Not allocated</b> · " : ""}${esc(r.note)}</span></button>`;
 }
 function itemSugg(q) {
   const I = items(), out = [], seen = new Set(); q = q.trim().toUpperCase(); if (q.length < 2) return [];
@@ -828,14 +842,13 @@ function callBlock(g, gi, whose, editing) {
 }
 // choosing a call: Dispatch Board, FMX screenshot, typed in, or no call (customer + site)
 function pickerCard(nCalls) {
-  const mine = engCalls(F.engineer), list = F.q ? searchCalls(F.q) : mine, whose = F.engineer === me().code ? "Your" : esc(nameOf(F.engineer)) + "'s";
+  const mine = engCalls(F.engineer), list = F.q ? searchCalls(F.q) : mine, oth = F.q || !F.others ? [] : otherCalls(F.engineer), whose = F.engineer === me().code ? "Your" : esc(nameOf(F.engineer)) + "'s";
   const tabs = [["", "Dispatch Board"], ["fmx", "FMX screenshot"], ["man", "Type the call"], ["nocall", "No call"]];
   let h = `<div class="card"><h2>${nCalls ? "Which other call?" : "1. Which call?"} ${nCalls ? '<button type="button" class="btn small" id="f-backcall">Back to the spares</button>' : ""}</h2>
     <div class="tabs" id="f-mode">${tabs.map(([k, l]) => `<button type="button" data-m="${k}" aria-pressed="${(F.mode || "") === k}">${l}</button>`).join("")}</div>`;
   if (!F.mode) h += `<div class="status" style="padding:7px 10px"><div>${boardLine()}</div></div>
-    ${board() ? `<input class="f" id="f-q" type="search" placeholder="Search SO, site or customer ref..." value="${esc(F.q)}" autocomplete="off">
-    <div class="small">${F.q ? `${list.length} call${list.length === 1 ? "" : "s"} found (all engineers)` : `${whose} calls on the Dispatch Board (${esc(F.engineer)}) – ${mine.length}`}</div>
-    <div class="calls" id="f-calls">${list.map(callHtml).join("") || '<div class="empty">No calls. Search, or use FMX screenshot / Type the call / No call.</div>'}</div>` : ""}`;
+    ${board() ? `<input class="f" id="f-q" type="search" placeholder="Search the whole board – SO, site, ref, engineer..." value="${esc(F.q)}" autocomplete="off">
+    <div id="f-callwrap">${callsHtml(list, mine, oth, whose)}</div>` : ""}`;
   if (F.mode === "fmx") h += `<div class="fmxbox"><div class="row"><b style="flex:1">📷 From an FMX screenshot</b><button type="button" class="btn small" id="f-fmx"${online() ? "" : " disabled"}>${F.fmxBusy ? "Reading..." : F.fmx ? "Another screenshot" : "Choose screenshot"}</button></div>
       ${F.fmx ? (F.fmx.length ? `<div class="small">${F.fmx.length} call${F.fmx.length === 1 ? "" : "s"} on your screenshot – tap the one you need spares for</div>${F.fmx.map(fmxHtml).join("")}` : '<div class="small" style="color:var(--poor)">No calls found on that picture. Take the screenshot of your FMX job list with the call showing, or type the call in.</div>') : `<div class="small">${online() ? "Screenshot your FMX job list with the call on it, then choose it here. The app reads the SO and site for you." : "Needs signal."}</div>`}
       ${F.fmxErr ? `<div class="small" style="color:var(--poor)">${esc(F.fmxErr)}</div>` : ""}</div>`;
@@ -847,6 +860,16 @@ function pickerCard(nCalls) {
         <input class="f" id="f-sq" type="search" placeholder="Search the ${esc(F.cust)} site..." value="${esc(F.sq)}" autocomplete="off"><div class="sugg" id="f-ssugg"></div>`
       : `<input class="f" id="f-cq" type="search" placeholder="Search the customer (e.g. PICK N PAY, SHOPRITE)..." value="${esc(F.cq)}" autocomplete="off"><div class="sugg" id="f-csugg"></div>`}`;
   return h + `</div>`;
+}
+function callsHtml(list, mine, oth, whose) {
+  if (F.q) return `<div class="small">${list.length >= 80 ? "First 80 calls" : list.length + " call" + (list.length === 1 ? "" : "s")} found on the whole board${list.length >= 80 ? " – type more to narrow it down" : ""}</div><div class="calls" id="f-calls">${list.map(callHtml).join("") || '<div class="empty">No calls found. Try the site name or the engineer, or use Type the call.</div>'}</div>`;
+  const B = board(), nO = B ? B.rows.length - mine.length : 0;
+  return `<div class="small">${whose} calls on the Dispatch Board (${esc(F.engineer)}) – ${mine.length}</div>
+    <div class="calls" id="f-calls">${mine.map(callHtml).join("") || '<div class="empty">No calls on this name. Look under other calls, search, or use FMX screenshot / Type the call / No call.</div>'}</div>
+    ${nO ? (F.others ? `<div class="row" style="margin-top:10px"><b style="flex:1">Other calls on the board – ${nO}</b><button type="button" class="btn small" id="f-oth">Hide</button></div>
+      <div class="small">Newest first. A call that moved to someone else is still fine to use – the GL sees whose name it's under.</div>
+      <div class="calls">${oth.slice(0, 60).map(callHtml).join("")}</div>${nO > 60 ? '<div class="small">Showing the newest 60 – search above to find any call.</div>' : ""}`
+      : `<button type="button" class="btn small" id="f-oth" style="margin-top:10px">Show other calls on the board (${nO})</button>`) : ""}`;
 }
 function paintCustSugg() {
   const cb = $("f-csugg"); if (cb) { const q = (F.cq || "").trim().toUpperCase(); const list = q.length < 2 ? [] : customers().filter(([c]) => c.includes(q)).slice(0, 15);
@@ -869,7 +892,7 @@ function paintSugg() {
 }
 $("v-new").addEventListener("input", e => {
   const t = e.target;
-  if (t.id === "f-q") { F.q = t.value; const list = F.q ? searchCalls(F.q) : engCalls(F.engineer); $("f-calls").innerHTML = list.map(callHtml).join("") || '<div class="empty">No calls found.</div>'; saveDraft(); }
+  if (t.id === "f-q") { F.q = t.value; const mine = engCalls(F.engineer); $("f-callwrap").innerHTML = callsHtml(F.q ? searchCalls(F.q) : mine, mine, F.q || !F.others ? [] : otherCalls(F.engineer), F.engineer === me().code ? "Your" : esc(nameOf(F.engineer)) + "'s"); saveDraft(); }
   if (t.id === "f-item") { F.iq = t.value; paintSugg(); }
   if (t.id === "f-note") { F.note = t.value; saveDraft(); }
   if (t.id === "f-so") F.mso = t.value.trim().toUpperCase();
@@ -884,6 +907,7 @@ $("v-new").addEventListener("click", async e => {
   const t = e.target;
   const md = t.closest("#f-mode button"); if (md) { F.mode = md.dataset.m; renderForm(); return; }
   if (t.id === "f-fmx") { $("fmx-file").click(); return; }
+  if (t.id === "f-oth") { F.others = !F.others; renderForm(); return; }
   if (t.id === "f-another") { F.call = null; F.mode = ""; F.iq = ""; saveDraft(); renderForm(); setTimeout(() => { const c = document.querySelector("#f-mode"); if (c) c.scrollIntoView({block: "start"}); }, 40); return; }
   if (t.id === "f-backcall") { const g = groupLines({lines: F.lines}); const last = g[g.length - 1]; if (last) { F.call = F.calls[callKey(last)] || {so: last.so, ship: last.ship}; } F.mode = ""; renderForm(); return; }
   const use = t.closest("[data-use]"); if (use) { const b = use.closest(".cblock"), k = b.dataset.so + "|" + b.dataset.ship; F.call = F.calls[k] || {so: b.dataset.so, ship: b.dataset.ship}; F.iq = ""; saveDraft(); renderForm(); setTimeout(() => { const s = $("f-item"); if (s) s.scrollIntoView({block: "center"}); }, 40); return; }
@@ -1110,13 +1134,25 @@ function beep() { try { const a = new (window.AudioContext || window.webkitAudio
 function onFresh(fresh) {
   if (VIEW !== "kds") return;
   const arrived = fresh.filter(q => q.status === "NEW");
-  if (SEEN === null) { SEEN = new Set(REQS.map(q => q.id)); return; }
-  const newOnes = arrived.filter(q => !SEEN.has(q.id)); REQS.forEach(q => SEEN.add(q.id));
+  // v2.1: "seen" means seen AT STORES - a request the GL then sends on is new to stores even if it was on the list before
+  if (SEEN === null) { SEEN = new Set(REQS.filter(q => q.status !== "GL").map(q => q.id)); autoCatchUp(); return; }
+  const newOnes = arrived.filter(q => !SEEN.has(q.id)); REQS.forEach(q => { if (q.status !== "GL") SEEN.add(q.id); });
   if (!newOnes.length) return;
   if (ls.get("sr-sound") !== false) beep();
   newOnes.forEach(q => FRESH[q.id] = Date.now());
-  if (P().onArrive) { const printed = new Set(ls.get("sr-printed") || []), todo = newOnes.filter(q => !printed.has(q.id)); if (todo.length) { todo.forEach(q => printed.add(q.id)); ls.set("sr-printed", [...printed].slice(-300)); printReqs(todo, P().layout); } }
+  if (P().onArrive) autoPrint(newOnes);
 }
+// auto print: each request once on this PC; remember when, so the ticket can say "printed 10:42"
+function printedMap() { const m = ls.get("sr-printed2"); return m && typeof m === "object" && !Array.isArray(m) ? m : {}; }
+function autoPrint(list) {
+  const m = printedMap(), old = new Set(ls.get("sr-printed") || []), todo = list.filter(q => !m[q.id] && !old.has(q.id)); if (!todo.length) return;
+  const now = Date.now(); todo.forEach(q => m[q.id] = now);
+  ls.set("sr-printed2", Object.fromEntries(Object.entries(m).sort((a, b) => b[1] - a[1]).slice(0, 300)));
+  printReqs(todo, P().layout);
+}
+// what came in while the screen was closed - only since auto print was switched on (never an old backlog)
+function autoCatchUp() { const p = P(); if (!p.onArrive || !p.since) return; const since = new Date(p.since); autoPrint(REQS.filter(q => q.status === "NEW" && new Date(String(q.glAt && q.route === "ENGINEER" ? q.glAt : q.created).replace(/\//g, "-").replace(" ", "T")) >= since)); }
+function setAuto(on) { const p = P(); ls.set("sr-print", Object.assign(p, {onArrive: on, since: on ? (p.onArrive && p.since ? p.since : new Date().toISOString()) : ""})); }
 function lateOf(q) { const m = q.status === "PICKING" ? mins(q.pickingAt) : mins(q.glAt && q.status === "NEW" ? q.glAt : q.created); return q.status === "NEW" ? m > (q.urgent ? URGENT_LATE : NEW_LATE) : q.status === "PICKING" ? m > PICK_LATE : false; }
 function kStock(l, q) { if (q.status === "READY" || l.out) return ""; const n = brQty(l.item); return n == null ? "" : n ? ` · <b style="color:#1F7A4D">${n} in branch${brWhere(l.item) ? " (" + esc(brWhere(l.item)) + ")" : ""}</b>` : ' · <b style="color:#B4261D">none in branch</b>'; }
 function kSwap(q, l, i) { return (canSwap(q) ? `<button class="ksw" data-act="swap" data-line="${i}">Swap</button>` : "") + (l.was ? `<div class="kw">↺ ${esc(wasTxt(l))}${l.why ? " – " + esc(l.why) : ""}</div>` : ""); }
@@ -1124,7 +1160,8 @@ function tkHtml(q) {
   const since = q.status === "READY" ? q.bookedAt : q.status === "PICKING" ? q.pickingAt : (q.glAt || q.created);
   const G = groupLines(q), lineHtml = ({l, i}) => q.status === "PICKING" && isStores() ? `<li class="${l.out ? "out" : ""}"><button data-act="lineout" data-line="${i}" title="Tap if this one is out of stock"><b>${l.qty}×</b><span>${esc(l.desc)} <span class="c">${esc(l.item)}${kStock(l, q)}</span></span></button>${kSwap(q, l, i)}</li>` : `<li class="${l.out ? "out" : ""}"><b>${l.qty}×</b><span>${esc(l.desc)} <span class="c">${esc(l.item)}${kStock(l, q)}</span></span>${kSwap(q, l, i)}</li>`;
   const lines = G.map(g => `<li class="ch">📞 <b>${g.so === "NO CALL" ? "No call" : esc(g.so)}</b> · ${esc(g.ship)}</li>` + g.items.map(lineHtml).join("")).join("");
-  const f = q.status === "NEW" ? `<button data-act="print">🖨 Slip</button><button class="go" data-act="pick">Start picking</button>`
+  const pt = printedMap()[q.id], ptx = pt ? `<span class="prn">🖨 printed ${pad(new Date(pt).getHours())}:${pad(new Date(pt).getMinutes())}</span>` : "";
+  const f = q.status === "NEW" ? `${ptx}<button data-act="print">🖨 Slip</button><button class="go" data-act="pick">Start picking</button>`
     : q.status === "PICKING" ? `<button data-act="print">🖨</button><button data-act="unpick">Back</button><button data-act="nostock">Can't supply</button><button class="go" data-act="booked">Booked out</button>`
     : `<span class="bi">${q.bi ? esc(q.bi) : "no BI"}</span><span class="w">${q.bi ? "Waiting for Custody pick-up" : "Waiting for the engineer"}</span><button data-act="collected">Collected</button>`;
   return `<div class="tk${q.urgent ? " u" : ""}${q.status === "READY" ? " rd" : ""}${lateOf(q) ? " late" : ""}${FRESH[q.id] && Date.now() - FRESH[q.id] < 30000 ? " fresh" : ""}" data-id="${esc(q.id)}">
@@ -1138,7 +1175,7 @@ function renderKds() {
   const n = by("NEW"), p = by("PICKING"), r = by("READY").sort((a, b) => String(b.bookedAt).localeCompare(String(a.bookedAt))), urg = n.concat(p).filter(q => q.urgent).length, gl = REQS.filter(q => q.status === "GL").length;
   const now = new Date();
   $("kds").innerHTML = `<div class="hd"><span class="ttl">SPARES – DBN STORES</span>${urg ? `<span class="pill r">${urg} urgent</span>` : ""}<span class="pill" id="k-live"></span>${gl ? `<span class="pill">${gl} waiting for a GL</span>` : ""}
-    <button class="pill" id="k-bulk">🖨 Print picks</button><button class="pill" id="k-set">🖨 Printing: ${P().layout === "a4" ? "A4 form" : P().layout + " mm"}</button><button class="pill" id="k-snd">${ls.get("sr-sound") === false ? "🔇 Sound off" : "🔔 Sound on"}</button><button class="pill" id="k-exit">✕ Exit</button><span class="clk">${pad(now.getHours())}:${pad(now.getMinutes())}</span></div>
+    <button class="pill" id="k-bulk">🖨 Print picks</button><button class="pill${P().onArrive ? " on" : ""}" id="k-auto" title="Print each new request as it arrives">${P().onArrive ? "🖨 Auto print ON" : "🖨 Auto print off"}</button><button class="pill" id="k-set">⚙ Printer: ${P().layout === "a4" ? "A4 form" : P().layout + " mm"}</button><button class="pill" id="k-snd">${ls.get("sr-sound") === false ? "🔇 Sound off" : "🔔 Sound on"}</button><button class="pill" id="k-exit">✕ Exit</button><span class="clk">${pad(now.getHours())}:${pad(now.getMinutes())}</span></div>
     <div class="msg err" id="k-msg"></div>
     <div class="cols"><div class="col"><h4>New <span>${n.length}</span></h4>${n.map(tkHtml).join("") || '<div class="none">Nothing new.</div>'}</div>
     <div class="col"><h4>Picking <span>${p.length}</span></h4>${p.map(tkHtml).join("") || '<div class="none">Nothing being picked.</div>'}</div>
@@ -1151,21 +1188,43 @@ $("kds").addEventListener("click", e => {
   if (t.id === "k-snd") { ls.set("sr-sound", ls.get("sr-sound") === false); beep(); renderKds(); return; }
   if (t.id === "k-set") { KSET = !KSET; paintKset(); return; }
   if (t.id === "k-bulk") { bulkModal(null); return; }
+  if (t.id === "k-auto") { setAuto(!P().onArrive); note(P().onArrive ? "Auto print is on – every new request prints as it arrives." : "Auto print is off.", "ok"); renderKds(); if ($("kset") && !$("kset").hidden) paintKset(); return; }
 });
 function paintKset() {
   const k = $("kset"), p = P(); k.hidden = !KSET; if (!KSET) return;
   k.innerHTML = `<b style="font:700 21px/1 var(--display)">🖨 Printing on this PC</b>
     <label class="small" style="display:grid;gap:6px">PRINT LAYOUT (saved on this PC)<select id="ks-l"><option value="80"${p.layout === "80" ? " selected" : ""}>Slip printer 80 mm</option><option value="58"${p.layout === "58" ? " selected" : ""}>Slip printer 58 mm</option><option value="a4"${p.layout === "a4" ? " selected" : ""}>A4 – 4 slips per page (the paper form)</option></select></label>
     <label class="tg"><input type="checkbox" id="ks-p"${p.onPick ? " checked" : ""}> Print the picking slip when I tap <b>Start picking</b></label>
-    <label class="tg"><input type="checkbox" id="ks-a"${p.onArrive ? " checked" : ""}> Print as soon as a new request arrives</label>
+    <label class="tg"><input type="checkbox" id="ks-a"${p.onArrive ? " checked" : ""}> <span><b>Auto print</b> – print each new request as it arrives (and anything that came in while this screen was closed)</span></label>
     <div class="row"><button class="btn good grow" id="ks-test">Print a test slip</button><button class="btn grow" id="ks-x">Close</button></div>
-    <div class="small">The printer itself is picked once in the print window – Chrome remembers it. For no print window at all, open this screen from a Chrome shortcut with --kiosk-printing and make the slip printer this PC's default printer.</div>`;
+    <div class="ksteps"><b>Choosing the printer</b>
+      <ol><li>Tap <b>Print a test slip</b> and choose the slip printer in the print window. Chrome remembers it for next time.</li>
+      <li>For printing with <b>no print window at all</b>: <button class="btn small" id="ks-bat">Download “set up this PC”</button> and run it once on this PC. It puts a <b>BCX Stores Screen</b> shortcut on the desktop that opens this screen with silent printing.</li>
+      <li>Open the shortcut, log in as stores once, tap <b>Print a test slip</b>. From then on new requests print straight to that printer – keep the shortcut window open.</li></ol>
+      <div class="small">Silent printing goes to the printer Chrome used last in that window – if it ever goes to the wrong one, make the slip printer this PC's default printer in Windows.</div></div>`;
 }
-$("kset").addEventListener("change", () => { ls.set("sr-print", {layout: $("ks-l").value, onPick: $("ks-p").checked, onArrive: $("ks-a").checked}); renderKds(); });
+$("kset").addEventListener("change", () => { ls.set("sr-print", Object.assign(P(), {layout: $("ks-l").value, onPick: $("ks-p").checked})); if ($("ks-a").checked !== P().onArrive) setAuto($("ks-a").checked); renderKds(); });
 $("kset").addEventListener("click", e => {
   if (e.target.id === "ks-x") { KSET = false; paintKset(); }
+  if (e.target.id === "ks-bat") { setupBat(); return; }
   if (e.target.id === "ks-test") printReqs([{id: "SR-TEST", callRef: "SO0000000", customer: "TEST PRINT", engineerName: me().name, urgent: false, lines: [{qty: 1, desc: "Test line", item: "TEST"}], glName: "", route: "", note: ""}], P().layout);
 });
+
+// a Windows .bat that makes a desktop shortcut: Chrome (or Edge) in its own window, silent printing, this screen
+function setupBat() {
+  const url = location.origin + location.pathname + "?screen=1";
+  const bat = [
+    "@echo off", "title BCX Stores Screen - set up this PC", "rem BCX Spares Request v" + VER + " - makes a desktop shortcut that opens the stores screen with silent printing",
+    'set "URL=' + url + '"', 'set "PROF=%LOCALAPPDATA%\\BCXStoresScreen"', 'set "BR="',
+    'if exist "%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe" set "BR=%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe"',
+    'if not defined BR if exist "%ProgramFiles(x86)%\\Google\\Chrome\\Application\\chrome.exe" set "BR=%ProgramFiles(x86)%\\Google\\Chrome\\Application\\chrome.exe"',
+    'if not defined BR if exist "%LOCALAPPDATA%\\Google\\Chrome\\Application\\chrome.exe" set "BR=%LOCALAPPDATA%\\Google\\Chrome\\Application\\chrome.exe"',
+    'if not defined BR if exist "%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe" set "BR=%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe"',
+    'if not defined BR ( echo Chrome or Edge was not found on this PC. & pause & exit /b 1 )',
+    'powershell -NoProfile -ExecutionPolicy Bypass -Command "$s=(New-Object -ComObject WScript.Shell).CreateShortcut([Environment]::GetFolderPath(\'Desktop\')+\'\\BCX Stores Screen.lnk\'); $s.TargetPath=$env:BR; $s.Arguments=\'--kiosk-printing --user-data-dir=\'+[char]34+$env:PROF+[char]34+\' --app=\'+$env:URL; $s.Description=\'BCX Spares Request - stores screen (silent printing)\'; $s.Save()"',
+    'echo.', 'echo Done. Open "BCX Stores Screen" on the desktop, log in as stores, then tap Printer - Print a test slip.', 'echo New requests will print with no print window while that window is open.', "pause"].join("\r\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([bat], {type: "application/octet-stream"})); a.download = "BCX Stores Screen - set up this PC.bat"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
 
 /* ---------- drop zone: Dispatch Board, Item Ledger or Item list - worked out from the columns ---------- */
 const DROP = $("drop");
