@@ -242,7 +242,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <div class="mark"><b>Spares Request</b><small id="sub">v2.4 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <div class="mark"><b>Spares Request</b><small id="sub">v2.5 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
@@ -269,7 +269,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
   <section id="v-hist" hidden style="display:grid;gap:14px"></section>
   <input type="file" id="fmx-file" accept="image/*" hidden>
-  <div class="foot">Spares Request v2.4 · Developed by Gerald Pakree</div>
+  <div class="foot">Spares Request v2.5 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -350,7 +350,11 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v2.4
+/* BCX Spares Request v2.5
+   v2.5: "Boot stock" - spares just to keep in the boot (no call), for a customer group (PICK N PAY, CLICKS...) -
+         only groups DBN works for (from the Dispatch Board and Item Ledger).
+         "No call" - one search on the site name (any word: BALLITO JUNCTION, CHECKERS BALLITO), like Type the call.
+         Sites from the Dispatch Board and the Item Ledger (DBN) come first, then the Store Visit list.
    v2.4: GLs (and Admin) can edit a request at stores - new or being picked. It goes back to NEW as AMENDED, the
          stores screen beeps and auto prints the new slip (marked "AMENDED - throw away the earlier slip").
          READY requests close themselves 24 hours after they were ready (script v2.22). Needs script v2.22.
@@ -401,7 +405,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "2.4", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "2.5", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -645,6 +649,8 @@ function trk(q) {
   if (q.status === "REJECTED" || q.status === "CANCELLED") return "";
   const n = STEP[q.status] || 0; return `<div class="trk">${[1, 2, 3, 4, 5].map(i => `<span class="${i < n || q.status === "COLLECTED" ? "d" : i === n ? "c" : ""}"></span>`).join("")}</div>`;
 }
+const noCall = so => so === "NO CALL" || so === "BOOT STOCK";
+const soLbl = so => so === "NO CALL" ? "No call" : so === "BOOT STOCK" ? "Boot stock" : esc(so);
 const edN = q => Number(String(q.edited || "").split("|")[0]) || 0;
 const edAt = q => String(q.edited || "").split("|")[1] || "";
 const amTxt = q => edN(q) ? `AMENDED${edN(q) > 1 ? " x" + edN(q) : ""} ${hm(edAt(q))} – throw away the earlier slip` : "";
@@ -654,7 +660,7 @@ const wasHtml = l => l.was ? `<div class="swp">↺ ${esc(wasTxt(l))}${l.why ? " 
 const canSwap = q => isStores() && ["NEW", "PICKING"].includes(q.status);
 function linesHtml(q, noStock) {
   const live = !noStock && ["GL", "NEW", "PICKING"].includes(q.status), G = groupLines(q);
-  return G.map(g => `<div class="cgh">📞 <b class="mono">${g.so === "NO CALL" ? "No call" : esc(g.so)}</b> · ${esc(g.ship)}${live && g.so !== "NO CALL" ? underHtml(q, g.so) : ""}</div>` + g.items.map(({l, i}) => `<div class="sp${l.out ? " out" : ""}"><b>${l.qty}</b> ${esc(l.desc)} ${l.item ? `<span class="small mono">${esc(l.item)}</span>` : ""}${G.length > 1 ? ` <span class="chip">${g.so === "NO CALL" ? "no call" : esc(g.so)}</span>` : ""}${l.out ? ' <span class="chip bad">out of stock</span>' : live ? brChip(l.item) : ""}${canSwap(q) ? ` <button class="btn small ghost" data-act="swap" data-line="${i}">Swap</button>` : ""}</div>${wasHtml(l)}`).join("")).join("");
+  return G.map(g => `<div class="cgh">📞 <b class="mono">${soLbl(g.so)}</b> · ${esc(g.ship)}${live && !noCall(g.so) ? underHtml(q, g.so) : ""}</div>` + g.items.map(({l, i}) => `<div class="sp${l.out ? " out" : ""}"><b>${l.qty}</b> ${esc(l.desc)} ${l.item ? `<span class="small mono">${esc(l.item)}</span>` : ""}${G.length > 1 ? ` <span class="chip">${g.so === "NO CALL" ? "no call" : esc(g.so)}</span>` : ""}${l.out ? ' <span class="chip bad">out of stock</span>' : live ? brChip(l.item) : ""}${canSwap(q) ? ` <button class="btn small ghost" data-act="swap" data-line="${i}">Swap</button>` : ""}</div>${wasHtml(l)}`).join("")).join("");
 }
 function cardHtml(q) {
   const mine = q.engineer === me().code || q.createdBy === me().code, dead = q.status === "REJECTED" || q.status === "CANCELLED";
@@ -843,10 +849,10 @@ function renderForm() {
 }
 // one call and its spares; the call being added to has the "+ Add a spare" box
 function callBlock(g, gi, whose, editing) {
-  const cur = F.call && F.call.so === g.so && F.call.ship === g.ship, nocall = g.so === "NO CALL";
+  const cur = F.call && F.call.so === g.so && F.call.ship === g.ship, nocall = noCall(g.so);
   const dup = !editing && !nocall && REQS.find(q => String(q.callRef).split(/,\s*/).includes(g.so) && ["GL", "NEW", "PICKING", "READY"].includes(q.status));
   return `<div class="cblock gc${gi % 5}${cur ? " cur" : ""}" data-so="${esc(g.so)}" data-ship="${esc(g.ship)}">
-    <div class="chead"><span><b class="mono">${nocall ? "No call" : esc(g.so)}</b><span class="cs">${esc(g.ship || "–")}</span></span>${cur ? '<span class="chip info">adding here</span>' : '<button type="button" class="btn small" data-use="1">Add spares here</button>'}</div>
+    <div class="chead"><span><b class="mono">${soLbl(g.so)}</b><span class="cs">${esc(g.ship || "–")}</span></span>${cur ? '<span class="chip info">adding here</span>' : '<button type="button" class="btn small" data-use="1">Add spares here</button>'}</div>
     ${dup ? `<div class="boot">⚠ There's already an open request for this call: ${esc(dup.id)} (${esc(SNAME[dup.status])}).</div>` : ""}
     ${g.items.map(({l, i}) => `<div class="sline" data-i="${i}"><div><div class="d">${esc(l.desc)}</div><div class="c">${esc(l.item || "no item code")} · for <b>${nocall ? esc(g.ship) : esc(g.so)}</b></div>${l.item ? `<div>${brChip(l.item)}</div>` : ""}</div>
       <div class="qbox"><button type="button" data-q="-1" aria-label="One less">−</button><b>${l.qty}</b><button type="button" data-q="1" aria-label="One more">+</button></div>
@@ -858,7 +864,7 @@ function callBlock(g, gi, whose, editing) {
 // choosing a call: Dispatch Board, FMX screenshot, typed in, or no call (customer + site)
 function pickerCard(nCalls) {
   const mine = engCalls(F.engineer), list = F.q ? searchCalls(F.q) : mine, oth = F.q || !F.others ? [] : otherCalls(F.engineer), whose = F.engineer === me().code ? "Your" : esc(nameOf(F.engineer)) + "'s";
-  const tabs = [["", "Dispatch Board"], ["fmx", "FMX screenshot"], ["man", "Type the call"], ["nocall", "No call"]];
+  const tabs = [["", "Dispatch Board"], ["fmx", "FMX screenshot"], ["man", "Type the call"], ["nocall", "No call"], ["boot", "Boot stock"]];
   let h = `<div class="card"><h2>${nCalls ? "Which other call?" : "1. Which call?"} ${nCalls ? '<button type="button" class="btn small" id="f-backcall">Back to the spares</button>' : ""}</h2>
     <div class="tabs" id="f-mode">${tabs.map(([k, l]) => `<button type="button" data-m="${k}" aria-pressed="${(F.mode || "") === k}">${l}</button>`).join("")}</div>`;
   if (!F.mode) h += `<div class="status" style="padding:7px 10px"><div>${boardLine()}</div></div>
@@ -870,10 +876,10 @@ function pickerCard(nCalls) {
   if (F.mode === "man") h += `<label class="lbl">Call ref (SO)<input class="f mono" id="f-so" autocapitalize="characters" value="${esc(F.mso || "")}" placeholder="SO3827304"></label>
       <label class="lbl">Customer / site<input class="f" id="f-ship" list="f-ships" value="${esc(F.mship || "")}" placeholder="e.g. MARKHAM - BALLITO"></label><datalist id="f-ships">${shipNames().map(s => `<option value="${esc(s)}">`).join("")}</datalist>
       <button type="button" class="btn primary" id="f-usecall">Use this call</button><div class="small">The GL will see “Not on the Dispatch Board” on this one.</div>`;
-  if (F.mode === "nocall") h += `<div class="small">Spares not for a call (e.g. stock for a site): choose the customer, then the site.</div>
-      ${F.cust ? `<div class="fill"><span>Customer</span><b>${esc(F.cust)} <button type="button" class="btn small ghost" id="f-custx">change</button></b></div>
-        <input class="f" id="f-sq" type="search" placeholder="Search the ${esc(F.cust)} site..." value="${esc(F.sq)}" autocomplete="off"><div class="sugg" id="f-ssugg"></div>`
-      : `<input class="f" id="f-cq" type="search" placeholder="Search the customer (e.g. PICK N PAY, SHOPRITE)..." value="${esc(F.cq)}" autocomplete="off"><div class="sugg" id="f-csugg"></div>`}`;
+  if (F.mode === "boot") h += `<div class="small">Spares just to keep in the boot – no call. Choose the customer group they're for.</div>
+      <input class="f" id="f-bq" type="search" placeholder="Search the customer group – e.g. PICK N PAY, CLICKS" value="${esc(F.bq || "")}" autocomplete="off"><div class="sugg" id="f-bsugg"></div>`;
+  if (F.mode === "nocall") h += `<div class="small">Spares not for a call (e.g. stock for a site): search the site by any part of its name.</div>
+      <input class="f" id="f-cq" type="search" placeholder="Search the site – e.g. BALLITO JUNCTION or CHECKERS BALLITO" value="${esc(F.cq)}" autocomplete="off"><div class="sugg" id="f-csugg"></div>`;
   return h + `</div>`;
 }
 function callsHtml(list, mine, oth, whose) {
@@ -886,15 +892,39 @@ function callsHtml(list, mine, oth, whose) {
       <div class="calls">${oth.slice(0, 60).map(callHtml).join("")}</div>${nO > 60 ? '<div class="small">Showing the newest 60 – search above to find any call.</div>' : ""}`
       : `<button type="button" class="btn small" id="f-oth" style="margin-top:10px">Show other calls on the board (${nO})</button>`) : ""}`;
 }
+// v2.5: every site we know - DBN ones (Dispatch Board + Item Ledger) first, then the Store Visit list
+let SITES = null;
+function allSites() {
+  const key = (board() || {}).stamp + "|" + ((ledger() || {}).file || "");
+  if (SITES && SITES.key === key) return SITES.l;
+  const seen = new Set(), l = [], add = (n, dbn) => { n = String(n || "").trim(); const k = n.toUpperCase().replace(/\s+/g, " "); if (!n || seen.has(k)) return; seen.add(k); l.push({n, k, dbn}); };
+  shipNames().forEach(n => add(n, true)); stores().forEach(st => add(st.n.replace(/^\([A-Z]+\)\s*/, ""), false));
+  SITES = {key, l}; return l;
+}
+// v2.5: customer groups (the part before " - "), DBN ones first
+function custGroups() {
+  const m = new Map(), add = (n, dbn) => { n = String(n || "").replace(/^\([A-Z]+\)\s*/, "").trim(); const ix = n.search(/\s*-\s*/), g = (ix > 0 ? n.slice(0, ix) : n).replace(/['’]/g, "").replace(/\s+/g, " ").trim().toUpperCase(); if (!g) return; const x = m.get(g) || {g, n: 0, dbn: false}; x.n++; x.dbn = x.dbn || dbn; m.set(g, x); };
+  allSites().forEach(x => add(x.n, x.dbn)); const all = [...m.values()], dbn = all.filter(x => x.dbn);   // only the customers DBN actually works for (on the board / ledger)
+  return (dbn.length ? dbn : all.filter(x => x.n > 1)).sort((a, b) => (b.dbn - a.dbn) || (b.n - a.n) || a.g.localeCompare(b.g));
+}
+function paintBootSugg() {
+  const bb = $("f-bsugg"); if (!bb) return; const t = (F.bq || "").trim().toUpperCase().split(/\s+/).filter(Boolean), q = t.join(" ");
+  const list = q.length < 2 ? [] : custGroups().filter(x => t.every(w => x.g.includes(w))).slice(0, 20);
+  bb.innerHTML = list.map(x => `<button type="button" data-bootg="${esc(x.g)}">${esc(x.g)}<span class="c">${x.dbn ? "DBN · " : ""}${x.n} site${x.n === 1 ? "" : "s"}</span></button>`).join("")
+    + `<button type="button" data-bootg="${q.length >= 2 ? esc(q) : "GENERAL"}">${q.length >= 2 ? `Use “${esc(q)}” as typed` : "General – not for one customer"}</button>`;
+}
 function paintCustSugg() {
-  const cb = $("f-csugg"); if (cb) { const q = (F.cq || "").trim().toUpperCase(); const list = q.length < 2 ? [] : customers().filter(([c]) => c.includes(q)).slice(0, 15);
-    cb.hidden = !list.length; cb.innerHTML = list.map(([c, n]) => `<button type="button" data-cust="${esc(c)}">${esc(c)}<span class="c">${n} site${n === 1 ? "" : "s"}</span></button>`).join(""); }
-  const sb = $("f-ssugg"); if (sb) { const t = (F.sq || "").trim().toUpperCase().split(/\s+/).filter(Boolean); const all = stores().filter(s => s.cust === F.cust);
-    const list = all.filter(s => t.every(w => s.n.toUpperCase().includes(w))).slice(0, 25);
-    sb.hidden = !list.length; sb.innerHTML = list.map(s => `<button type="button" data-store="${esc(s.n)}">${esc(s.site)}</button>`).join("") + (all.length > 25 && list.length === 25 ? '<div class="small" style="padding:8px 11px">Type more of the site name to narrow it down.</div>' : ""); }
+  paintBootSugg();
+  const cb = $("f-csugg"); if (!cb) return;
+  const t = (F.cq || "").trim().toUpperCase().split(/\s+/).filter(Boolean), q = t.join(" ");
+  const list = q.length < 2 ? [] : allSites().filter(x => t.every(w => x.k.includes(w))).slice(0, 30);
+  cb.hidden = !list.length && q.length < 2;
+  cb.innerHTML = list.map(x => `<button type="button" data-store="${esc(x.n)}">${esc(x.n)}${x.dbn ? '<span class="c">DBN</span>' : ""}</button>`).join("")
+    + (list.length === 30 ? '<div class="small" style="padding:8px 11px">Type more of the name to narrow it down.</div>' : "")
+    + (q.length >= 2 ? `<button type="button" data-store="${esc(F.cq.trim().toUpperCase())}">Use “${esc(F.cq.trim().toUpperCase())}” as typed</button>` : "");
 }
 function setCall(c) {
-  F.call = c; F.calls[callKey(c)] = c; F.q = ""; F.mode = ""; F.cq = ""; F.cust = ""; F.sq = ""; F.mso = ""; F.mship = "";
+  F.call = c; F.calls[callKey(c)] = c; F.q = ""; F.mode = ""; F.cq = ""; F.bq = ""; F.cust = ""; F.sq = ""; F.mso = ""; F.mship = "";
   saveDraft(); renderForm(); setTimeout(() => { const s = $("f-item"); if (s) { s.scrollIntoView({block: "center"}); } }, 40);
 }
 function shipNames() { const s = new Set(); const B = board(); if (B) B.rows.forEach(r => s.add(r[3])); const L = ledger(); if (L) L.rows.forEach(r => r[10] && s.add(String(r[10]).trim())); return [...s].filter(Boolean).sort().slice(0, 1500); }
@@ -913,6 +943,7 @@ $("v-new").addEventListener("input", e => {
   if (t.id === "f-so") F.mso = t.value.trim().toUpperCase();
   if (t.id === "f-ship") F.mship = t.value.trim();
   if (t.id === "f-cq") { F.cq = t.value; paintCustSugg(); }
+  if (t.id === "f-bq") { F.bq = t.value; paintBootSugg(); }
   if (t.id === "f-sq") { F.sq = t.value; paintCustSugg(); }
 });
 $("v-new").addEventListener("change", e => {
@@ -936,6 +967,7 @@ $("v-new").addEventListener("click", async e => {
     setCall({so, ship, manual: true}); return; }
   const cu = t.closest("[data-cust]"); if (cu) { F.cust = cu.dataset.cust; F.sq = ""; renderForm(); setTimeout(() => { const s = $("f-sq"); if (s) s.focus(); }, 40); return; }
   if (t.id === "f-custx") { F.cust = ""; F.cq = ""; renderForm(); return; }
+  const bg = t.closest("[data-bootg]"); if (bg) { setCall({so: "BOOT STOCK", ship: bg.dataset.bootg, nocall: true}); return; }
   const st = t.closest("[data-store]"); if (st) { setCall({so: "NO CALL", ship: st.dataset.store, nocall: true}); return; }
   const sg = t.closest("#f-sugg button"); if (sg) {
     const k = sg.dataset.k, i = k === "free" ? ["", F.iq.trim()] : $("f-sugg")._list[+k];
@@ -968,7 +1000,7 @@ async function send(emergency) {
   if (!F.lines.length) { msg.textContent = "Add at least one spare."; return; }
   const btn = $("f-send"); if (btn) { btn.disabled = true; btn.textContent = "Sending..."; }
   const groups = groupLines({lines: F.lines}), meta = g => F.calls[callKey(g)] || {}, first = meta(groups[0]);
-  const onBoard = groups.every(g => g.so === "NO CALL" || (!meta(g).manual && !!(board() && board().rows.find(x => x[0] === g.so))));
+  const onBoard = groups.every(g => noCall(g.so) || (!meta(g).manual && !!(board() && board().rows.find(x => x[0] === g.so))));
   const inBoot = F.lines.map(l => { const b = bootHas(F.engineer, l.item); return b ? `${l.item}: ${b.text}` : ""; }).filter(Boolean).join(" | ");
   const source = first.fmx ? "FMX" : first.manual ? "TYPED" : first.nocall ? "" : "BOARD";
   const req = {source, engineer: F.engineer, callRef: [...new Set(groups.map(g => g.so))].join(", "), customer: [...new Set(groups.map(g => g.ship))].join(" / "), custRef: first.ref || "", machine: first.mach || "", onBoard, lines: F.lines, urgent: F.urgent, note: F.note, inBoot, emergency};
@@ -1004,7 +1036,7 @@ function waText(q, notInApp) {
   return [notInApp ? "*SPARES REQUEST – NOT IN THE APP (no signal)*" : `*SPARES REQUEST* ${q.id || ""}${q.urgent ? " (URGENT)" : ""}`,
     notInApp && q.urgent ? "*URGENT*" : "",
     `Engineer: ${q.engineerName || nameOf(q.engineer)}`,
-    ...groupLines(q).flatMap(g => [`${g.so === "NO CALL" ? "No call" : "Call: " + g.so} – ${g.ship || ""}`, ...g.items.map(({l}) => `   ${l.qty} x ${String(l.desc).toUpperCase()}${l.item ? " (" + l.item + ")" : ""}${((n) => n == null ? "" : n ? " – DBN stock: " + n : " – none in DBN stock")(brQty(l.item))}${l.was ? ` – ${wasTxt(l)}${l.why ? " (" + l.why + ")" : ""}` : ""}`)]),
+    ...groupLines(q).flatMap(g => [`${noCall(g.so) ? (g.so === "NO CALL" ? "No call" : "Boot stock") : "Call: " + g.so} – ${g.ship || ""}`, ...g.items.map(({l}) => `   ${l.qty} x ${String(l.desc).toUpperCase()}${l.item ? " (" + l.item + ")" : ""}${((n) => n == null ? "" : n ? " – DBN stock: " + n : " – none in DBN stock")(brQty(l.item))}${l.was ? ` – ${wasTxt(l)}${l.why ? " (" + l.why + ")" : ""}` : ""}`)]),
     q.note ? q.note : "",
     notInApp ? "Please request it in the Spares Request app for me / phone me." : st ? `Status: ${st}` : ""].filter(Boolean).join("\n");
 }
@@ -1059,7 +1091,7 @@ function printReqs(list, layout) {
   if (layout === "a4") {
     const W = [15.29, 20.71, 17.43, 50.43], tot = W.reduce((a, b) => a + b, 0);
     const blocks = [];
-    list.forEach(q => { const rows = []; groupLines(q).forEach(g => g.items.forEach(({l}, k) => rows.push({l, so: k === 0 ? (g.so === "NO CALL" ? "NO CALL" : g.so) : "", ship: k === 0 ? g.ship : ""})));
+    list.forEach(q => { const rows = []; groupLines(q).forEach(g => g.items.forEach(({l}, k) => rows.push({l, so: k === 0 ? g.so : "", ship: k === 0 ? g.ship : ""})));
       for (let i = 0; i < Math.max(1, rows.length); i += 10) { const part = rows.slice(i, i + 10); if (part.length && !part[0].so) { const g = groupLines(q).find(g => g.items.some(x => x.l === part[0].l)); part[0] = Object.assign({}, part[0], {so: g.so, ship: g.ship}); }
         blocks.push({q, rows: part, part: rows.length > 10 ? `${i / 10 + 1}/${Math.ceil(rows.length / 10)}` : ""}); } });
     pa.innerHTML = `<div class="pa4">${blocks.map(({q, rows, part}) => `<table><colgroup>${W.map(w => `<col style="width:${(w / tot * 100).toFixed(1)}%">`).join("")}</colgroup>
@@ -1073,7 +1105,7 @@ function printReqs(list, layout) {
       <div>REQ ${esc(q.id)}</div><div>ENGINEER ${esc(q.engineerName)}</div>
       <div>${q.glName ? "GL OK " + esc(q.glName.split(" ")[0]) + " " + esc(hm(q.glAt)) : q.route === "EMERGENCY" ? "EMERGENCY - NO GL CHECK" : ""}</div>
       <hr><div class="ln"><b>QTY</b>SPARES</div><hr>
-      ${groupLines(q).map(g => `<div style="margin:6px 0 3px;font-weight:700">CALL ${esc(g.so)}<br>${esc(g.ship)}</div>` + g.items.map(({l}) => `<div class="ln" style="margin-bottom:4px"><b>${l.qty}</b><span><span class="bx"></span>${esc(String(l.desc).toUpperCase())}${l.item ? "<br>&nbsp;&nbsp;&nbsp;" + esc(l.item) : ""}${l.out ? "<br>&nbsp;&nbsp;&nbsp;** OUT OF STOCK **" : ""}${l.was ? "<br>&nbsp;&nbsp;&nbsp;(" + esc(wasTxt(l)).toUpperCase() + ")" : ""}</span></div>`).join("")).join("")}
+      ${groupLines(q).map(g => `<div style="margin:6px 0 3px;font-weight:700">${noCall(g.so) ? esc(g.so) : "CALL " + esc(g.so)}<br>${esc(g.ship)}</div>` + g.items.map(({l}) => `<div class="ln" style="margin-bottom:4px"><b>${l.qty}</b><span><span class="bx"></span>${esc(String(l.desc).toUpperCase())}${l.item ? "<br>&nbsp;&nbsp;&nbsp;" + esc(l.item) : ""}${l.out ? "<br>&nbsp;&nbsp;&nbsp;** OUT OF STOCK **" : ""}${l.was ? "<br>&nbsp;&nbsp;&nbsp;(" + esc(wasTxt(l)).toUpperCase() + ")" : ""}</span></div>`).join("")).join("")}
       ${q.note ? `<hr><div>NOTE: ${esc(q.note)}</div>` : ""}<hr><div>BI NO. ____________________</div><div style="margin-top:9px">PICKED BY _________________</div>
       <div class="c" style="margin-top:9px;font-size:10px">Printed ${new Date().toLocaleString("en-ZA", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"})}</div></div>`).join("");
     st.textContent = slipCss(w58);
@@ -1132,7 +1164,7 @@ function printBulk(list, layout) {
     const w58 = layout === "58";
     pa.innerHTML = `<div class="pslip${w58 ? " w58" : ""}"><div class="c"><b class="tt">PICKING LIST</b>DBN STORES · ${list.length} REQUEST${list.length > 1 ? "S" : ""}</div><div class="c" style="font-size:10px">${when} · ${U(me().name)}</div>${offTxt ? `<div class="u">${U(offTxt)}</div>` : ""}
       ${list.map(q => `<hr class="dbl"><div><b>${U(q.engineerName)}</b></div>${edN(q) ? `<div class="u">AMENDED${edN(q) > 1 ? " X" + edN(q) : ""}</div>` : ""}${q.urgent ? '<div class="u">URGENT</div>' : ""}<div>${esc(q.id)}</div><div>${glTxt(q)}</div>`
-        + groupLines(q).map(g => `<div style="margin:5px 0 3px;font-weight:700">CALL ${esc(g.so)}<br>${esc(g.ship)}</div>` + g.items.map(({l}) => `<div class="ln" style="margin-bottom:3px"><b>${l.qty}</b><span><span class="bx"></span>${U(l.desc)}${l.item ? "<br>&nbsp;&nbsp;&nbsp;" + esc(l.item) : ""}${l.out ? "<br>&nbsp;&nbsp;&nbsp;** OUT OF STOCK **" : ""}${l.was ? "<br>&nbsp;&nbsp;&nbsp;(" + U(wasTxt(l)) + ")" : ""}</span></div>`).join("")).join("")
+        + groupLines(q).map(g => `<div style="margin:5px 0 3px;font-weight:700">${noCall(g.so) ? esc(g.so) : "CALL " + esc(g.so)}<br>${esc(g.ship)}</div>` + g.items.map(({l}) => `<div class="ln" style="margin-bottom:3px"><b>${l.qty}</b><span><span class="bx"></span>${U(l.desc)}${l.item ? "<br>&nbsp;&nbsp;&nbsp;" + esc(l.item) : ""}${l.out ? "<br>&nbsp;&nbsp;&nbsp;** OUT OF STOCK **" : ""}${l.was ? "<br>&nbsp;&nbsp;&nbsp;(" + U(wasTxt(l)) + ")" : ""}</span></div>`).join("")).join("")
         + (q.note ? `<div>NOTE: ${esc(q.note)}</div>` : "") + `<div style="margin-top:6px">BI NO. ________________</div>`).join("")}
       <hr class="dbl"><div class="c"><b>PICK TOTALS</b></div><hr>
       ${tot.map(t => `<div class="ln"><b>${t.qty}</b><span><span class="bx"></span>${U(t.desc)}${t.item ? "<br>&nbsp;&nbsp;&nbsp;" + esc(t.item) : ""}</span></div>`).join("")}
@@ -1186,7 +1218,7 @@ function kSwap(q, l, i) { return (canSwap(q) ? `<button class="ksw" data-act="sw
 function tkHtml(q) {
   const since = q.status === "READY" ? q.bookedAt : q.status === "PICKING" ? q.pickingAt : (q.glAt || q.created);
   const G = groupLines(q), lineHtml = ({l, i}) => q.status === "PICKING" && isStores() ? `<li class="${l.out ? "out" : ""}"><button data-act="lineout" data-line="${i}" title="Tap if this one is out of stock"><b>${l.qty}×</b><span>${esc(l.desc)} <span class="c">${esc(l.item)}${kStock(l, q)}</span></span></button>${kSwap(q, l, i)}</li>` : `<li class="${l.out ? "out" : ""}"><b>${l.qty}×</b><span>${esc(l.desc)} <span class="c">${esc(l.item)}${kStock(l, q)}</span></span>${kSwap(q, l, i)}</li>`;
-  const lines = G.map(g => `<li class="ch">📞 <b>${g.so === "NO CALL" ? "No call" : esc(g.so)}</b> · ${esc(g.ship)}</li>` + g.items.map(lineHtml).join("")).join("");
+  const lines = G.map(g => `<li class="ch">📞 <b>${soLbl(g.so)}</b> · ${esc(g.ship)}</li>` + g.items.map(lineHtml).join("")).join("");
   const pt = printedMap()[edN(q) ? q.id + "#" + edN(q) : q.id], ptx = pt ? `<span class="prn">🖨 printed ${pad(new Date(pt).getHours())}:${pad(new Date(pt).getMinutes())}</span>` : "";
   const f = q.status === "NEW" ? `${ptx}<button data-act="print">🖨 Slip</button><button class="go" data-act="pick">Start picking</button>`
     : q.status === "PICKING" ? `<button data-act="print">🖨</button><button data-act="unpick">Back</button><button data-act="nostock">Can't supply</button><button class="go" data-act="booked">Booked out</button>`
