@@ -242,7 +242,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <div class="mark"><b>Spares Request</b><small id="sub">v2.3 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <div class="mark"><b>Spares Request</b><small id="sub">v2.4 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
@@ -269,7 +269,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
   <section id="v-hist" hidden style="display:grid;gap:14px"></section>
   <input type="file" id="fmx-file" accept="image/*" hidden>
-  <div class="foot">Spares Request v2.3 · Developed by Gerald Pakree</div>
+  <div class="foot">Spares Request v2.4 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -350,7 +350,10 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v2.3
+/* BCX Spares Request v2.4
+   v2.4: GLs (and Admin) can edit a request at stores - new or being picked. It goes back to NEW as AMENDED, the
+         stores screen beeps and auto prints the new slip (marked "AMENDED - throw away the earlier slip").
+         READY requests close themselves 24 hours after they were ready (script v2.22). Needs script v2.22.
    v2.3: slip printing - the slip is narrower and moved in from the left edge (it was cut off on the 80 mm printer),
          and stores can nudge the left margin and width under Printer if their printer still cuts it.
    v2.2: the stores screen notices when the print window pops up (Chrome not in silent-printing mode) and says how to
@@ -398,7 +401,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "2.3", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "2.4", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -642,6 +645,10 @@ function trk(q) {
   if (q.status === "REJECTED" || q.status === "CANCELLED") return "";
   const n = STEP[q.status] || 0; return `<div class="trk">${[1, 2, 3, 4, 5].map(i => `<span class="${i < n || q.status === "COLLECTED" ? "d" : i === n ? "c" : ""}"></span>`).join("")}</div>`;
 }
+const edN = q => Number(String(q.edited || "").split("|")[0]) || 0;
+const edAt = q => String(q.edited || "").split("|")[1] || "";
+const amTxt = q => edN(q) ? `AMENDED${edN(q) > 1 ? " x" + edN(q) : ""} ${hm(edAt(q))} – throw away the earlier slip` : "";
+const amChip = q => edN(q) ? ` <span class="chip warn">Amended${edN(q) > 1 ? " ×" + edN(q) : ""} ${esc(hm(edAt(q)))}</span>` : "";
 const wasTxt = l => l.was ? `instead of ${l.was.qty} x ${l.was.desc}${l.was.item ? " (" + l.was.item + ")" : ""}` : "";
 const wasHtml = l => l.was ? `<div class="swp">↺ ${esc(wasTxt(l))}${l.why ? " – " + esc(l.why) : ""}${l.by ? ` <span class="small">(${esc(l.by.split(" ")[0])}${l.at ? " " + esc(hm(l.at)) : ""})</span>` : ""}</div>` : "";
 const canSwap = q => isStores() && ["NEW", "PICKING"].includes(q.status);
@@ -655,7 +662,8 @@ function cardHtml(q) {
   if (q.status === "GL" && isGL()) a.push(`<button class="btn small" data-act="reject">Reject</button><button class="btn small" data-act="edit">Edit</button><button class="btn small good r" data-act="approve">Send to stores →</button>`);
   else if (q.status === "GL" && mine) a.push(`<button class="btn small" data-act="cancel">Cancel</button><button class="btn small" data-act="edit">Edit</button>`);
   if (q.status === "NEW" && isStores()) a.push(`<button class="btn small good r" data-act="pick">Start picking</button>`);
-  if (q.status === "NEW" && isGL() && !isStores()) a.push(`<button class="btn small" data-act="reject">Reject</button><button class="btn small" data-act="edit">Edit</button>`);
+  if (q.status === "NEW" && isGL() && !isStores()) a.push(`<button class="btn small" data-act="reject">Reject</button>`);
+  if ((q.status === "NEW" || q.status === "PICKING") && isGL()) a.push(`<button class="btn small" data-act="edit" title="Stores get it again as AMENDED">Edit</button>`);
   if (q.status === "NEW" && mine && !isLead()) a.push(`<button class="btn small" data-act="cancel">Cancel</button>`);
   if (q.status === "PICKING" && isStores()) a.push(`<button class="btn small" data-act="unpick">Back to new</button><button class="btn small" data-act="nostock">Can't supply</button><button class="btn small good r" data-act="booked">Booked out → BI</button>`);
   if (q.status === "READY" && isLead()) a.push(`<button class="btn small r" data-act="collected">Mark collected</button>`);
@@ -665,7 +673,7 @@ function cardHtml(q) {
   const who = q.createdBy !== q.engineer ? ` · by ${esc(q.createdByName)}` : "";
   const st = q.status === "READY" ? (q.bi ? `Booked out on <b class="mono">${esc(q.bi)}</b> – collect from stores` : "Ready at stores – collect it, then tap “I've got it”") : q.status === "COLLECTED" ? `Collected ${q.collectedRef ? "(" + esc(q.collectedRef) + ")" : ""}` : q.status === "PICKING" ? `Being picked by ${esc(q.storesName)}` : q.status === "NEW" && q.glName ? `At stores · checked by ${esc(q.glName)}` : SNAME[q.status] || q.status;
   return `<div class="req${q.urgent && !dead && q.status !== "COLLECTED" ? " urg" : ""}${q.status === "COLLECTED" || q.status === "READY" ? " done" : ""}${dead ? " dead" : ""}" data-id="${esc(q.id)}">
-    <div class="t">${isLead() ? `<label class="pick"><input type="checkbox" data-act="sel"${SEL.has(q.id) ? " checked" : ""} aria-label="Tick to print"></label>` : ""}<b>${esc(q.engineerName)}</b>${q.urgent ? '<span class="chip bad">Urgent</span>' : ""}${q.route === "EMERGENCY" ? '<span class="chip bad">Emergency</span>' : ""}${q.source === "FMX screenshot" && !q.onBoard ? '<span class="chip info">From FMX screenshot</span>' : q.onBoard ? "" : '<span class="chip warn">Not on the Dispatch Board</span>'}<span class="ago">${esc(ago(q.created))}</span></div>
+    <div class="t">${isLead() ? `<label class="pick"><input type="checkbox" data-act="sel"${SEL.has(q.id) ? " checked" : ""} aria-label="Tick to print"></label>` : ""}<b>${esc(q.engineerName)}</b>${amChip(q)}${q.urgent ? '<span class="chip bad">Urgent</span>' : ""}${q.route === "EMERGENCY" ? '<span class="chip bad">Emergency</span>' : ""}${q.source === "FMX screenshot" && !q.onBoard ? '<span class="chip info">From FMX screenshot</span>' : q.onBoard ? "" : '<span class="chip warn">Not on the Dispatch Board</span>'}<span class="ago">${esc(ago(q.created))}</span></div>
     <div class="s">${groupLines(q).length > 1 ? `<b>${groupLines(q).length} calls</b>` : `<span class="mono">${esc(q.callRef)}</span> · ${esc(q.customer)}${q.custRef ? " · ref " + esc(q.custRef) : ""}`}${who}</div>
     ${linesHtml(q)}
     ${q.inBoot && !dead && q.status !== "COLLECTED" ? `<div class="boot" style="font-size:12.5px">⚠ Already in ${q.engineer === me().code ? "your" : "his"} boot: ${esc(q.inBoot)}</div>` : ""}
@@ -823,7 +831,7 @@ function renderForm() {
       const canSend = F.lines.length > 0;
       h += `<div class="card"><div class="row"><span class="lbl">Urgent</span><span class="seg" id="f-urg"><button type="button" data-u="0" aria-pressed="${!F.urgent}">No</button><button type="button" data-u="1" aria-pressed="${F.urgent}" ${F.urgent ? 'style="background:var(--poor);color:#fff"' : ""}>Yes</button></span></div>
         <label class="lbl">Note for the GL / stores (optional)<textarea class="f" id="f-note" maxlength="300">${esc(F.note)}</textarea></label></div>`;
-      if (editing) h += `<div class="row"><button class="btn grow" id="f-cancel">Back</button>${isGL() && F.status === "GL" ? `<button class="btn grow" id="f-save">Save</button><button class="btn good grow" id="f-send"${canSend ? "" : " disabled"}>Save and send to stores</button>` : `<button class="btn primary grow" id="f-save"${canSend ? "" : " disabled"}>Save changes</button>`}</div>`;
+      if (editing) h += `<div class="row"><button class="btn grow" id="f-cancel">Back</button>${isGL() && F.status === "GL" ? `<button class="btn grow" id="f-save">Save</button><button class="btn good grow" id="f-send"${canSend ? "" : " disabled"}>Save and send to stores</button>` : `<button class="btn primary grow" id="f-save"${canSend ? "" : " disabled"}>${F.status === "NEW" || F.status === "PICKING" ? "Save – stores get the new slip" : "Save changes"}</button>`}</div>${F.status === "NEW" || F.status === "PICKING" ? `<div class="small" style="margin-top:6px">This request is already at stores${F.status === "PICKING" ? " and being picked" : ""}. Saving sends it back to them as <b>AMENDED</b> – their screen beeps and prints the new slip.</div>` : ""}`;
       else h += `<div class="row"><button class="btn grow" id="f-clear">Start again</button><button class="btn primary grow" id="f-send"${canSend ? "" : " disabled"}>${lead ? "Send to stores" : "Send to Group Leader"}</button></div>
         ${lead ? "" : `<div class="small" style="text-align:center">Emergency? <button type="button" class="btn small ghost" id="f-emerg"${canSend ? "" : " disabled"}>Send straight to stores</button> (the GLs are told)</div>`}
         <div class="small" style="text-align:center">${online() ? "Sending needs signal. You'll see “Sent” with a request number when it's through." : '<b style="color:var(--poor)">No signal: you can fill this in, but it can only be sent when you have signal.</b>'}</div>`;
@@ -1055,13 +1063,13 @@ function printReqs(list, layout) {
       for (let i = 0; i < Math.max(1, rows.length); i += 10) { const part = rows.slice(i, i + 10); if (part.length && !part[0].so) { const g = groupLines(q).find(g => g.items.some(x => x.l === part[0].l)); part[0] = Object.assign({}, part[0], {so: g.so, ship: g.ship}); }
         blocks.push({q, rows: part, part: rows.length > 10 ? `${i / 10 + 1}/${Math.ceil(rows.length / 10)}` : ""}); } });
     pa.innerHTML = `<div class="pa4">${blocks.map(({q, rows, part}) => `<table><colgroup>${W.map(w => `<col style="width:${(w / tot * 100).toFixed(1)}%">`).join("")}</colgroup>
-      <tr><th colspan="4" class="t">SPARES REQUEST${q.urgent ? ' <span class="u">URGENT</span>' : ""}<span class="r">${esc(q.id)}${part ? " (" + part + ")" : ""}${q.glName ? " · GL " + esc(q.glName.split(" ")[0]) + " " + esc(hm(q.glAt)) : q.route === "EMERGENCY" ? " · EMERGENCY" : ""}</span></th></tr>
+      <tr><th colspan="4" class="t">SPARES REQUEST${edN(q) ? ` <span class="u">${esc(amTxt(q)).toUpperCase()}</span>` : ""}${q.urgent ? ' <span class="u">URGENT</span>' : ""}<span class="r">${esc(q.id)}${part ? " (" + part + ")" : ""}${q.glName ? " · GL " + esc(q.glName.split(" ")[0]) + " " + esc(hm(q.glAt)) : q.route === "EMERGENCY" ? " · EMERGENCY" : ""}</span></th></tr>
       <tr><th>CALL REF</th><th>CUSTOMER</th><th>ENGINEER</th><th>SPARES</th></tr>
       ${Array.from({length: 10}, (_, i) => { const r = rows[i] || {}, l = r.l; return `<tr><td class="so">${esc(r.so || "")}</td><td>${esc(r.ship || "")}</td><td>${i === 0 ? esc(q.engineerName) : ""}</td><td>${l ? `${l.qty} x ${esc(String(l.desc).toUpperCase())}${l.item ? " (" + esc(l.item) + ")" : ""}${l.out ? " – OUT OF STOCK" : ""}${l.was ? " [" + esc(wasTxt(l)) + "]" : ""}` : ""}</td></tr>`; }).join("")}</table>`).join("")}</div>`;
     st.textContent = "@page { size: A4 portrait; margin: 7mm 10mm; }";
   } else {
     const w58 = layout === "58";
-    pa.innerHTML = list.map(q => `<div class="pslip${w58 ? " w58" : ""}"><div class="c"><b class="tt">SPARES REQUEST</b>${esc(board() ? "" : "")}DBN STORES · PICKING LIST</div>${q.urgent ? '<div class="u">URGENT</div>' : ""}
+    pa.innerHTML = list.map(q => `<div class="pslip${w58 ? " w58" : ""}"><div class="c"><b class="tt">SPARES REQUEST</b>${esc(board() ? "" : "")}DBN STORES · PICKING LIST</div>${edN(q) ? `<div class="u">${esc(amTxt(q)).toUpperCase()}</div>` : ""}${q.urgent ? '<div class="u">URGENT</div>' : ""}
       <div>REQ ${esc(q.id)}</div><div>ENGINEER ${esc(q.engineerName)}</div>
       <div>${q.glName ? "GL OK " + esc(q.glName.split(" ")[0]) + " " + esc(hm(q.glAt)) : q.route === "EMERGENCY" ? "EMERGENCY - NO GL CHECK" : ""}</div>
       <hr><div class="ln"><b>QTY</b>SPARES</div><hr>
@@ -1111,7 +1119,7 @@ function printBulk(list, layout) {
     pa.innerHTML = `<div class="pbk"><div class="hd"><b>DBN STORES · PICKING LIST</b><span>${list.length} request${list.length > 1 ? "s" : ""} · ${nL} line${nL > 1 ? "s" : ""} · printed ${when} by ${esc(me().name)}</span></div>${offTxt ? `<div class="off">${esc(offTxt)}</div>` : ""}
       <table><colgroup><col style="width:6%"><col style="width:7%"><col style="width:15%"><col style="width:40%"><col style="width:14%"><col style="width:18%"></colgroup>
       <thead><tr><th>✓</th><th>QTY</th><th>ITEM</th><th>DESCRIPTION</th><th>CALL REF</th><th>CUSTOMER</th></tr></thead><tbody>
-      ${list.map(q => `<tr class="eh"><td colspan="6"><b>${esc(q.engineerName)}</b>${q.urgent ? ' <span class="u">URGENT</span>' : ""}<span class="r">${esc(q.id)}${glTxt(q) ? " · " + glTxt(q) : ""}</span></td></tr>`
+      ${list.map(q => `<tr class="eh"><td colspan="6"><b>${esc(q.engineerName)}</b>${edN(q) ? ` <span class="u">AMENDED${edN(q) > 1 ? " x" + edN(q) : ""}</span>` : ""}${q.urgent ? ' <span class="u">URGENT</span>' : ""}<span class="r">${esc(q.id)}${glTxt(q) ? " · " + glTxt(q) : ""}</span></td></tr>`
         + groupLines(q).map(g => g.items.map(({l}, k) => `<tr${l.out ? ' class="out"' : ""}><td><span class="bx"></span></td><td class="q">${l.qty}</td><td class="m">${esc(l.item || "")}</td><td>${U(l.desc)}${l.out ? " – OUT OF STOCK" : ""}${l.was ? `<div class="w">${esc(wasTxt(l))}${l.why ? " – " + esc(l.why) : ""}</div>` : ""}</td><td class="so">${k === 0 ? esc(g.so) : ""}</td><td>${k === 0 ? esc(g.ship) : ""}</td></tr>`).join("")).join("")
         + (q.note ? `<tr><td></td><td colspan="5" class="nt">NOTE: ${esc(q.note)}</td></tr>` : "")).join("")}
       </tbody></table>
@@ -1123,7 +1131,7 @@ function printBulk(list, layout) {
   } else {
     const w58 = layout === "58";
     pa.innerHTML = `<div class="pslip${w58 ? " w58" : ""}"><div class="c"><b class="tt">PICKING LIST</b>DBN STORES · ${list.length} REQUEST${list.length > 1 ? "S" : ""}</div><div class="c" style="font-size:10px">${when} · ${U(me().name)}</div>${offTxt ? `<div class="u">${U(offTxt)}</div>` : ""}
-      ${list.map(q => `<hr class="dbl"><div><b>${U(q.engineerName)}</b></div>${q.urgent ? '<div class="u">URGENT</div>' : ""}<div>${esc(q.id)}</div><div>${glTxt(q)}</div>`
+      ${list.map(q => `<hr class="dbl"><div><b>${U(q.engineerName)}</b></div>${edN(q) ? `<div class="u">AMENDED${edN(q) > 1 ? " X" + edN(q) : ""}</div>` : ""}${q.urgent ? '<div class="u">URGENT</div>' : ""}<div>${esc(q.id)}</div><div>${glTxt(q)}</div>`
         + groupLines(q).map(g => `<div style="margin:5px 0 3px;font-weight:700">CALL ${esc(g.so)}<br>${esc(g.ship)}</div>` + g.items.map(({l}) => `<div class="ln" style="margin-bottom:3px"><b>${l.qty}</b><span><span class="bx"></span>${U(l.desc)}${l.item ? "<br>&nbsp;&nbsp;&nbsp;" + esc(l.item) : ""}${l.out ? "<br>&nbsp;&nbsp;&nbsp;** OUT OF STOCK **" : ""}${l.was ? "<br>&nbsp;&nbsp;&nbsp;(" + U(wasTxt(l)) + ")" : ""}</span></div>`).join("")).join("")
         + (q.note ? `<div>NOTE: ${esc(q.note)}</div>` : "") + `<div style="margin-top:6px">BI NO. ________________</div>`).join("")}
       <hr class="dbl"><div class="c"><b>PICK TOTALS</b></div><hr>
@@ -1145,8 +1153,10 @@ function onFresh(fresh) {
   if (VIEW !== "kds") return;
   const arrived = fresh.filter(q => q.status === "NEW");
   // v2.1: "seen" means seen AT STORES - a request the GL then sends on is new to stores even if it was on the list before
-  if (SEEN === null) { SEEN = new Set(REQS.filter(q => q.status !== "GL").map(q => q.id)); autoCatchUp(); return; }
-  const newOnes = arrived.filter(q => !SEEN.has(q.id)); REQS.forEach(q => { if (q.status !== "GL") SEEN.add(q.id); });
+  // v2.4: an amended request counts as new again (key = id + how many times it was amended)
+  const sk = q => q.id + "#" + edN(q);
+  if (SEEN === null) { SEEN = new Set(REQS.filter(q => q.status !== "GL").map(sk)); autoCatchUp(); return; }
+  const newOnes = arrived.filter(q => !SEEN.has(sk(q))); REQS.forEach(q => { if (q.status !== "GL") SEEN.add(sk(q)); });
   if (!newOnes.length) return;
   if (ls.get("sr-sound") !== false) beep();
   newOnes.forEach(q => FRESH[q.id] = Date.now());
@@ -1161,13 +1171,14 @@ function doPrint() {
 const silentOk = () => ls.get("sr-silent");
 function printedMap() { const m = ls.get("sr-printed2"); return m && typeof m === "object" && !Array.isArray(m) ? m : {}; }
 function autoPrint(list) {
-  const m = printedMap(), old = new Set(ls.get("sr-printed") || []), todo = list.filter(q => !m[q.id] && !old.has(q.id)); if (!todo.length) return;
-  const now = Date.now(); todo.forEach(q => m[q.id] = now);
+  const pk = q => edN(q) ? q.id + "#" + edN(q) : q.id;
+  const m = printedMap(), old = new Set(ls.get("sr-printed") || []), todo = list.filter(q => !m[pk(q)] && !(old.has(q.id) && !edN(q))); if (!todo.length) return;
+  const now = Date.now(); todo.forEach(q => m[pk(q)] = now);
   ls.set("sr-printed2", Object.fromEntries(Object.entries(m).sort((a, b) => b[1] - a[1]).slice(0, 300)));
   printReqs(todo, P().layout);
 }
 // what came in while the screen was closed - only since auto print was switched on (never an old backlog)
-function autoCatchUp() { const p = P(); if (!p.onArrive || !p.since) return; const since = new Date(p.since); autoPrint(REQS.filter(q => q.status === "NEW" && new Date(String(q.glAt && q.route === "ENGINEER" ? q.glAt : q.created).replace(/\//g, "-").replace(" ", "T")) >= since)); }
+function autoCatchUp() { const p = P(); if (!p.onArrive || !p.since) return; const since = new Date(p.since); autoPrint(REQS.filter(q => q.status === "NEW" && new Date(String(edN(q) ? edAt(q) : q.glAt && q.route === "ENGINEER" ? q.glAt : q.created).replace(/\//g, "-").replace(" ", "T")) >= since)); }
 function setAuto(on) { const p = P(); ls.set("sr-print", Object.assign(p, {onArrive: on, since: on ? (p.onArrive && p.since ? p.since : new Date().toISOString()) : ""})); }
 function lateOf(q) { const m = q.status === "PICKING" ? mins(q.pickingAt) : mins(q.glAt && q.status === "NEW" ? q.glAt : q.created); return q.status === "NEW" ? m > (q.urgent ? URGENT_LATE : NEW_LATE) : q.status === "PICKING" ? m > PICK_LATE : false; }
 function kStock(l, q) { if (q.status === "READY" || l.out) return ""; const n = brQty(l.item); return n == null ? "" : n ? ` · <b style="color:#1F7A4D">${n} in branch${brWhere(l.item) ? " (" + esc(brWhere(l.item)) + ")" : ""}</b>` : ' · <b style="color:#B4261D">none in branch</b>'; }
@@ -1176,12 +1187,12 @@ function tkHtml(q) {
   const since = q.status === "READY" ? q.bookedAt : q.status === "PICKING" ? q.pickingAt : (q.glAt || q.created);
   const G = groupLines(q), lineHtml = ({l, i}) => q.status === "PICKING" && isStores() ? `<li class="${l.out ? "out" : ""}"><button data-act="lineout" data-line="${i}" title="Tap if this one is out of stock"><b>${l.qty}×</b><span>${esc(l.desc)} <span class="c">${esc(l.item)}${kStock(l, q)}</span></span></button>${kSwap(q, l, i)}</li>` : `<li class="${l.out ? "out" : ""}"><b>${l.qty}×</b><span>${esc(l.desc)} <span class="c">${esc(l.item)}${kStock(l, q)}</span></span>${kSwap(q, l, i)}</li>`;
   const lines = G.map(g => `<li class="ch">📞 <b>${g.so === "NO CALL" ? "No call" : esc(g.so)}</b> · ${esc(g.ship)}</li>` + g.items.map(lineHtml).join("")).join("");
-  const pt = printedMap()[q.id], ptx = pt ? `<span class="prn">🖨 printed ${pad(new Date(pt).getHours())}:${pad(new Date(pt).getMinutes())}</span>` : "";
+  const pt = printedMap()[edN(q) ? q.id + "#" + edN(q) : q.id], ptx = pt ? `<span class="prn">🖨 printed ${pad(new Date(pt).getHours())}:${pad(new Date(pt).getMinutes())}</span>` : "";
   const f = q.status === "NEW" ? `${ptx}<button data-act="print">🖨 Slip</button><button class="go" data-act="pick">Start picking</button>`
     : q.status === "PICKING" ? `<button data-act="print">🖨</button><button data-act="unpick">Back</button><button data-act="nostock">Can't supply</button><button class="go" data-act="booked">Booked out</button>`
     : `<span class="bi">${q.bi ? esc(q.bi) : "no BI"}</span><span class="w">${q.bi ? "Waiting for Custody pick-up" : "Waiting for the engineer"}</span><button data-act="collected">Collected</button>`;
   return `<div class="tk${q.urgent ? " u" : ""}${q.status === "READY" ? " rd" : ""}${lateOf(q) ? " late" : ""}${FRESH[q.id] && Date.now() - FRESH[q.id] < 30000 ? " fresh" : ""}" data-id="${esc(q.id)}">
-    <div class="t"><span class="eng">${esc(q.engineerName)}</span>${q.urgent ? '<span class="chip bad">Urgent</span>' : ""}${q.route === "EMERGENCY" ? '<span class="chip bad">Emergency</span>' : ""}<span class="age">${esc(ago(since))}</span></div>
+    <div class="t"><span class="eng">${esc(q.engineerName)}</span>${amChip(q)}${q.urgent ? '<span class="chip bad">Urgent</span>' : ""}${q.route === "EMERGENCY" ? '<span class="chip bad">Emergency</span>' : ""}<span class="age">${esc(ago(since))}</span></div>
     <div class="s">${G.length > 1 ? `<b>${G.length} calls</b>` : `<span class="mono">${esc(q.callRef)}</span> · ${esc(q.customer)}`}${q.glName ? " · GL " + esc(q.glName.split(" ")[0]) : ""}${q.status === "PICKING" ? " · " + esc(q.storesName.split(" ")[0]) : ""}</div>
     <ul>${lines}</ul>${q.note ? `<div class="nt">Note: ${esc(q.note)}</div>` : ""}<div class="f">${isStores() ? f : q.status === "READY" ? `<span class="bi">${q.bi ? esc(q.bi) : "no BI"}</span>` : '<span class="w">stores will pick this</span>'}</div></div>`;
 }
