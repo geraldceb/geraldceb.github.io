@@ -238,10 +238,11 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
 #kds .pill.on, .kds .pill.on { background: #1F7A4D; color: #fff; border-color: #1F7A4D; }
 .ksteps { font-size: 14px; line-height: 1.45; } .ksteps ol { margin: 6px 0; padding-left: 20px; } .ksteps li { margin-bottom: 5px; }
 .tk .prn { font: 600 12px/1 var(--body); color: #5b5653; margin-left: 6px; }
+.kwarn { background: #FFE9A8; color: #3A2A00; border-radius: 10px; padding: 10px 14px; margin: 0 0 12px; font-size: 15px; }
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <div class="mark"><b>Spares Request</b><small id="sub">v2.1 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <div class="mark"><b>Spares Request</b><small id="sub">v2.2 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
@@ -268,7 +269,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
   <section id="v-hist" hidden style="display:grid;gap:14px"></section>
   <input type="file" id="fmx-file" accept="image/*" hidden>
-  <div class="foot">Spares Request v2.1 · Developed by Gerald Pakree</div>
+  <div class="foot">Spares Request v2.2 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -349,7 +350,11 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v2.1
+/* BCX Spares Request v2.2
+   v2.2: the stores screen notices when the print window pops up (Chrome not in silent-printing mode) and says how to
+         fix it. "Set up this PC" now makes two shortcuts that share one window profile: "choose printer" (normal print
+         window - pick the slip printer once, Chrome remembers it) and the silent one, which then prints to that
+         printer. The Windows default printer doesn't need to change.
    v2.1: calls - the engineer's own calls first, then "Other calls on the board" (stale calls moved to someone else)
          with a search across the whole board (SO, site, ref, engineer, machine). A call on someone else's name
          shows who it's under, on the request too. Stores screen: Auto print on/off button in the top bar; it also
@@ -391,7 +396,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "2.1", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "2.2", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -1062,7 +1067,7 @@ function printReqs(list, layout) {
   }
   const done = () => { pa.innerHTML = ""; window.removeEventListener("afterprint", done); };
   window.addEventListener("afterprint", done);
-  setTimeout(() => window.print(), 60);
+  setTimeout(doPrint, 60);
 }
 
 /* ---------- bulk picking list (v1.9) ---------- */
@@ -1123,7 +1128,7 @@ function printBulk(list, layout) {
   }
   const done = () => { pa.innerHTML = ""; window.removeEventListener("afterprint", done); };
   window.addEventListener("afterprint", done);
-  setTimeout(() => window.print(), 60);
+  setTimeout(doPrint, 60);
 }
 
 /* ---------- kitchen screen (stores) ---------- */
@@ -1143,6 +1148,12 @@ function onFresh(fresh) {
   if (P().onArrive) autoPrint(newOnes);
 }
 // auto print: each request once on this PC; remember when, so the ticket can say "printed 10:42"
+// window.print() waits while the print window is open; in silent (--kiosk-printing) mode it comes back at once
+function doPrint() {
+  const t = Date.now(); window.print(); const ms = Date.now() - t;
+  if (VIEW === "kds") { ls.set("sr-silent", ms < 1500); renderKds(); if (KSET) paintKset(); }
+}
+const silentOk = () => ls.get("sr-silent");
 function printedMap() { const m = ls.get("sr-printed2"); return m && typeof m === "object" && !Array.isArray(m) ? m : {}; }
 function autoPrint(list) {
   const m = printedMap(), old = new Set(ls.get("sr-printed") || []), todo = list.filter(q => !m[q.id] && !old.has(q.id)); if (!todo.length) return;
@@ -1176,6 +1187,7 @@ function renderKds() {
   const now = new Date();
   $("kds").innerHTML = `<div class="hd"><span class="ttl">SPARES – DBN STORES</span>${urg ? `<span class="pill r">${urg} urgent</span>` : ""}<span class="pill" id="k-live"></span>${gl ? `<span class="pill">${gl} waiting for a GL</span>` : ""}
     <button class="pill" id="k-bulk">🖨 Print picks</button><button class="pill${P().onArrive ? " on" : ""}" id="k-auto" title="Print each new request as it arrives">${P().onArrive ? "🖨 Auto print ON" : "🖨 Auto print off"}</button><button class="pill" id="k-set">⚙ Printer: ${P().layout === "a4" ? "A4 form" : P().layout + " mm"}</button><button class="pill" id="k-snd">${ls.get("sr-sound") === false ? "🔇 Sound off" : "🔔 Sound on"}</button><button class="pill" id="k-exit">✕ Exit</button><span class="clk">${pad(now.getHours())}:${pad(now.getMinutes())}</span></div>
+    ${P().onArrive && silentOk() === false ? `<div class="kwarn">🖨 The print window popped up, so the storeman has to click Print. This window isn't in silent-printing mode – close it and open the <b>BCX Stores Screen</b> shortcut on the desktop (no shortcut yet? ⚙ Printer → Download “set up this PC”). If this IS the “– choose printer” window, that's normal.</div>` : ""}
     <div class="msg err" id="k-msg"></div>
     <div class="cols"><div class="col"><h4>New <span>${n.length}</span></h4>${n.map(tkHtml).join("") || '<div class="none">Nothing new.</div>'}</div>
     <div class="col"><h4>Picking <span>${p.length}</span></h4>${p.map(tkHtml).join("") || '<div class="none">Nothing being picked.</div>'}</div>
@@ -1197,11 +1209,11 @@ function paintKset() {
     <label class="tg"><input type="checkbox" id="ks-p"${p.onPick ? " checked" : ""}> Print the picking slip when I tap <b>Start picking</b></label>
     <label class="tg"><input type="checkbox" id="ks-a"${p.onArrive ? " checked" : ""}> <span><b>Auto print</b> – print each new request as it arrives (and anything that came in while this screen was closed)</span></label>
     <div class="row"><button class="btn good grow" id="ks-test">Print a test slip</button><button class="btn grow" id="ks-x">Close</button></div>
-    <div class="ksteps"><b>Choosing the printer</b>
-      <ol><li>Tap <b>Print a test slip</b> and choose the slip printer in the print window. Chrome remembers it for next time.</li>
-      <li>For printing with <b>no print window at all</b>: <button class="btn small" id="ks-bat">Download “set up this PC”</button> and run it once on this PC. It puts a <b>BCX Stores Screen</b> shortcut on the desktop that opens this screen with silent printing.</li>
-      <li>Open the shortcut, log in as stores once, tap <b>Print a test slip</b>. From then on new requests print straight to that printer – keep the shortcut window open.</li></ol>
-      <div class="small">Silent printing goes to the printer Chrome used last in that window – if it ever goes to the wrong one, make the slip printer this PC's default printer in Windows.</div></div>`;
+    <div class="ksteps"><b>Printing with no print window</b> ${silentOk() === true ? '<span class="chip good">this window prints silently ✓</span>' : silentOk() === false ? '<span class="chip bad">this window shows the print window</span>' : ""}
+      <ol><li><button class="btn small" id="ks-bat">Download “set up this PC”</button> and run it once. It puts two shortcuts on the desktop: <b>BCX Stores Screen</b> and <b>BCX Stores Screen – choose printer</b>.</li>
+      <li>Close this window. Open <b>“– choose printer”</b>, log in as stores, tap <b>Print a test slip</b>, choose the <b>slip printer</b> in the print window and print. Close it.</li>
+      <li>From now on open <b>BCX Stores Screen</b> and turn on Auto print. It prints to the slip printer you chose, with no print window. Your Windows default printer stays as it is.</li></ol>
+      <div class="small">To change the printer, do step 2 again. Still getting the print window in BCX Stores Screen? Close every BCX Stores Screen window and open it again – silent printing only switches on when it starts.</div></div>`;
 }
 $("kset").addEventListener("change", () => { ls.set("sr-print", Object.assign(P(), {layout: $("ks-l").value, onPick: $("ks-p").checked})); if ($("ks-a").checked !== P().onArrive) setAuto($("ks-a").checked); renderKds(); });
 $("kset").addEventListener("click", e => {
@@ -1221,8 +1233,8 @@ function setupBat() {
     'if not defined BR if exist "%LOCALAPPDATA%\\Google\\Chrome\\Application\\chrome.exe" set "BR=%LOCALAPPDATA%\\Google\\Chrome\\Application\\chrome.exe"',
     'if not defined BR if exist "%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe" set "BR=%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe"',
     'if not defined BR ( echo Chrome or Edge was not found on this PC. & pause & exit /b 1 )',
-    'powershell -NoProfile -ExecutionPolicy Bypass -Command "$s=(New-Object -ComObject WScript.Shell).CreateShortcut([Environment]::GetFolderPath(\'Desktop\')+\'\\BCX Stores Screen.lnk\'); $s.TargetPath=$env:BR; $s.Arguments=\'--kiosk-printing --user-data-dir=\'+[char]34+$env:PROF+[char]34+\' --app=\'+$env:URL; $s.Description=\'BCX Spares Request - stores screen (silent printing)\'; $s.Save()"',
-    'echo.', 'echo Done. Open "BCX Stores Screen" on the desktop, log in as stores, then tap Printer - Print a test slip.', 'echo New requests will print with no print window while that window is open.', "pause"].join("\r\n");
+    'powershell -NoProfile -ExecutionPolicy Bypass -Command "$w=New-Object -ComObject WScript.Shell; $d=[Environment]::GetFolderPath(\'Desktop\'); $p=\'--user-data-dir=\'+[char]34+$env:PROF+[char]34+\' --app=\'+$env:URL; $s=$w.CreateShortcut($d+\'\\BCX Stores Screen.lnk\'); $s.TargetPath=$env:BR; $s.Arguments=\'--kiosk-printing \'+$p; $s.Description=\'BCX Spares Request - stores screen (silent printing)\'; $s.Save(); $c=$w.CreateShortcut($d+\'\\BCX Stores Screen - choose printer.lnk\'); $c.TargetPath=$env:BR; $c.Arguments=$p; $c.Description=\'BCX Spares Request - stores screen with the print window, to choose the printer\'; $c.Save()"',
+    'echo.', 'echo Done - two shortcuts are on the desktop:', 'echo.', 'echo  1. Open "BCX Stores Screen - choose printer", log in as stores, tap Printer - Print a test slip,', 'echo     choose the slip printer in the print window and print. Close that window.', 'echo  2. From then on open "BCX Stores Screen". New requests print to the slip printer with no print window.', 'echo.', 'echo To change printer later, repeat step 1.', "pause"].join("\r\n");
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([bat], {type: "application/octet-stream"})); a.download = "BCX Stores Screen - set up this PC.bat"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 
