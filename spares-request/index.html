@@ -242,7 +242,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <div class="mark"><b>Spares Request</b><small id="sub">v2.2 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <div class="mark"><b>Spares Request</b><small id="sub">v2.3 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
@@ -269,7 +269,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
   <section id="v-hist" hidden style="display:grid;gap:14px"></section>
   <input type="file" id="fmx-file" accept="image/*" hidden>
-  <div class="foot">Spares Request v2.2 · Developed by Gerald Pakree</div>
+  <div class="foot">Spares Request v2.3 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -350,7 +350,9 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v2.2
+/* BCX Spares Request v2.3
+   v2.3: slip printing - the slip is narrower and moved in from the left edge (it was cut off on the 80 mm printer),
+         and stores can nudge the left margin and width under Printer if their printer still cuts it.
    v2.2: the stores screen notices when the print window pops up (Chrome not in silent-printing mode) and says how to
          fix it. "Set up this PC" now makes two shortcuts that share one window profile: "choose printer" (normal print
          window - pick the slip printer once, Chrome remembers it) and the silent one, which then prints to that
@@ -396,7 +398,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "2.2", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "2.3", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -1040,6 +1042,9 @@ $("v-sent").addEventListener("click", async e => {
 
 /* ---------- printing ---------- */
 const P = () => Object.assign({layout: "80", onPick: true, onArrive: false}, ls.get("sr-print") || {});
+// slip printers only print the middle of the paper (80 mm roll = about 72 mm printable): keep in from the edges
+const slipDims = w58 => { const p = P(); return w58 ? {l: p.l58 != null ? p.l58 : 3, w: p.w58 || 46} : {l: p.l80 != null ? p.l80 : 5, w: p.w80 || 68}; };
+function slipCss(w58) { const d = slipDims(w58); return `@page { size: ${w58 ? "58mm" : "80mm"} auto; margin: 0; } #printarea { width: ${d.w}mm; margin: 0 0 0 ${d.l}mm !important; padding: 0 !important; box-sizing: border-box; }`; }
 function printReqs(list, layout) {
   if (!list.length) return;
   const pa = $("printarea"), st = $("pagestyle");
@@ -1063,7 +1068,7 @@ function printReqs(list, layout) {
       ${groupLines(q).map(g => `<div style="margin:6px 0 3px;font-weight:700">CALL ${esc(g.so)}<br>${esc(g.ship)}</div>` + g.items.map(({l}) => `<div class="ln" style="margin-bottom:4px"><b>${l.qty}</b><span><span class="bx"></span>${esc(String(l.desc).toUpperCase())}${l.item ? "<br>&nbsp;&nbsp;&nbsp;" + esc(l.item) : ""}${l.out ? "<br>&nbsp;&nbsp;&nbsp;** OUT OF STOCK **" : ""}${l.was ? "<br>&nbsp;&nbsp;&nbsp;(" + esc(wasTxt(l)).toUpperCase() + ")" : ""}</span></div>`).join("")).join("")}
       ${q.note ? `<hr><div>NOTE: ${esc(q.note)}</div>` : ""}<hr><div>BI NO. ____________________</div><div style="margin-top:9px">PICKED BY _________________</div>
       <div class="c" style="margin-top:9px;font-size:10px">Printed ${new Date().toLocaleString("en-ZA", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"})}</div></div>`).join("");
-    st.textContent = `@page { size: ${w58 ? "58mm" : "80mm"} auto; margin: 0 2mm; } #printarea { width: ${w58 ? "54mm" : "76mm"}; }`;
+    st.textContent = slipCss(w58);
   }
   const done = () => { pa.innerHTML = ""; window.removeEventListener("afterprint", done); };
   window.addEventListener("afterprint", done);
@@ -1124,7 +1129,7 @@ function printBulk(list, layout) {
       <hr class="dbl"><div class="c"><b>PICK TOTALS</b></div><hr>
       ${tot.map(t => `<div class="ln"><b>${t.qty}</b><span><span class="bx"></span>${U(t.desc)}${t.item ? "<br>&nbsp;&nbsp;&nbsp;" + esc(t.item) : ""}</span></div>`).join("")}
       <hr><div>PICKED BY _________________</div><div style="margin-top:9px">CHECKED BY ________________</div></div>`;
-    st.textContent = `@page { size: ${w58 ? "58mm" : "80mm"} auto; margin: 0 2mm; } #printarea { width: ${w58 ? "54mm" : "76mm"}; }`;
+    st.textContent = slipCss(w58);
   }
   const done = () => { pa.innerHTML = ""; window.removeEventListener("afterprint", done); };
   window.addEventListener("afterprint", done);
@@ -1206,6 +1211,7 @@ function paintKset() {
   const k = $("kset"), p = P(); k.hidden = !KSET; if (!KSET) return;
   k.innerHTML = `<b style="font:700 21px/1 var(--display)">🖨 Printing on this PC</b>
     <label class="small" style="display:grid;gap:6px">PRINT LAYOUT (saved on this PC)<select id="ks-l"><option value="80"${p.layout === "80" ? " selected" : ""}>Slip printer 80 mm</option><option value="58"${p.layout === "58" ? " selected" : ""}>Slip printer 58 mm</option><option value="a4"${p.layout === "a4" ? " selected" : ""}>A4 – 4 slips per page (the paper form)</option></select></label>
+    ${p.layout !== "a4" ? ((d) => `<div class="row" style="gap:10px;align-items:end"><label class="small" style="display:grid;gap:4px;flex:1">LEFT MARGIN (mm)<input class="f" id="ks-ml" type="number" min="0" max="15" step="1" value="${d.l}"></label><label class="small" style="display:grid;gap:4px;flex:1">PRINT WIDTH (mm)<input class="f" id="ks-mw" type="number" min="30" max="80" step="1" value="${d.w}"></label></div><div class="small">Cut off on the left? Make the left margin bigger. Cut off on the right? Make the width smaller. Then Print a test slip.</div>`)(slipDims(p.layout === "58")) : ""}
     <label class="tg"><input type="checkbox" id="ks-p"${p.onPick ? " checked" : ""}> Print the picking slip when I tap <b>Start picking</b></label>
     <label class="tg"><input type="checkbox" id="ks-a"${p.onArrive ? " checked" : ""}> <span><b>Auto print</b> – print each new request as it arrives (and anything that came in while this screen was closed)</span></label>
     <div class="row"><button class="btn good grow" id="ks-test">Print a test slip</button><button class="btn grow" id="ks-x">Close</button></div>
@@ -1215,7 +1221,9 @@ function paintKset() {
       <li>From now on open <b>BCX Stores Screen</b> and turn on Auto print. It prints to the slip printer you chose, with no print window. Your Windows default printer stays as it is.</li></ol>
       <div class="small">To change the printer, do step 2 again. Still getting the print window in BCX Stores Screen? Close every BCX Stores Screen window and open it again – silent printing only switches on when it starts.</div></div>`;
 }
-$("kset").addEventListener("change", () => { ls.set("sr-print", Object.assign(P(), {layout: $("ks-l").value, onPick: $("ks-p").checked})); if ($("ks-a").checked !== P().onArrive) setAuto($("ks-a").checked); renderKds(); });
+$("kset").addEventListener("change", () => { const w58 = P().layout === "58", dm = {};
+  if ($("ks-ml")) { const l = Math.max(0, Math.min(15, Math.round(Number($("ks-ml").value) || 0))), w = Math.max(30, Math.min(80, Math.round(Number($("ks-mw").value) || 0))); if (w58) { dm.l58 = l; dm.w58 = w; } else { dm.l80 = l; dm.w80 = w; } }
+  const lay0 = P().layout; ls.set("sr-print", Object.assign(P(), (lay0 === $("ks-l").value ? dm : {}), {layout: $("ks-l").value, onPick: $("ks-p").checked})); if (lay0 !== $("ks-l").value) paintKset(); if ($("ks-a").checked !== P().onArrive) setAuto($("ks-a").checked); renderKds(); });
 $("kset").addEventListener("click", e => {
   if (e.target.id === "ks-x") { KSET = false; paintKset(); }
   if (e.target.id === "ks-bat") { setupBat(); return; }
