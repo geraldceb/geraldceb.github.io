@@ -239,10 +239,12 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
 .ksteps { font-size: 14px; line-height: 1.45; } .ksteps ol { margin: 6px 0; padding-left: 20px; } .ksteps li { margin-bottom: 5px; }
 .tk .prn { font: 600 12px/1 var(--body); color: #5b5653; margin-left: 6px; }
 .kwarn { background: #FFE9A8; color: #3A2A00; border-radius: 10px; padding: 10px 14px; margin: 0 0 12px; font-size: 15px; }
+.ledage { display: inline-block; font-weight: 600; font-size: 12px; padding: 1px 7px; border-radius: 6px; background: #E3F1E8; color: #1F6B43; white-space: nowrap; } .ledage.old { background: #FFF0D2; color: #8A5A00; } .ledage.vold { background: #FBE1DE; color: #B3261E; }
+.hrej { font-size: 13px; color: var(--bad, #B3261E); margin: 2px 0; }
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <div class="mark"><b>Spares Request</b><small id="sub">v2.5 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <div class="mark"><b>Spares Request</b><small id="sub">v2.6 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
@@ -269,7 +271,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
   <section id="v-hist" hidden style="display:grid;gap:14px"></section>
   <input type="file" id="fmx-file" accept="image/*" hidden>
-  <div class="foot">Spares Request v2.5 · Developed by Gerald Pakree</div>
+  <div class="foot">Spares Request v2.6 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -350,7 +352,10 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v2.5
+/* BCX Spares Request v2.6
+   v2.6: the Item Ledger shows its age like the Dispatch Board (from the export time Nav puts in the file name) -
+         on the top bar, the "already in the boot" notice and the branch stock. History: swapped spares and
+         rejected requests - counts, filters, reasons and who did it.
    v2.5: "Boot stock" - spares just to keep in the boot (no call), for a customer group (PICK N PAY, CLICKS...) -
          only groups DBN works for (from the Dispatch Board and Item Ledger).
          "No call" - one search on the site name (any word: BALLITO JUNCTION, CHECKERS BALLITO), like Type the call.
@@ -405,7 +410,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "2.5", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "2.6", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -503,7 +508,7 @@ function branchStock() {
 // where the branch stock sits, when it's not all in MAINT_DBN: "MAINT 3 · MT_DBN_UC 2"
 function brWhere(item) { if (!branchStock()) return ""; const w = BR_CACHE.w[String(item || "").trim().toUpperCase()]; if (!w) return ""; const k = Object.keys(w); return k.length === 1 && k[0] === BRANCH_LOC ? "" : k.map(l => (l === BRANCH_LOC ? "MAINT" : l) + " " + w[l]).join(" · "); }
 const brQty = item => { if (!isLead()) return null; const m = branchStock(); return m && item ? (m[String(item).trim().toUpperCase()] || 0) : null; };
-function brChip(item) { const n = brQty(item); return n == null ? "" : n ? ` <span class="chip good brc">DBN branch: ${n} in stock${brWhere(item) ? " (" + esc(brWhere(item)) + ")" : ""}</span>` : ' <span class="chip">none in DBN branch</span>'; }
+function brChip(item) { const n = brQty(item); return n == null ? "" : n ? ` <span class="chip good brc" title="Item Ledger ${esc(ledAge(ledger()))}">DBN branch: ${n} in stock${brWhere(item) ? " (" + esc(brWhere(item)) + ")" : ""}</span>` : ' <span class="chip">none in DBN branch</span>'; }
 /* ---------- pods (v1.6): engineers in the same pod see each other's boot stock ---------- */
 function podOf(code) { const u = people().find(x => x.code === code); return u && u.pod ? u.pod : ""; }
 function podMates(code) { const p = podOf(code); return p ? people().filter(u => u.pod === p && u.code !== code) : []; }
@@ -545,7 +550,7 @@ function bootHas(code, item) {
 function bootHtml(code, item, whose) {
   const b = bootHas(code, item); if (!b) return "";
   let h = "";
-  if (b.wq) h += `<div class="boot">⚠ Already in ${whose} boot: ${b.wq} working (${b.w.map(i => `${i.qty > 1 ? i.qty + " on " : ""}${esc(i.doc)} ${daysTxt(i.days)}`).join(", ")}). Still needed?</div>`;
+  if (b.wq) h += `<div class="boot">⚠ Already in ${whose} boot: ${b.wq} working (${b.w.map(i => `${i.qty > 1 ? i.qty + " on " : ""}${esc(i.doc)} ${daysTxt(i.days)}`).join(", ")}). Still needed? <span class="small">Item Ledger${ledAgeHtml(ledger())}</span></div>`;
   if (b.fq) h += `<div class="boot f">ℹ ${b.fq} in ${whose} FAULTY boot (${b.f.map(i => esc(i.doc)).join(", ")}) – not usable</div>`;
   return h;
 }
@@ -622,7 +627,7 @@ function tabsFor() {
 function renderList() {
   const L = ledger(), I = items();
   $("who").innerHTML = `Logged in as <b>${esc(me().name)}</b> (${esc(me().code)})${ROLE() === "ADMIN" ? " · Admin" : isGL() ? " · Group Leader" : isStores() ? " · Stores" : ""}`;
-  $("st").innerHTML = `<div>${boardLine()}</div><div>${L ? `Item Ledger <b>${esc(L.date || "")}</b> – used for the "already in the boot" notices${branchStock() && isLead() ? ` and DBN branch stock (${Object.keys(branchStock()).length} items)` : isLead() ? ' <span class="old">(no DBN branch stock on it)</span>' : ""}${podLine()}` : '<span class="old">No Item Ledger on this phone – the "already in the boot" notices are off. Get it on the home page.</span>'}</div>${itemsLine()}`;
+  $("st").innerHTML = `<div>${boardLine()}</div><div>${L ? `Item Ledger <b>${esc(L.date || "")}</b>${ledAgeHtml(L)} – used for the "already in the boot" notices${branchStock() && isLead() ? ` and DBN branch stock (${Object.keys(branchStock()).length} items)` : isLead() ? ' <span class="old">(no DBN branch stock on it)</span>' : ""}${podLine()}` : '<span class="old">No Item Ledger on this phone – the "already in the boot" notices are off. Get it on the home page.</span>'}</div>${itemsLine()}`;
   $("b-kds").hidden = !isLead();
   $("dropcard").hidden = !isLead();
   $("b-board").hidden = !navigator.onLine;
@@ -649,6 +654,14 @@ function trk(q) {
   if (q.status === "REJECTED" || q.status === "CANCELLED") return "";
   const n = STEP[q.status] || 0; return `<div class="trk">${[1, 2, 3, 4, 5].map(i => `<span class="${i < n || q.status === "COLLECTED" ? "d" : i === n ? "c" : ""}"></span>`).join("")}</div>`;
 }
+// ledger age (v2.6): from the export time Nav puts in the file name, else the ledger date, else when it was loaded
+const ledWhen = L => { if (!L) return null; const m = String(L.file || "").match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})[_:.](\d{2})/); if (m) return {t: new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5]).getTime()};
+  const d = String(L.date || "").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/) || String(L.date || "").match(/^(\d{4})-(\d{2})-(\d{2})/); if (d) { const y = d[0].length && d[1].length === 4 ? [+d[1], +d[2], +d[3]] : [+d[3], +d[2], +d[1]]; return {t: new Date(y[0], y[1] - 1, y[2]).getTime(), day: true}; }
+  return L.importedAt ? {t: L.importedAt} : null; };
+const ledAge = L => { const w = ledWhen(L); if (!w) return ""; if (w.day) { const n = Math.round((new Date().setHours(0, 0, 0, 0) - w.t) / 864e5); return n <= 0 ? "from today" : n === 1 ? "1 day old" : n + " days old"; }
+  const mins = Math.max(0, Math.round((Date.now() - w.t) / 6e4)); return mins < 60 ? mins + " min old" : mins < 2880 ? Math.round(mins / 60) + " h old" : Math.round(mins / 1440) + " days old"; };
+const ledHours = L => { const w = ledWhen(L); return w ? (w.day ? Math.max(0, (new Date().setHours(0, 0, 0, 0) - w.t) / 36e5) : (Date.now() - w.t) / 36e5) : null; };
+const ledAgeHtml = L => { const a = ledAge(L), h = ledHours(L); return a ? ` <span class="ledage${h >= 72 ? " vold" : h >= 24 ? " old" : ""}" title="How old this Item Ledger is">${a}</span>` : ""; };
 const noCall = so => so === "NO CALL" || so === "BOOT STOCK";
 const soLbl = so => so === "NO CALL" ? "No call" : so === "BOOT STOCK" ? "Boot stock" : esc(so);
 const edN = q => Number(String(q.edited || "").split("|")[0]) || 0;
@@ -1343,7 +1356,7 @@ async function takeLedger(file) {
     shared = j.ok ? (j.newest ? `<span class="chip good">Shared with everyone</span> <span class="small">“Get the latest ledger” on every phone now gets this one</span>` : `<span class="chip warn">Saved</span> <span class="small">the office already has a newer ledger (${esc(j.current)})</span>`) : `<span class="chip warn">Only on this device</span> <span class="small">${esc(j.error)}</span>`;
   } catch (e) { shared = `<span class="chip warn">Only on this device</span> <span class="small">${esc(e.net ? "no signal" : e.message)}</span>`; }
   const L = ledger(), bootsW = new Set(), bootsF = new Set(); L.rows.forEach(x => { const l = String(x[8] || "").toUpperCase(); if (Number(x[9]) > 0) { if (l[0] === "T") bootsW.add(l); if (l[0] === "F") bootsF.add(l); } });
-  detOut("ok", `<h2>✓ Item Ledger<span class="aside">${esc(file.name)}</span></h2><div class="kv"><span>Ledger date</span><b>${esc(L.date)}</b><span>Lines</span><b>${L.rows.length}</b><span>Boots</span><b>${bootsW.size} working · ${bootsF.size} faulty</b><span>Used for</span><b>“Already in the boot” notices, and all the apps on this device</b></div><div class="row">${shared}</div>`);
+  detOut("ok", `<h2>✓ Item Ledger<span class="aside">${esc(file.name)}</span></h2><div class="kv"><span>Ledger date</span><b>${esc(L.date)}${ledAgeHtml(L)}</b><span>Lines</span><b>${L.rows.length}</b><span>Boots</span><b>${bootsW.size} working · ${bootsF.size} faulty</b><span>Used for</span><b>“Already in the boot” notices, and all the apps on this device</b></div><div class="row">${shared}</div>`);
   render();
 }
 async function takeItems(file, sh, hr, h) {
@@ -1467,7 +1480,7 @@ $("fmx-file").addEventListener("change", async e => {
 });
 
 /* ---------- History (v1.2) ---------- */
-let H = {eng: "", period: "30", from: "", to: "", data: null, busy: false, err: ""};
+let H = {eng: "", period: "30", from: "", to: "", data: null, busy: false, err: "", f: "all"};
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 function histRange() {
   const n = new Date(), y = n.getFullYear(), m = n.getMonth();
@@ -1494,19 +1507,23 @@ function renderHist() {
   if (d && !H.busy) {
     const L = d.requests, by = s => L.filter(q => q.status === s).length, open = L.filter(q => ["GL", "NEW", "PICKING", "READY"].includes(q.status)).length;
     const qty = L.reduce((n, q) => n + q.lines.reduce((m, l) => m + (Number(l.qty) || 0), 0), 0);
+    const SW = []; L.forEach(q => q.lines.forEach(l => { if (l.was) SW.push({q, l}); }));   // v2.6: swapped by stores
     h += `<div class="card"><h2>${esc(d.engineer ? nameOf(d.engineer) : "Everyone")}<span class="aside">${L.length} request${L.length === 1 ? "" : "s"}${d.total > L.length ? " (first " + L.length + ")" : ""}</span></h2>
-      <div class="hsum"><div><b>${L.length}</b><span>requests</span></div><div><b>${qty}</b><span>spares asked for</span></div><div><b>${by("COLLECTED")}</b><span>collected</span></div><div><b>${open}</b><span>still open</span></div><div><b>${by("REJECTED")}</b><span>rejected</span></div><div><b>${by("CANCELLED")}</b><span>cancelled</span></div><div><b>${L.filter(q => q.urgent).length}</b><span>urgent</span></div><div><b>${L.filter(q => q.route === "EMERGENCY").length}</b><span>emergency</span></div></div>
+      <div class="hsum"><div><b>${L.length}</b><span>requests</span></div><div><b>${qty}</b><span>spares asked for</span></div><div><b>${by("COLLECTED")}</b><span>collected</span></div><div><b>${open}</b><span>still open</span></div><div><b>${by("REJECTED")}</b><span>rejected</span></div><div><b>${SW.length}</b><span>swapped</span></div><div><b>${by("CANCELLED")}</b><span>cancelled</span></div><div><b>${L.filter(q => q.urgent).length}</b><span>urgent</span></div><div><b>${L.filter(q => q.route === "EMERGENCY").length}</b><span>emergency</span></div></div>
       ${L.length ? `<button class="btn small" id="h-csv" style="justify-self:start">⬇ Download for Excel (CSV)</button>` : ""}</div>`;
     if (L.length) {
       const top = {}; L.forEach(q => { if (q.status === "CANCELLED") return; q.lines.forEach(l => { const k = (l.item || l.desc).toUpperCase(); const t = top[k] || (top[k] = {desc: l.desc, item: l.item, n: 0, qty: 0}); t.n++; t.qty += Number(l.qty) || 0; }); });
       const tl = Object.values(top).sort((a, b) => b.qty - a.qty || b.n - a.n).slice(0, 12);
       h += `<div class="card"><h2>Most asked-for spares</h2><table class="ht"><tr><th>Spare</th><th style="text-align:right">Times</th><th style="text-align:right">Qty</th></tr>${tl.map(t => `<tr><td>${esc(t.desc)}<div class="small mono">${esc(t.item || "")}</div></td><td class="n">${t.n}</td><td class="n">${t.qty}</td></tr>`).join("")}</table></div>`;
       if (!d.engineer && lead) {
-        const pe = {}; L.forEach(q => { const p = pe[q.engineer] || (pe[q.engineer] = {name: q.engineerName, n: 0, qty: 0, rej: 0}); p.n++; p.qty += q.lines.reduce((m, l) => m + (Number(l.qty) || 0), 0); if (q.status === "REJECTED") p.rej++; });
-        h += `<div class="card"><h2>By engineer <span class="aside">tap one to see his requests</span></h2><table class="ht"><tr><th>Engineer</th><th style="text-align:right">Requests</th><th style="text-align:right">Qty</th><th style="text-align:right">Rejected</th></tr>${Object.entries(pe).sort((a, b) => b[1].n - a[1].n).map(([c, p]) => `<tr data-eng="${esc(c)}"><td>${esc(p.name)}</td><td class="n">${p.n}</td><td class="n">${p.qty}</td><td class="n">${p.rej || ""}</td></tr>`).join("")}</table></div>`;
+        const pe = {}; L.forEach(q => { const p = pe[q.engineer] || (pe[q.engineer] = {name: q.engineerName, n: 0, qty: 0, rej: 0, sw: 0}); p.n++; p.sw += q.lines.filter(l => l.was).length; p.qty += q.lines.reduce((m, l) => m + (Number(l.qty) || 0), 0); if (q.status === "REJECTED") p.rej++; });
+        h += `<div class="card"><h2>By engineer <span class="aside">tap one to see his requests</span></h2><table class="ht"><tr><th>Engineer</th><th style="text-align:right">Requests</th><th style="text-align:right">Qty</th><th style="text-align:right">Rejected</th><th style="text-align:right">Swapped</th></tr>${Object.entries(pe).sort((a, b) => b[1].n - a[1].n).map(([c, p]) => `<tr data-eng="${esc(c)}"><td>${esc(p.name)}</td><td class="n">${p.n}</td><td class="n">${p.qty}</td><td class="n">${p.rej || ""}</td><td class="n">${p.sw || ""}</td></tr>`).join("")}</table></div>`;
       }
-      h += `<div class="card"><h2>Requests</h2>${L.map(q => `<div class="hrow"><div class="t"><b class="mono">${esc(q.callRef)}</b>${lead && !d.engineer ? esc(q.engineerName) : ""}<span class="chip${q.status === "COLLECTED" ? " good" : q.status === "REJECTED" || q.status === "CANCELLED" ? " bad" : ""}">${esc(SNAME[q.status] ? SNAME[q.status].split(" – ")[0] : q.status)}</span>${q.urgent ? '<span class="chip bad">Urgent</span>' : ""}<span class="d">${esc(ddmm(q.created))} ${esc(hm(q.created))}</span></div>
-        <div class="small">${esc(q.customer)}${q.bi ? " · " + esc(q.bi) : ""}${q.reason ? " · " + esc(q.reason) : ""}</div><div>${q.lines.map(l => `<b>${l.qty}</b> ${esc(l.desc)}`).join(" · ")}</div></div>`).join("")}</div>`;
+      const FL = [["all", "All", () => true], ["rejected", "Rejected", q => q.status === "REJECTED"], ["swapped", "Swapped", q => q.lines.some(l => l.was)], ["collected", "Collected", q => q.status === "COLLECTED"], ["open", "Still open", q => ["GL", "NEW", "PICKING", "READY"].includes(q.status)], ["cancelled", "Cancelled", q => q.status === "CANCELLED"]];
+      const ff = (FL.find(x => x[0] === H.f) || FL[0])[2], LF = L.filter(ff);
+      if (SW.length) h += `<div class="card"><h2>Swapped by stores <span class="aside">${SW.length} spare${SW.length === 1 ? "" : "s"}</span></h2><table class="ht"><tr><th>Asked for</th><th>Given instead</th><th>Why</th></tr>${SW.slice(0, 40).map(({q, l}) => `<tr><td>${l.was.qty} x ${esc(l.was.desc)}<div class="small mono">${esc(l.was.item || "")}</div></td><td>${l.qty} x ${esc(l.desc)}<div class="small mono">${esc(l.item || "")}</div></td><td>${esc(l.why || "")}<div class="small">${esc(l.by || "")}${lead && !d.engineer ? " · " + esc(q.engineerName) : ""} · ${esc(q.callRef)}</div></td></tr>`).join("")}</table>${SW.length > 40 ? '<div class="small">First 40 – the CSV has them all.</div>' : ""}</div>`;
+      h += `<div class="card"><h2>Requests <span class="aside">${LF.length}</span></h2><div class="tabs" id="h-f">${FL.map(([k, l, f]) => { const n = L.filter(f).length; return k === "all" || n ? `<button data-hf="${k}" aria-pressed="${H.f === k}">${l} <span class="small">${n}</span></button>` : ""; }).join("")}</div>${LF.map(q => `<div class="hrow"><div class="t"><b class="mono">${esc(q.callRef)}</b>${lead && !d.engineer ? esc(q.engineerName) : ""}<span class="chip${q.status === "COLLECTED" ? " good" : q.status === "REJECTED" || q.status === "CANCELLED" ? " bad" : ""}">${esc(SNAME[q.status] ? SNAME[q.status].split(" – ")[0] : q.status)}</span>${q.urgent ? '<span class="chip bad">Urgent</span>' : ""}<span class="d">${esc(ddmm(q.created))} ${esc(hm(q.created))}</span></div>
+        <div class="small">${esc(q.customer)}${q.bi ? " · " + esc(q.bi) : ""}${q.reason && q.status !== "REJECTED" ? " · " + esc(q.reason) : ""}</div>${q.status === "REJECTED" ? `<div class="hrej">✕ Rejected${q.glName ? " by " + esc(q.glName) : ""}${q.glAt ? " " + esc(ddmm(String(q.glAt).slice(0, 10).replace(/\//g, "-"))) : ""}: ${esc(q.reason || "no reason given")}</div>` : ""}<div>${q.lines.map(l => `<b>${l.qty}</b> ${esc(l.desc)}${l.was ? `<div class="swp" style="margin-left:0">↺ swapped by stores – ${esc(wasTxt(l))}${l.why ? " – " + esc(l.why) : ""}${l.by ? " (" + esc(l.by) + ")" : ""}</div>` : ""}`).join(" · ")}</div></div>`).join("") || '<div class="empty">None in this period.</div>'}</div>`;
     } else h += `<div class="card"><div class="empty">No requests in this period.</div></div>`;
   }
   $("v-hist").innerHTML = h;
@@ -1520,6 +1537,7 @@ function histCsv() {
 }
 $("v-hist").addEventListener("click", e => {
   const p = e.target.closest("[data-p]"); if (p) { H.period = p.dataset.p; if (H.period === "custom") { renderHist(); return; } loadHist(); return; }
+  const hf = e.target.closest("[data-hf]"); if (hf) { H.f = hf.dataset.hf; renderHist(); return; }
   const r = e.target.closest("tr[data-eng]"); if (r) { H.eng = r.dataset.eng; loadHist(); window.scrollTo(0, 0); return; }
   if (e.target.id === "h-csv") histCsv();
 });

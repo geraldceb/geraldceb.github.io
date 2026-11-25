@@ -60,6 +60,7 @@ h2 { margin: 0; font: 700 19px/1.15 var(--display); }
 #gate button:disabled { opacity: .6; }
 #gate .m { color: var(--poor); font-size: 14px; min-height: 1em; }
 #gate .dev { text-align: center; font-size: 12px; color: var(--muted); }
+.ledage { display: inline-block; font-weight: 600; font-size: 12px; padding: 1px 7px; border-radius: 6px; background: #E3F1E8; color: #1F6B43; white-space: nowrap; } .ledage.old { background: #FFF0D2; color: #8A5A00; } .ledage.vold { background: #FBE1DE; color: #B3261E; }
 </style>
 </head><body>
 <div id="gate" hidden>
@@ -71,7 +72,7 @@ h2 { margin: 0; font: 700 19px/1.15 var(--display); }
     <label>PIN<input id="l-pin" name="bcx-pin-x" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></label>
     <button id="l-go" type="submit">Log in</button>
     <div class="m" id="l-msg"></div>
-    <div class="dev">BCX Field Apps v1.9 · Developed by Gerald Pakree</div>
+    <div class="dev">BCX Field Apps v1.10 · Developed by Gerald Pakree</div>
   </form>
 </div>
 
@@ -95,7 +96,7 @@ h2 { margin: 0; font: 700 19px/1.15 var(--display); }
     <a class="tile" href="store-visit/?hub=1"><span class="ic">SV</span><div><b>Store Visit</b><span>Site visit report</span></div><span class="go">&#8250;</span></a>
     <a class="tile" id="t-users" href="users/" hidden><span class="ic">MU</span><div><b>Manage users</b><span>Admin: logins, PINs, roles, lock-outs</span></div><span class="go">&#8250;</span></a>
   </nav>
-  <div class="foot">BCX Field Apps v1.9 · Developed by Gerald Pakree</div>
+  <div class="foot">BCX Field Apps v1.10 · Developed by Gerald Pakree</div>
 </main>
 
 <script>
@@ -179,7 +180,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Login: same Google script and same saved login ("ct-session") as every app, so logging in here logs you into all of them.
    - Ledger: imported once here and saved where all the apps read it ("brl-ledger"; Fault Tags and Custody read that too).
      Older per-app copies are cleared so every app uses this one. */
-const VER = "1.9", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "1.10", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = {
@@ -210,12 +211,20 @@ function currentLedger() {
   return ["brl-ledger", "ft-ledger", "ct-ledger"].map(ls.get).filter(L => L && L.rows)
     .sort((a, b) => (b.importedAt || 0) - (a.importedAt || 0))[0] || null;
 }
+// ledger age (v1.10): from the export time Nav puts in the file name, else the ledger date, else when it was loaded
+const ledWhen = L => { if (!L) return null; const m = String(L.file || "").match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})[_:.](\d{2})/); if (m) return {t: new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5]).getTime()};
+  const d = String(L.date || "").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/) || String(L.date || "").match(/^(\d{4})-(\d{2})-(\d{2})/); if (d) { const y = d[0].length && d[1].length === 4 ? [+d[1], +d[2], +d[3]] : [+d[3], +d[2], +d[1]]; return {t: new Date(y[0], y[1] - 1, y[2]).getTime(), day: true}; }
+  return L.importedAt ? {t: L.importedAt} : null; };
+const ledAge = L => { const w = ledWhen(L); if (!w) return ""; if (w.day) { const n = Math.round((new Date().setHours(0, 0, 0, 0) - w.t) / 864e5); return n <= 0 ? "from today" : n === 1 ? "1 day old" : n + " days old"; }
+  const mins = Math.max(0, Math.round((Date.now() - w.t) / 6e4)); return mins < 60 ? mins + " min old" : mins < 2880 ? Math.round(mins / 60) + " h old" : Math.round(mins / 1440) + " days old"; };
+const ledHours = L => { const w = ledWhen(L); return w ? (w.day ? Math.max(0, (new Date().setHours(0, 0, 0, 0) - w.t) / 36e5) : (Date.now() - w.t) / 36e5) : null; };
+const ledAgeHtml = L => { const a = ledAge(L), h = ledHours(L); return a ? ` <span class="ledage${h >= 72 ? " vold" : h >= 24 ? " old" : ""}" title="How old this Item Ledger is">${a}</span>` : ""; };
 function renderLedger() {
   const L = currentLedger(), box = $("led");
   if (!L) { box.className = "led none"; $("led-t").innerHTML = "<b>No ledger on this phone yet.</b> Import today's Item Ledger Entries export."; return; }
-  const ageDays = L.importedAt ? Math.floor((Date.now() - L.importedAt) / 864e5) : null;
-  box.className = "led" + (ageDays !== null && ageDays >= 1 ? " old" : "");
-  $("led-t").innerHTML = `<b>Ledger ${esc(L.date || "")}</b> · ${L.rows.length} lines<br>${esc(L.file || "")}${L.importedAt ? " · imported " + new Date(L.importedAt).toLocaleString("en-ZA", {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"}) : ""}`;
+  const hrs = ledHours(L);   // v1.10: age from the export time, not from when it was imported
+  box.className = "led" + (hrs !== null && hrs >= 24 ? " old" : "");
+  $("led-t").innerHTML = `<b>Ledger ${esc(L.date || "")}</b>${ledAgeHtml(L)} · ${L.rows.length} lines<br>${esc(L.file || "")}${L.importedAt ? " · imported " + new Date(L.importedAt).toLocaleString("en-ZA", {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"}) : ""}`;
 }
 function ledMsg(t, k) { const m = $("led-msg"); m.textContent = t; m.className = "msg" + (k ? " " + k : ""); }
 

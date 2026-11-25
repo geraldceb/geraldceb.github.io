@@ -5,7 +5,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<style>/* same header on every module: name, then version and "Developed by" */ header.top .mark .title > span { font: 700 20px/1.05 var(--display) !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--ink) !important; } header.top .mark .title small { font: 500 11.5px/1.2 var(--body) !important; color: var(--muted) !important; text-transform: none !important; letter-spacing: 0 !important; }</style>
+<style>/* same header on every module: name, then version and "Developed by" */ header.top .mark .title > span { font: 700 20px/1.05 var(--display) !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--ink) !important; } header.top .mark .title small { font: 500 11.5px/1.2 var(--body) !important; color: var(--muted) !important; text-transform: none !important; letter-spacing: 0 !important; }.ledage { display: inline-block; font-weight: 600; font-size: 12px; padding: 1px 7px; border-radius: 6px; background: #E3F1E8; color: #1F6B43; white-space: nowrap; } .ledage.old { background: #FFF0D2; color: #8A5A00; } .ledage.vold { background: #FBE1DE; color: #B3261E; }
+</style>
 </head><body>
 <title>BCX Spares Custody</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -174,7 +175,7 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
 
 <!-- v4.11: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
 <header class="top"><div class="wrap">
-  <div class="mark" id="home-link"><div class="title"><span>Spares Custody</span><small>v<span class="ver">4.13</span> · Developed by Gerald Pakree</small></div></div>
+  <div class="mark" id="home-link"><div class="title"><span>Spares Custody</span><small>v<span class="ver">4.14</span> · Developed by Gerald Pakree</small></div></div>
 </div></header>
 
 <main class="wrap">
@@ -13563,7 +13564,7 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "4.13";
+const APP_VERSION = "4.14";
 /* v4.12: the ledger keeps only boots and the branch maintenance stock (MAINT_...), so a whole-branch ledger works. */
 /* v4.11: "Posted" on a collection is picked from a calendar (date) and a clock (time) instead of typed - only on
    issues typed in by hand; an issue picked from the ledger keeps Nav's date, locked;
@@ -14492,7 +14493,16 @@ async function retPrepare() {
   } catch (e) { msg("r-check", e instanceof Offline ? "Preparing needs signal. Try again when you have signal, or go straight to the handover." : esc(e.message), "err"); }
   finally { btn.disabled = false; }
 }
-const homeMark = (el, L) => { if (!el) return; const on = !!(L && L.src === "home"); el.classList.toggle("homeled", on); if (on) el.insertAdjacentHTML("afterbegin", '<span class="hm">&#10003; From the home page</span> · '); };   // green when the ledger came from the BCX Field Apps home page
+const homeMark = (el, L) => { if (!el) return; const on = !!(L && L.src === "home"); el.classList.toggle("homeled", on); if (on) el.insertAdjacentHTML("afterbegin", '<span class="hm">&#10003; From the home page</span> · '); if (L) el.insertAdjacentHTML("beforeend", ledAgeHtml(L)); };   // v4.14: + how old the ledger is
+// ledger age (v4.14): from the export time Nav puts in the file name, else the ledger date, else when it was loaded
+const ledWhen = L => { if (!L) return null; const m = String(L.file || "").match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})[_:.](\d{2})/); if (m) return {t: new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5]).getTime()};
+  const d = String(L.date || "").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/) || String(L.date || "").match(/^(\d{4})-(\d{2})-(\d{2})/); if (d) { const y = d[0].length && d[1].length === 4 ? [+d[1], +d[2], +d[3]] : [+d[3], +d[2], +d[1]]; return {t: new Date(y[0], y[1] - 1, y[2]).getTime(), day: true}; }
+  return L.importedAt ? {t: L.importedAt} : null; };
+const ledAge = L => { const w = ledWhen(L); if (!w) return ""; if (w.day) { const n = Math.round((new Date().setHours(0, 0, 0, 0) - w.t) / 864e5); return n <= 0 ? "from today" : n === 1 ? "1 day old" : n + " days old"; }
+  const mins = Math.max(0, Math.round((Date.now() - w.t) / 6e4)); return mins < 60 ? mins + " min old" : mins < 2880 ? Math.round(mins / 60) + " h old" : Math.round(mins / 1440) + " days old"; };
+const ledHours = L => { const w = ledWhen(L); return w ? (w.day ? Math.max(0, (new Date().setHours(0, 0, 0, 0) - w.t) / 36e5) : (Date.now() - w.t) / 36e5) : null; };
+const ledAgeHtml = L => { const a = ledAge(L), h = ledHours(L); return a ? ` <span class="ledage${h >= 72 ? " vold" : h >= 24 ? " old" : ""}" title="How old this Item Ledger is">${a}</span>` : ""; };
+   // green when the ledger came from the BCX Field Apps home page
 // v4.12: the ledger can be the whole branch (site stock, repairs...). The apps keep only the boots
 // (T... working, F... faulty) and the branch maintenance stock (MAINT_...): smaller, quicker, and nothing else shows up.
 // v4.13: the stock locations kept are MAINT_ and MT_ (e.g. MT_DBN_UC); anything with OBS (obsolete) is left out.

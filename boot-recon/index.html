@@ -7,6 +7,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}.homeled { background: rgba(46, 125, 79, .13); border-left: 4px solid #2E7D4F; border-radius: 8px; padding: 8px 10px; }
 .homeled .hm { color: #2E7D4F; font-weight: 700; }
+.ledage { display: inline-block; font-weight: 600; font-size: 12px; padding: 1px 7px; border-radius: 6px; background: #E3F1E8; color: #1F6B43; white-space: nowrap; } .ledage.old { background: #FFF0D2; color: #8A5A00; } .ledage.vold { background: #FBE1DE; color: #B3261E; }
 </style>
 <style>/* same header on every module: name, then version and "Developed by" */ header.top .mark .title > span { font: 700 20px/1.05 var(--display) !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--ink) !important; } header.top .mark .title small { font: 500 11.5px/1.2 var(--body) !important; color: var(--muted) !important; text-transform: none !important; letter-spacing: 0 !important; }</style>
 </head><body>
@@ -183,7 +184,7 @@ footer.bar #share { min-height: 48px; flex: none; }
 
 <!-- v2.17: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
 <header class="top"><div class="wrap">
-  <div class="mark"><div class="title"><span>Boot Recon</span><small>v2.19 · Developed by Gerald Pakree</small></div></div>
+  <div class="mark"><div class="title"><span>Boot Recon</span><small>v2.20 · Developed by Gerald Pakree</small></div></div>
   <div class="status" aria-live="polite">
     <span class="pill" id="pill-checked">0/0 checked</span>
     <span class="pill" id="pill-pages">2 pages</span>
@@ -760,7 +761,16 @@ function flagOf(L) {
   if (c.status === "in" && !L.serial && counted(L, c) < L.qty) return `SHORT - COUNTED ${counted(L, c)} OF ${L.qty}`;
   return "";
 }
-const homeMark = (el, L) => { if (!el) return; const on = !!(L && L.src === "home"); el.classList.toggle("homeled", on); if (on) el.insertAdjacentHTML("afterbegin", '<span class="hm">&#10003; From the home page</span> · '); };   // green when the ledger came from the BCX Field Apps home page
+const homeMark = (el, L) => { if (!el) return; const on = !!(L && L.src === "home"); el.classList.toggle("homeled", on); if (on) el.insertAdjacentHTML("afterbegin", '<span class="hm">&#10003; From the home page</span> · '); if (L) el.insertAdjacentHTML("beforeend", ledAgeHtml(L)); };   // v2.20: + how old the ledger is
+// ledger age (v2.20): from the export time Nav puts in the file name, else the ledger date, else when it was loaded
+const ledWhen = L => { if (!L) return null; const m = String(L.file || "").match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})[_:.](\d{2})/); if (m) return {t: new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5]).getTime()};
+  const d = String(L.date || "").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/) || String(L.date || "").match(/^(\d{4})-(\d{2})-(\d{2})/); if (d) { const y = d[0].length && d[1].length === 4 ? [+d[1], +d[2], +d[3]] : [+d[3], +d[2], +d[1]]; return {t: new Date(y[0], y[1] - 1, y[2]).getTime(), day: true}; }
+  return L.importedAt ? {t: L.importedAt} : null; };
+const ledAge = L => { const w = ledWhen(L); if (!w) return ""; if (w.day) { const n = Math.round((new Date().setHours(0, 0, 0, 0) - w.t) / 864e5); return n <= 0 ? "from today" : n === 1 ? "1 day old" : n + " days old"; }
+  const mins = Math.max(0, Math.round((Date.now() - w.t) / 6e4)); return mins < 60 ? mins + " min old" : mins < 2880 ? Math.round(mins / 60) + " h old" : Math.round(mins / 1440) + " days old"; };
+const ledHours = L => { const w = ledWhen(L); return w ? (w.day ? Math.max(0, (new Date().setHours(0, 0, 0, 0) - w.t) / 36e5) : (Date.now() - w.t) / 36e5) : null; };
+const ledAgeHtml = L => { const a = ledAge(L), h = ledHours(L); return a ? ` <span class="ledage${h >= 72 ? " vold" : h >= 24 ? " old" : ""}" title="How old this Item Ledger is">${a}</span>` : ""; };
+   // green when the ledger came from the BCX Field Apps home page
 // v2.18: the ledger can be the whole branch (site stock, repairs...). The apps keep only the boots
 // (T... working, F... faulty) and the branch maintenance stock (MAINT_...): smaller, quicker, and nothing else shows up.
 // v2.19: the stock locations kept are MAINT_ and MT_ (e.g. MT_DBN_UC); anything with OBS (obsolete) is left out.
@@ -1420,7 +1430,7 @@ const BCXUsers = (() => {
    One login per phone covers Boot Recon, Fault Tags and Spares Custody: Nav code + PIN checked by the Google script,
    kept for 30 days. Engineers are locked to their own boot; Admin and Stores can pick anyone. */
 (() => {
-  const APP = "BCX Boot Stock Recon", VER = "2.19", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+  const APP = "BCX Boot Stock Recon", VER = "2.20", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
   const g = id => document.getElementById(id);
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
