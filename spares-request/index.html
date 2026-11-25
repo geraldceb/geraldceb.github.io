@@ -244,7 +244,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <div class="mark"><b>Spares Request</b><small id="sub">v2.8 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <div class="mark"><b>Spares Request</b><small id="sub">v2.9 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
@@ -271,7 +271,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
   <section id="v-hist" hidden style="display:grid;gap:14px"></section>
   <input type="file" id="fmx-file" accept="image/*" hidden>
-  <div class="foot">Spares Request v2.8 · Developed by Gerald Pakree</div>
+  <div class="foot">Spares Request v2.9 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -352,7 +352,8 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v2.8
+/* BCX Spares Request v2.9
+   v2.9: the "new version" bar no longer comes back after tapping Update.
    v2.8: quicker - opens straight from the phone's copy (a newer version is offered with "Update"), and the Item
          Ledger is read once instead of on every screen.
    v2.7: "Get the latest ledger" button next to the Item Ledger line (Refresh still gets it too).
@@ -413,7 +414,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "2.8", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "2.9", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -1624,7 +1625,7 @@ if ("serviceWorker" in navigator) window.addEventListener("load", () => navigato
   setInterval(upd, 800); upd();
 })();
 </script>
-<script>/* v2.8: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+<script>/* v2.9: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
 (function () { if (!("serviceWorker" in navigator)) return; let shown = false;
   const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
     d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";
@@ -1632,8 +1633,9 @@ if ("serviceWorker" in navigator) window.addEventListener("load", () => navigato
     d.innerHTML = '<span>A new version is ready</span><span style="display:flex;gap:6px;flex:none"><button type="button" data-u="later" style="' + b + ';background:transparent;color:#ccc">Later</button><button type="button" data-u="go" style="' + b + ';background:#D7262C;color:#fff">Update</button></span>';
     d.addEventListener("click", e => { const u = e.target.getAttribute && e.target.getAttribute("data-u"); if (u === "go") location.reload(); if (u === "later") d.remove(); });
     document.body.appendChild(d); };
-  navigator.serviceWorker.addEventListener("message", e => { if (e.data && e.data.type === "bcx-updated") bar(); });
-  const ask = () => { const c = navigator.serviceWorker.controller; if (c) c.postMessage({type: "bcx-ask"}); };
+  const since = Math.round(performance.timeOrigin || Date.now());   // when this page was opened
+  navigator.serviceWorker.addEventListener("message", e => { if (e.data && e.data.type === "bcx-updated" && !(e.data.at && e.data.at <= since)) bar(); });
+  const ask = () => { const c = navigator.serviceWorker.controller; if (c) c.postMessage({type: "bcx-ask", since}); };
   setTimeout(ask, 4000); setTimeout(ask, 20000);
 })();</script>
 </body></html>

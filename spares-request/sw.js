@@ -1,5 +1,5 @@
 // Offline support for Spares Request. The version changes whenever the app changes.
-const CACHE = "spares-request-v2-8-20261125";
+const CACHE = "spares-request-v2-9-20261125";
 const EXCLUDE = []; // other apps in sub-folders of this site keep their own offline copy
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 const BASE = new URL("./", self.registration.scope).pathname;
@@ -7,9 +7,10 @@ const mine = url => { const u = new URL(url); return u.origin !== location.origi
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => { const old = ks.filter(k => (k.startsWith("spares-request-")) && k !== CACHE); return Promise.all(old.map(k => caches.delete(k))).then(() => self.clients.claim()).then(() => { if (old.length) tellUpdated(); }); })); });
 // v2.8: tell the open app when a newer version has been saved, so it can offer "Update"
-let UPDATED = false;
-const tellUpdated = () => { UPDATED = true; self.clients.matchAll({type: "window"}).then(cs => cs.forEach(c => c.postMessage({type: "bcx-updated"}))); };
-self.addEventListener("message", e => { if (e.data && e.data.type === "bcx-ask" && UPDATED && e.source) e.source.postMessage({type: "bcx-updated"}); });
+// v2.9: remember WHEN the newer copy was saved; only a page opened before that gets the offer (after Update it's gone)
+let UPDATED = 0;
+const tellUpdated = () => { UPDATED = Date.now(); self.clients.matchAll({type: "window"}).then(cs => cs.forEach(c => c.postMessage({type: "bcx-updated", at: UPDATED}))); };
+self.addEventListener("message", e => { const m = e.data; if (m && m.type === "bcx-ask" && UPDATED && e.source && UPDATED > (Number(m.since) || 0)) e.source.postMessage({type: "bcx-updated", at: UPDATED}); });
 self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET" || !mine(req.url) || /script\.google/.test(req.url)) return;
