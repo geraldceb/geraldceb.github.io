@@ -241,10 +241,14 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
 .kwarn { background: #FFE9A8; color: #3A2A00; border-radius: 10px; padding: 10px 14px; margin: 0 0 12px; font-size: 15px; }
 .ledage { display: inline-block; font-weight: 600; font-size: 12px; padding: 1px 7px; border-radius: 6px; background: #E3F1E8; color: #1F6B43; white-space: nowrap; } .ledage.old { background: #FFF0D2; color: #8A5A00; } .ledage.vold { background: #FBE1DE; color: #B3261E; }
 .hrej { font-size: 13px; color: var(--bad, #B3261E); margin: 2px 0; }
+/* v2.10: point the engineer at the spare box after choosing the call */
+.f.hl { border: 2px solid var(--red, #D7262C) !important; box-shadow: 0 0 0 4px rgba(215, 38, 44, .18); animation: hlp 1.1s ease-in-out 3; }
+@keyframes hlp { 50% { box-shadow: 0 0 0 9px rgba(215, 38, 44, .06); } }
+.itemhint { font-weight: 700; color: var(--red, #D7262C); margin: 8px 0 4px; font-size: 14px; }
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <div class="mark"><b>Spares Request</b><small id="sub">v2.9 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <div class="mark"><b>Spares Request</b><small id="sub">v2.10 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
@@ -271,7 +275,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
   <section id="v-hist" hidden style="display:grid;gap:14px"></section>
   <input type="file" id="fmx-file" accept="image/*" hidden>
-  <div class="foot">Spares Request v2.9 · Developed by Gerald Pakree</div>
+  <div class="foot">Spares Request v2.10 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -352,7 +356,10 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v2.9
+/* BCX Spares Request v2.10
+   v2.10: the spare search no longer suggests items from his faulty boot (F...) - those are item codes of returned
+         parts, not stock codes; only his working boot and the item list.
+         After choosing the call, the "add a spare" box is highlighted, scrolled into view and ready to type in.
    v2.9: the "new version" bar no longer comes back after tapping Update.
    v2.8: quicker - opens straight from the phone's copy (a newer version is offered with "Update"), and the Item
          Ledger is read once instead of on every screen.
@@ -414,7 +421,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "2.9", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "2.10", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -840,7 +847,8 @@ function itemSugg(q) {
   const t = q.split(/\s+/);
   // his own ledger items first (codes he has used), then the item list
   const L = ledger();
-  if (L && F.engineer) L.rows.forEach(x => { const loc = String(x[8] || "").toUpperCase(); if (loc.slice(1) !== F.engineer) return; const code = String(x[4] || "").trim(), d = String(x[5] || "").trim(); const s = (code + " " + d).toUpperCase(); if (!seen.has(code.toUpperCase()) && t.every(w => s.includes(w))) { seen.add(code.toUpperCase()); out.push([code, d, "", 1]); } });
+  // v2.10: only his WORKING boot (T...) - the faulty boot (F...) holds item codes of returned parts, not stock codes
+  if (L && F.engineer) L.rows.forEach(x => { const loc = String(x[8] || "").toUpperCase(); if (loc !== "T" + F.engineer) return; const code = String(x[4] || "").trim(), d = String(x[5] || "").trim(); const s = (code + " " + d).toUpperCase(); if (!seen.has(code.toUpperCase()) && t.every(w => s.includes(w))) { seen.add(code.toUpperCase()); out.push([code, d, "", 1]); } });
   if (I) for (const i of I.items) { if (out.length >= 14) break; const s = (i[0] + " " + i[1]).toUpperCase(); if (!seen.has(String(i[0]).toUpperCase()) && t.every(w => s.includes(w))) { seen.add(String(i[0]).toUpperCase()); out.push(i); } }
   return out.slice(0, 14);
 }
@@ -881,7 +889,7 @@ function callBlock(g, gi, whose, editing) {
     ${g.items.map(({l, i}) => `<div class="sline" data-i="${i}"><div><div class="d">${esc(l.desc)}</div><div class="c">${esc(l.item || "no item code")} · for <b>${nocall ? esc(g.ship) : esc(g.so)}</b></div>${l.item ? `<div>${brChip(l.item)}</div>` : ""}</div>
       <div class="qbox"><button type="button" data-q="-1" aria-label="One less">−</button><b>${l.qty}</b><button type="button" data-q="1" aria-label="One more">+</button></div>
       ${bootHtml(F.engineer, l.item, whose)}${othersHtml(F.engineer, l.item)}<button type="button" class="btn small ghost x" data-x="1">Remove</button></div>`).join("")}
-    ${cur ? `<input class="f" id="f-item" type="search" placeholder="+ Add a spare for ${nocall ? "this site" : esc(g.so)} (item code or description)" value="${esc(F.iq)}" autocomplete="off"><div class="sugg" id="f-sugg"></div>` : ""}
+    ${cur ? `<div class="itemhint" id="f-itemhint" hidden>↓ Now type the spare you need</div><input class="f" id="f-item" type="search" placeholder="+ Add a spare for ${nocall ? "this site" : esc(g.so)} (item code or description)" value="${esc(F.iq)}" autocomplete="off"><div class="sugg" id="f-sugg"></div>` : ""}
     ${!g.items.length && !cur ? "" : !g.items.length ? '<div class="small">No spares for this call yet.</div>' : ""}
   </div>`;
 }
@@ -949,7 +957,11 @@ function paintCustSugg() {
 }
 function setCall(c) {
   F.call = c; F.calls[callKey(c)] = c; F.q = ""; F.mode = ""; F.cq = ""; F.bq = ""; F.cust = ""; F.sq = ""; F.mso = ""; F.mship = "";
-  saveDraft(); renderForm(); setTimeout(() => { const s = $("f-item"); if (s) { s.scrollIntoView({block: "center"}); } }, 40);
+  saveDraft(); renderForm();
+  // v2.10: straight on to the spare - highlight the box, bring it into view and put the cursor in it
+  setTimeout(() => { const s = $("f-item"); if (!s) return; s.classList.add("hl"); const h = $("f-itemhint"); if (h) h.hidden = false;
+    try { s.focus({preventScroll: true}); } catch (e) { s.focus(); } s.scrollIntoView({block: "center", behavior: "smooth"});
+    s.addEventListener("input", () => { s.classList.remove("hl"); if (h) h.hidden = true; }, {once: true}); }, 60);
 }
 function shipNames() { const s = new Set(); const B = board(); if (B) B.rows.forEach(r => s.add(r[3])); const L = ledger(); if (L) L.rows.forEach(r => r[10] && s.add(String(r[10]).trim())); return [...s].filter(Boolean).sort().slice(0, 1500); }
 function paintSugg() {
@@ -1625,7 +1637,7 @@ if ("serviceWorker" in navigator) window.addEventListener("load", () => navigato
   setInterval(upd, 800); upd();
 })();
 </script>
-<script>/* v2.9: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+<script>/* v2.10: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
 (function () { if (!("serviceWorker" in navigator)) return; let shown = false;
   const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
     d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";
