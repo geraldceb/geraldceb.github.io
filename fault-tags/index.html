@@ -211,7 +211,7 @@ footer.bar #share { min-height: 48px; flex: none; }
 
 <!-- v2.12: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
 <header class="top"><div class="wrap">
-  <div class="mark"><div class="title"><span>Fault Tags</span><small>v2.16 · Developed by Gerald Pakree</small></div></div>
+  <div class="mark"><div class="title"><span>Fault Tags</span><small>v2.17 · Developed by Gerald Pakree</small></div></div>
   <div class="status" aria-live="polite">
     <span class="pill" id="pill-tags">0 tags</span>
     <span class="pill" id="pill-pages">0 pages</span>
@@ -268,7 +268,7 @@ footer.bar #share { min-height: 48px; flex: none; }
 
 <datalist id="res"></datalist>
 
-<script>/* pdf-lib 1.17.1 (MIT), built in so tags can be made without signal */
+<script type="text/plain" id="lib-pdflib">/* pdf-lib 1.17.1 (MIT), built in so tags can be made without signal */
 !function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"function"==typeof define&&define.amd?define(["exports"],e):e((t=t||self).PDFLib={})}(this,(function(t){"use strict";
 /*! *****************************************************************************
     Copyright (c) Microsoft Corporation. All rights reserved.
@@ -287,6 +287,13 @@ footer.bar #share { min-height: 48px; flex: none; }
 //# sourceMappingURL=pdf-lib.min.js.map
 
 </script>
+<script>/* v2.17: big libraries start only when they're first needed (making a PDF), so the app opens quicker */
+(function () { const lazy = (name, id) => Object.defineProperty(window, name, {configurable: true,
+  get() { delete window[name]; const src = document.getElementById(id); if (src) { const s = document.createElement("script"); s.textContent = src.textContent; document.head.appendChild(s); } return window[name]; },
+  set(v) { delete window[name]; window[name] = v; } });
+  lazy("PDFLib", "lib-pdflib");
+})();</script>
+
 <script>
 /* Minimal offline .xlsx reader: first worksheet -> array of rows (arrays of cell values).
    Uses the browser's DecompressionStream for zip entries; dates stay as Excel serial numbers. */
@@ -975,7 +982,7 @@ const BCXUsers = (() => {
    One login per phone covers Boot Recon, Fault Tags and Spares Custody: Nav code + PIN checked by the Google script,
    kept for 30 days. Engineers are locked to their own boot; Admin and Stores can pick anyone. */
 (() => {
-  const APP = "BCX Fault Tags", VER = "2.16", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+  const APP = "BCX Fault Tags", VER = "2.17", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
   const g = id => document.getElementById(id);
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
@@ -1165,4 +1172,16 @@ window.BCX_BACK = {can: () => !document.getElementById("confirm").hidden, go: ()
   setInterval(upd, 800); upd();
 })();
 </script>
+<script>/* v2.17: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+(function () { if (!("serviceWorker" in navigator)) return; let shown = false;
+  const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
+    d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";
+    const b = "border:0;border-radius:8px;padding:9px 14px;font:600 14px/1 system-ui,sans-serif;cursor:pointer";
+    d.innerHTML = '<span>A new version is ready</span><span style="display:flex;gap:6px;flex:none"><button type="button" data-u="later" style="' + b + ';background:transparent;color:#ccc">Later</button><button type="button" data-u="go" style="' + b + ';background:#D7262C;color:#fff">Update</button></span>';
+    d.addEventListener("click", e => { const u = e.target.getAttribute && e.target.getAttribute("data-u"); if (u === "go") location.reload(); if (u === "later") d.remove(); });
+    document.body.appendChild(d); };
+  navigator.serviceWorker.addEventListener("message", e => { if (e.data && e.data.type === "bcx-updated") bar(); });
+  const ask = () => { const c = navigator.serviceWorker.controller; if (c) c.postMessage({type: "bcx-ask"}); };
+  setTimeout(ask, 4000); setTimeout(ask, 20000);
+})();</script>
 </body></html>
