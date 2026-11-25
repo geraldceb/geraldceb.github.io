@@ -8,6 +8,7 @@
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}.homeled { background: rgba(46, 125, 79, .13); border-left: 4px solid #2E7D4F; border-radius: 8px; padding: 8px 10px; }
 .homeled .hm { color: #2E7D4F; font-weight: 700; }
 .ledage { display: inline-block; font-weight: 600; font-size: 12px; padding: 1px 7px; border-radius: 6px; background: #E3F1E8; color: #1F6B43; white-space: nowrap; } .ledage.old { background: #FFF0D2; color: #8A5A00; } .ledage.vold { background: #FBE1DE; color: #B3261E; }
+.getled { width: 100%; min-height: 48px; margin-bottom: 8px; }
 </style>
 <style>/* same header on every module: name, then version and "Developed by" */ header.top .mark .title > span { font: 700 20px/1.05 var(--display) !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--ink) !important; } header.top .mark .title small { font: 500 11.5px/1.2 var(--body) !important; color: var(--muted) !important; text-transform: none !important; letter-spacing: 0 !important; }</style>
 </head><body>
@@ -184,7 +185,7 @@ footer.bar #share { min-height: 48px; flex: none; }
 
 <!-- v2.17: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
 <header class="top"><div class="wrap">
-  <div class="mark"><div class="title"><span>Boot Recon</span><small>v2.20 · Developed by Gerald Pakree</small></div></div>
+  <div class="mark"><div class="title"><span>Boot Recon</span><small>v2.21 · Developed by Gerald Pakree</small></div></div>
   <div class="status" aria-live="polite">
     <span class="pill" id="pill-checked">0/0 checked</span>
     <span class="pill" id="pill-pages">2 pages</span>
@@ -205,7 +206,8 @@ footer.bar #share { min-height: 48px; flex: none; }
 
   <section class="step" aria-labelledby="h2">
     <h2 id="h2"><span class="n">02</span>Ledger check<span class="aside" id="lines-count"></span></h2>
-    <label class="import">Import Nav export (.xlsx)<input type="file" id="import" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+    <button type="button" class="btn primary getled" id="get-led">Get the latest ledger</button>
+    <label class="import">Import my own copy (.xlsx)<input type="file" id="import" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
     <details class="other-note" id="other-note" hidden><summary id="other-sum"></summary><div id="other-list"></div></details>
     <div class="ledger-info" id="ledger-info">Import the weekly Item Ledger Entries export. A newer Resource List export can be imported the same way.</div>
     <div id="mode-ui" hidden>
@@ -1248,6 +1250,21 @@ function init() {
   $("f-eng").addEventListener("input", e => { if (!pickEngineer(e.target.value)) { S.engineer = e.target.value; save(); } });
   FIELDS.forEach(([id, k]) => { const el = $(id); el.value = S[k] || ""; el.addEventListener(el.type === "date" ? "change" : "input", () => { S[k] = el.value; save(); }); });
   $("import").addEventListener("change", e => { const f = e.target.files && e.target.files[0]; if (f) importFile(f); e.target.value = ""; });
+  // v2.21: the office copy of the Item Ledger (the same one as on the home page) - no need to import a file
+  $("get-led").addEventListener("click", async () => {
+    const b = $("get-led"); b.disabled = true; setMsg("Getting the latest ledger...");
+    try {
+      const rd = k => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
+      const sess = rd("ct-session"), have = (typeof LEDGER !== "undefined" && LEDGER) || rd("brl-ledger"); if (!sess || !sess.token) throw new Error("Log in on the BCX Field Apps home page first.");
+      const r = await fetch(rd("ct-api") || "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec", {method: "POST", body: JSON.stringify({action: "latestLedger", token: sess.token, have: have && have.kv === 2 && have.file}), redirect: "follow"}), j = await r.json();
+      if (!j.ok) throw new Error(/^LOGIN:/.test(j.error || "") ? "Please log in again on the BCX Field Apps home page." : j.error);
+      if (!j.name) { setMsg("There's no office ledger yet. Import your own copy instead.", "err"); return; }
+      if (j.same) { setMsg("You already have the latest ledger.", "ok"); return; }
+      const bin = atob(j.b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      await importFile(new File([u8], j.name));
+    } catch (e) { setMsg(e instanceof TypeError ? "No signal. Try again when you have signal, or import your own copy." : e.message, "err"); }
+    finally { b.disabled = false; }
+  });
   $("filters").addEventListener("click", e => { const b = e.target.closest("button[data-f]"); if (!b) return; if (b.dataset.f !== "tidy") filter = b.dataset.f; renderLines(); });
   let ft = null; $("find").addEventListener("input", e => { clearTimeout(ft); ft = setTimeout(() => { query = e.target.value.trim(); if (query && filter === "todo") filter = "all"; renderLines(); }, 150); });
   ["lines", "extras"].forEach(id => { const el = $(id); el.addEventListener("click", onClick); el.addEventListener("input", onInput); el.addEventListener("change", onChange); });
@@ -1430,7 +1447,7 @@ const BCXUsers = (() => {
    One login per phone covers Boot Recon, Fault Tags and Spares Custody: Nav code + PIN checked by the Google script,
    kept for 30 days. Engineers are locked to their own boot; Admin and Stores can pick anyone. */
 (() => {
-  const APP = "BCX Boot Stock Recon", VER = "2.20", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+  const APP = "BCX Boot Stock Recon", VER = "2.21", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
   const g = id => document.getElementById(id);
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },

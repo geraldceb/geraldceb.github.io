@@ -175,7 +175,7 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
 
 <!-- v4.11: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
 <header class="top"><div class="wrap">
-  <div class="mark" id="home-link"><div class="title"><span>Spares Custody</span><small>v<span class="ver">4.14</span> · Developed by Gerald Pakree</small></div></div>
+  <div class="mark" id="home-link"><div class="title"><span>Spares Custody</span><small>v<span class="ver">4.15</span> · Developed by Gerald Pakree</small></div></div>
 </div></header>
 
 <main class="wrap">
@@ -294,6 +294,19 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
     <button class="btn primary block" id="r-next">Next: sign the handover</button>
     <button class="btn block" id="r-prep">Prepare only: print tags now, hand over later</button>
     <div class="msg" id="r-check"></div>
+  </section>
+</section>
+
+<!-- FAULT TAGS for any trail (v4.15) -->
+<section id="v-tagfill" hidden style="display:grid;gap:16px">
+  <section class="card">
+    <h2>Fault tags <span class="aside" id="tf-count"></span></h2>
+    <p class="hint" id="tf-hint">Fill in the fault for each item you're tagging. Untick any that don't need a tag.</p>
+    <div class="msg warn" id="tf-block" hidden></div>
+    <div class="list" id="tf-items"></div>
+    <button class="btn primary block" id="tf-print">Print fault tags</button>
+    <button class="btn block" id="tf-back">Back</button>
+    <div class="msg" id="tf-msg"></div>
   </section>
 </section>
 
@@ -13564,7 +13577,7 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "4.14";
+const APP_VERSION = "4.15";
 /* v4.12: the ledger keeps only boots and the branch maintenance stock (MAINT_...), so a whole-branch ledger works. */
 /* v4.11: "Posted" on a collection is picked from a calendar (date) and a clock (time) instead of typed - only on
    issues typed in by hand; an issue picked from the ledger keeps Nav's date, locked;
@@ -13642,7 +13655,7 @@ async function api(action, data, opts) {
 }
 
 /* ---------- views ---------- */
-const VIEWS = ["v-login", "v-home", "v-out", "v-collected", "v-ret", "v-find", "v-trail", "v-hand", "v-done", "v-settings"];
+const VIEWS = ["v-login", "v-home", "v-out", "v-collected", "v-ret", "v-find", "v-trail", "v-hand", "v-done", "v-settings", "v-tagfill"];
 let current = "";
 function show(v, push) {
   VIEWS.forEach(x => $(x).hidden = x !== v); current = v; window.scrollTo(0, 0);
@@ -13655,7 +13668,7 @@ function show(v, push) {
 function handWork() { if (current === "v-hand" && HAND) handSave(); return current === "v-hand" && HAND && ((PADS.g && !PADS.g.empty()) || (PADS.r && !PADS.r.empty())); }
 window.addEventListener("popstate", e => {
   if (handWork() && !confirm("Leave this handover? The ticks, photos and note are kept, but both people will need to sign again.")) { history.pushState({v: "v-hand"}, "", location.pathname + location.search); return; }
-  const v = e.state && e.state.v; if (!SESSION) show("v-login", false); else if (v && v !== "v-done" && v !== "v-hand") show(v, false); else goHome(false); });
+  const v = e.state && e.state.v; if (!SESSION) show("v-login", false); else if (v && ((v !== "v-done" && v !== "v-hand") || (v === "v-done" && current === "v-tagfill"))) show(v, false); else goHome(false); });
 function renderWho() { const w = $("who"); if (w) w.innerHTML = SESSION ? `Logged in as <b>${esc(me().name)}</b> (${esc(me().code)})` : ""; $("btn-settings").hidden = !(SESSION && me().role === "ADMIN"); }
 
 /* ---------- login ---------- */
@@ -13675,6 +13688,7 @@ function logout() { SESSION = null; ls.del("ct-session"); renderWho(); show("v-l
 function afterLogin() {
   const t = new URLSearchParams(location.search).get("t");
   if (t) { history.replaceState(null, "", location.pathname); openTrail(t.toUpperCase()); }
+  else if (new URLSearchParams(location.search).get("ret") === "ft") { history.replaceState(null, "", location.pathname); goHome(); fromFaultTags(); }
   else goHome();
   processQueue();
 }
@@ -14325,6 +14339,20 @@ function startRet() {
   if (d) { if (RET.extra.length && typeof renderExtraR === "function") renderExtraR();
     draftBanner("r-msg", d, "return", () => { draftDel("ct-draft-ret"); startRet(); }); }
 }
+// v4.15: opened from Fault Tags ("Make custody") - a Return to stores with the tagged items ticked; their tags are already printed
+function fromFaultTags() {
+  const h = ls.get("ct-from-ft", null); ls.del("ct-from-ft");
+  if (!h || !h.keys || Date.now() - (h.at || 0) > 6 * 3600e3) { startRet(); return; }
+  draftDel("ct-draft-ret"); startRet();
+  if (me().role !== "ENG" || h.eng === me().code) { RET.eng = h.eng; $("r-eng").value = h.eng; }
+  else { msg("r-msg", "These fault tags were for " + esc(h.eng) + " – pick the boot owner.", "warn"); return; }
+  buildRetItems();
+  let n = 0; h.keys.forEach(k => { if (RET.sel[k] === undefined) return; RET.sel[k] = true; n++; const x = (h.t || {})[k]; if (x) Object.assign(RET.t[k], {call: x.call || RET.t[k].call, cust: x.cust || RET.t[k].cust, loc: x.loc || RET.t[k].loc, fault: x.fault || "", acc: x.acc || "", urgent: x.urgent || "no"}); if (x && x.rtc === "yes" && k[0] === "f") RET.cond[k] = "RTC"; });
+  RET.tags = false; $("r-tags").checked = false;
+  retView = "sel"; document.querySelectorAll("#r-pick .seg[aria-label=Show] button").forEach(x => x.setAttribute("aria-pressed", x.dataset.view === "sel"));
+  renderRetItems();
+  msg("r-msg", `From Fault Tags: <b>${n}</b> item${n === 1 ? "" : "s"} ticked${n < h.keys.length ? ` (${h.keys.length - n} not on this ledger)` : ""}. Their tags are already printed, so “Make fault tags” is off. Check them, then sign the handover.`, "ok");
+}
 function renderLedgerInfo() {
   const L = loadLedger();
   $("r-ledger-info").innerHTML = L ? `Ledger <b>${esc(L.date || L.file)}</b> on this phone (${L.rows.length} lines). Import a newer one if you have it.` : "No ledger on this phone yet. Import the Item Ledger Entries file you got this week.";
@@ -14463,6 +14491,44 @@ async function saveTags(items, engineer) {
   const d = new Date(), name = `Fault Tags - ${engineer} ${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}.pdf`;
   savePdf(out.bytes, name);
   return {name, tags: tags.length, pages: out.pages, rtc: out.rtc, overflow: out.overflow};
+}
+/* ---------- v4.15: fault tags from ANY trail (outbound, return, any step) ----------
+   A trail that already has tag details prints straight away (as before); one without them opens this form first. */
+let TF = null;
+function ledShip(it) {
+  const L = loadLedger(); if (!L) return {};
+  const r = L.rows.find(x => it.serial ? String(x[6]) === String(it.serial) : (String(x[1]) === String(it.doc) && String(x[4]) === String(it.itemNo)));
+  if (!r) return {}; const p = String(r[10] || "").split(" - "); return {so: r[2], cust: (p[0] || "").trim(), loc: p.slice(1).join(" - ").trim()};
+}
+function openTagFill(items, engineer, back) {
+  TF = {engineer, back, list: (items || []).filter(i => i.description || i.itemNo || i.serial).map((i, n) => {
+    const s = !i.customer || !(i.tagCall || i.so) ? ledShip(i) : {}, cond = i.condition === "RTC" || i.condition === "Working" ? i.condition : "Faulty";
+    return {key: "i" + n, kind: "working", description: i.description || i.itemNo, serial: i.serial || "", itemNo: i.itemNo || "", qty: Number(i.qty) || 1, so: i.so || "", doc: i.doc || "", on: true, cond,
+      t: {call: i.tagCall || i.so || s.so || "", cust: i.customer || s.cust || "", loc: i.location || s.loc || "", ser: i.serial || "", stk: i.itemNo || "", fault: i.fault || "", acc: i.accessories || "", urgent: i.urgent || "no", copies: Number(i.copies) || Number(i.qty) || 1}};
+  })};
+  msg("tf-msg", ""); renderTF(); show("v-tagfill");
+}
+function renderTF() {
+  const bl = tagBlock(TF.engineer), tb = $("tf-block"); tb.hidden = !bl; tb.textContent = bl ? tagBlockText(bl) : ""; $("tf-print").disabled = !!bl;
+  $("tf-items").innerHTML = TF.list.map(it => `<div class="item ${it.on ? (it.cond === "RTC" ? "rtc" : "sel") : ""}" data-key="${esc(it.key)}">
+      <label class="ih"><input type="checkbox" data-act="sel" ${it.on ? "checked" : ""}><span><span class="desc">${esc(it.description)}</span><br>
+      <span class="meta">${esc(it.itemNo)} · S/N ${esc(it.serial || "-")}${it.so ? " · " + esc(it.so) : ""}</span></span></label>
+      ${it.on ? condUi(it, it.cond) + tagForm(it, it.t, it.cond) : ""}</div>`).join("") || '<div class="empty">No items on this trail.</div>';
+  const n = TF.list.filter(i => i.on).length; $("tf-count").textContent = `${n} to tag`;
+  $("tf-print").textContent = n ? `Print fault tags (${n} item${n === 1 ? "" : "s"})` : "Print fault tags";
+}
+async function printTF() {
+  const on = TF.list.filter(i => i.on); if (!on.length) return msg("tf-msg", "Tick at least one item.", "err");
+  const bad = on.filter(i => tagNeed(i.t, i.cond).length); if (bad.length) return msg("tf-msg", `${bad.length} item${bad.length === 1 ? " needs" : "s need"} a fault description.`, "err");
+  try {
+    const r = await saveTags(on.map(i => Object.assign({description: i.description, serial: i.t.ser, itemNo: i.t.stk, so: i.t.call, qty: i.qty, condition: i.cond}, tagFields(i.t, i.cond))), TF.engineer);
+    msg("tf-msg", r ? tagMsg(r) : "Nothing to print.", r ? "ok" : "warn");
+  } catch (e) { msg("tf-msg", "Couldn't make the tags: " + esc(e.message), "err"); }
+}
+// the Tags buttons: details on the trail -> print now; none -> fill them in first
+async function tagsOrFill(items, engineer, back, msgId) {
+  if (hasTags(items)) { try { const r = await saveTags(items, engineer); msg(msgId, r ? tagMsg(r) : "No fault tag details.", r ? "ok" : "warn"); } catch (e) { msg(msgId, "Couldn't make the tags: " + esc(e.message), "err"); } return; }
+  openTagFill(items, engineer, back);
 }
 function retChosen() {
   const tv = (i, f, d) => RET.tags && RET.t[i.key] && RET.t[i.key].unlock && String(RET.t[i.key][f] || "").trim() ? String(RET.t[i.key][f]).trim() : d;   // Nav details changed on purpose
@@ -14792,7 +14858,7 @@ function showDoneMany(keepMsg) {
   const box = $("d-multi"); box.hidden = false;
   box.innerHTML = MULTI.map((m, i) => `<div class="trow ${m.res.trail.status === "COMPLETE" ? "done" : ""}"><span class="r1" style="flex-wrap:nowrap"><span class="ref">${esc(m.res.ref)}</span>
     <span class="chip ${m.res.trail.status === "COMPLETE" ? "ok" : "open"}">${m.res.trail.status === "COMPLETE" ? "Complete" : "Hop " + m.res.hop}</span>
-    <button class="btn small" data-mpdf="${i}" style="margin-left:auto">PDF</button>${m.res.trail.type === "RET" && hasTags(m.res.items) ? `<button class="btn small" data-mtags="${i}">Tags</button>` : ""}</span>
+    <button class="btn small" data-mpdf="${i}" style="margin-left:auto">PDF</button><button class="btn small" data-mtags="${i}">Tags</button></span>
     <span class="r2" style="color:${m.up === "ok" ? "var(--good)" : m.up === "sending" || !m.up ? "var(--muted)" : "var(--poor)"}">${m.up === "ok" ? "PDF saved to the log and emailed" : m.up === "sending" ? "PDF waiting to send..." : m.up ? "PDF not in the log yet: " + esc(m.up) : "Already saved earlier"}</span></div>`).join("");
   if (!keepMsg) { msg("d-msg", '<span class="spinner"></span> Saving PDFs to the custody log... keep the app open.'); show("v-done"); }
 }
@@ -14862,7 +14928,7 @@ function showDone(res) {
   $("d-ref").textContent = t.ref;
   $("d-pdf").disabled = $("d-share").disabled = false;
   $("d-share").hidden = !(navigator.canShare && navigator.canShare({files: [new File([""], "x.pdf", {type: "application/pdf"})]}));
-  $("d-tags").hidden = !(res.trail.type === "RET" && hasTags(res.items));
+  $("d-tags").hidden = false; $("d-tags").textContent = hasTags(res.items) ? "Fault tags PDF" : "Make fault tags";   // v4.15: any step
   show("v-done");
 }
 function showQueued(payload, fast, qid) {
@@ -15023,7 +15089,7 @@ function renderTrail() {
     .map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
   const canHand = !closed(t);
   $("tv-hand").hidden = !canHand;
-  $("tv-tags").hidden = !(t.type === "RET" && hasTags(items));
+  $("tv-tags").hidden = false; $("tv-tags").textContent = hasTags(items) ? "Print fault tags" : "Make fault tags for these items";   // v4.15: any trail
   const canFind = !closed(t) && (t.currentHolder === me().code || me().role === "ADMIN");
   $("tv-items").innerHTML = items.map(it => {
     const miss = /^Missing/.test(it.status);
@@ -15128,7 +15194,7 @@ function init() {
   $("t-multi").onclick = () => setPick(!PICK);
   $("t-multi-next").onclick = pickNext;
   $("d-multi").onclick = async e => { const i = e.target.dataset.mpdf, t = e.target.dataset.mtags; if (i != null && MULTI[i]) savePdf(MULTI[i].bytes, MULTI[i].name);
-    if (t != null && MULTI[t]) { try { const r = await saveTags(MULTI[t].res.items, MULTI[t].res.trail.bookedTo); if (r) msg("d-msg", tagMsg(r), "ok"); } catch (er) { msg("d-msg", esc(er.message), "err"); } } };
+    if (t != null && MULTI[t]) tagsOrFill(MULTI[t].res.items, MULTI[t].res.trail.bookedTo, "v-done", "d-msg"); };
   $("queue-banner").onclick = e => { if (e.target.id === "q-retry") { e.target.disabled = true; e.target.textContent = "Sending..."; const q = Q(); q.forEach(x => { if (x.kind === "pdf") x.notBefore = 0; }); ls.set("ct-queue", q); processQueue(); } const d = e.target.dataset.qdel; if (d) queueDel(d); };
   $("go-out").onclick = startOut; $("go-ret").onclick = startRet; $("go-scan").onclick = () => { msg("f-msg", ""); $("f-ref").value = ""; show("v-find"); };
   // outbound
@@ -15219,8 +15285,18 @@ function init() {
   $("f-go").onclick = () => { const r = $("f-ref").value.trim().toUpperCase(); if (r) openTrail(r); };
   $("f-ref").addEventListener("keydown", e => { if (e.key === "Enter") $("f-go").click(); });
   $("tv-hand").onclick = () => startHandover({isNew: false, trail: TRAIL.trail, items: TRAIL.items});
-  $("tv-tags").onclick = async () => { try { const r = await saveTags(TRAIL.items, TRAIL.trail.bookedTo); msg("tv-msg", r ? tagMsg(r) : "No fault tag details on this trail.", r ? "ok" : "warn"); } catch (e) { msg("tv-msg", "Couldn't make the tags: " + esc(e.message), "err"); } };
-  $("d-tags").onclick = async () => { if (!LAST) return; try { const r = await saveTags(LAST.res.items, LAST.res.trail.bookedTo); msg("d-msg", r ? tagMsg(r) : "No fault tag details.", r ? "ok" : "warn"); } catch (e) { msg("d-msg", "Couldn't make the tags: " + esc(e.message), "err"); } };
+  $("tv-tags").onclick = () => tagsOrFill(TRAIL.items, TRAIL.trail.bookedTo, "v-trail", "tv-msg");
+  $("d-tags").onclick = () => { if (LAST) tagsOrFill(LAST.res.items, LAST.res.trail.bookedTo, "v-done", "d-msg"); };
+  // v4.15: the fault tag form for any trail
+  $("tf-back").onclick = () => history.back();
+  $("tf-print").onclick = printTF;
+  $("tf-items").addEventListener("input", e => { const f = e.target.dataset.tf; if (!f) return; const card = e.target.closest(".item"), it = TF.list.find(x => x.key === card.dataset.key);
+    it.t[f] = f === "copies" ? Math.max(1, Math.min(99, Number(e.target.value) || 1)) : e.target.value; const nd = card.querySelector(".tagf .need"), m = tagNeed(it.t, it.cond); if (nd) { nd.textContent = "Still needed: " + m.join(", "); nd.hidden = !m.length; } });
+  $("tf-items").addEventListener("click", e => { const card = e.target.closest(".item"); if (!card) return; const it = TF.list.find(x => x.key === card.dataset.key);
+    const lk = e.target.closest("[data-tf-lock]"); if (lk) { if (lk.dataset.tfLock === "open" && !confirm("Change the call ref, customer, location, serial or stock code on this tag?\n\nThese come from Nav. Only change them if they are wrong.")) return; it.t.unlock = lk.dataset.tfLock === "open"; renderTF(); return; }
+    if (e.target.dataset.tfUrgent) { it.t.urgent = e.target.dataset.tfUrgent; renderTF(); return; }
+    if (e.target.dataset.act === "sel") { it.on = e.target.checked; renderTF(); return; }
+    if (e.target.dataset.act === "cond") { it.cond = e.target.dataset.c; renderTF(); return; } });
   $("tv-hops").onclick = async e => {
     const cf = e.target.dataset.confirm, ap = e.target.dataset.approve;
     if (cf) return openConfirm(Number(cf));

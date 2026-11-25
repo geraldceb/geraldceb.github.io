@@ -62,7 +62,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
 .homeled { background: rgba(46, 125, 79, .13); border-left: 4px solid #2E7D4F; border-radius: 8px; padding: 8px 10px; }
 .homeled .hm { color: #2E7D4F; font-weight: 700; }
 
-/* ---- Spares Request v1.0 ---- */
+/* ---- Spares Request v2.7 ---- */
 .wrap { max-width: 720px; }
 .mark b { white-space: nowrap; }
 .sig { margin-left: auto; font: 600 12px/1 var(--body); padding: 6px 9px; border-radius: 20px; background: var(--good-soft); color: var(--good); white-space: nowrap; }
@@ -244,7 +244,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <div class="mark"><b>Spares Request</b><small id="sub">v2.6 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <div class="mark"><b>Spares Request</b><small id="sub">v2.7 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
@@ -271,7 +271,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
   <section id="v-hist" hidden style="display:grid;gap:14px"></section>
   <input type="file" id="fmx-file" accept="image/*" hidden>
-  <div class="foot">Spares Request v2.6 · Developed by Gerald Pakree</div>
+  <div class="foot">Spares Request v2.7 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -352,7 +352,8 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v2.6
+/* BCX Spares Request v2.7
+   v2.7: "Get the latest ledger" button next to the Item Ledger line (Refresh still gets it too).
    v2.6: the Item Ledger shows its age like the Dispatch Board (from the export time Nav puts in the file name) -
          on the top bar, the "already in the boot" notice and the branch stock. History: swapped spares and
          rejected requests - counts, filters, reasons and who did it.
@@ -410,7 +411,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "2.6", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "2.7", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -627,7 +628,7 @@ function tabsFor() {
 function renderList() {
   const L = ledger(), I = items();
   $("who").innerHTML = `Logged in as <b>${esc(me().name)}</b> (${esc(me().code)})${ROLE() === "ADMIN" ? " · Admin" : isGL() ? " · Group Leader" : isStores() ? " · Stores" : ""}`;
-  $("st").innerHTML = `<div>${boardLine()}</div><div>${L ? `Item Ledger <b>${esc(L.date || "")}</b>${ledAgeHtml(L)} – used for the "already in the boot" notices${branchStock() && isLead() ? ` and DBN branch stock (${Object.keys(branchStock()).length} items)` : isLead() ? ' <span class="old">(no DBN branch stock on it)</span>' : ""}${podLine()}` : '<span class="old">No Item Ledger on this phone – the "already in the boot" notices are off. Get it on the home page.</span>'}</div>${itemsLine()}`;
+  $("st").innerHTML = `<div>${boardLine()}</div><div>${L ? `Item Ledger <b>${esc(L.date || "")}</b>${ledAgeHtml(L)} <button type="button" class="btn small ghost" id="b-led">Get the latest ledger</button> – used for the "already in the boot" notices${branchStock() && isLead() ? ` and DBN branch stock (${Object.keys(branchStock()).length} items)` : isLead() ? ' <span class="old">(no DBN branch stock on it)</span>' : ""}${podLine()}` : '<span class="old">No Item Ledger on this phone – the "already in the boot" notices are off.</span> <button type="button" class="btn small" id="b-led">Get the latest ledger</button>'}</div>${itemsLine()}`;
   $("b-kds").hidden = !isLead();
   $("dropcard").hidden = !isLead();
   $("b-board").hidden = !navigator.onLine;
@@ -1550,11 +1551,8 @@ $("v-hist").addEventListener("change", e => {
 $("b-new").onclick = () => startForm(null);
 $("b-kds").onclick = () => enterKds();
 $("b-hist").onclick = () => { H.data = null; if (!isLead()) H.eng = me().code; go("hist"); loadHist(); };
-$("b-board").onclick = async () => {
-  note("Checking for a newer Dispatch Board, item ledger and item list..."); await sync(true); const B = board(), msg = []; let bad = false;
-  try { const j = await call("srBoardGet", {have: B ? B.stamp : ""}); if (j.board) ls.set("sr-board", Object.assign({stamp: j.stamp}, j.board)); msg.push(j.none ? "Nobody has shared a Dispatch Board yet." : j.same ? "Dispatch Board is the latest." : "Dispatch Board updated."); if (j.none) bad = true; }
-  catch (e) { note(e.net ? "No signal." : e.message, "err"); return; }
-  // v1.9: the item ledger comes along (the same office copy as "Get the latest ledger" on the home page)
+// the office copy of the Item Ledger (same as "Get the latest ledger" on the home page); pushes messages, returns true if something's wrong
+async function pullLedger(msg) { let bad = false;
   try { const L = ledger(), j = await call("latestLedger", {have: L && L.kv === 2 && L.file || ""}, 90000);
     if (!j.name) msg.push("No office ledger yet – drop one in.");
     else if (j.same) msg.push("Item Ledger is the latest (" + (L.date || j.name) + ").");
@@ -1562,6 +1560,16 @@ $("b-board").onclick = async () => {
       const r = await importLedger(new File([u8], j.name)); if (r.ok) { BR_CACHE = null; msg.push("Item Ledger updated to " + (ledger().date || j.name) + "."); } else { msg.push("Item Ledger: " + r.error); bad = true; } }
     if (isLead() && ledger() && !branchStock()) { msg.push("That ledger has no " + BRANCH_LOC + " lines, so there's no branch stock to show – export it with the " + BRANCH_LOC + " / MT_DBN locations included."); bad = true; }
   } catch (e) { msg.push("Item Ledger: " + (e.net ? "no signal." : e.message)); bad = true; }
+  return bad;
+}
+async function getLatestLedger() { const msg = []; note("Getting the latest Item Ledger..."); const bad = await pullLedger(msg); note(msg.join(" "), bad ? "err" : "ok"); render(); }
+$("st").addEventListener("click", e => { if (e.target.id === "b-led") getLatestLedger(); });
+$("b-board").onclick = async () => {
+  note("Checking for a newer Dispatch Board, item ledger and item list..."); await sync(true); const B = board(), msg = []; let bad = false;
+  try { const j = await call("srBoardGet", {have: B ? B.stamp : ""}); if (j.board) ls.set("sr-board", Object.assign({stamp: j.stamp}, j.board)); msg.push(j.none ? "Nobody has shared a Dispatch Board yet." : j.same ? "Dispatch Board is the latest." : "Dispatch Board updated."); if (j.none) bad = true; }
+  catch (e) { note(e.net ? "No signal." : e.message, "err"); return; }
+  // v1.9: the item ledger comes along (the same office copy as "Get the latest ledger" on the home page)
+  if (await pullLedger(msg)) bad = true;
   note(msg.join(" "), bad ? "err" : "ok"); await getItems(); render();
 };
 window.addEventListener("pageshow", () => { render(); sync(); });
