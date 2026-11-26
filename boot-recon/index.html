@@ -13,7 +13,6 @@
 <style>/* same header on every module: name, then version and "Developed by" */ header.top .mark .title > span { font: 700 20px/1.05 var(--display) !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--ink) !important; } header.top .mark .title small { font: 500 11.5px/1.2 var(--body) !important; color: var(--muted) !important; text-transform: none !important; letter-spacing: 0 !important; }</style>
 </head><body>
 <title>BCX Boot Stock Recon (Ledger)</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap" media="print" onload="this.media=\'all\'">
@@ -1196,7 +1195,7 @@ function exportSig(cv) {
 /* ---------- PDF ---------- */
 const b64 = s => { const t = atob(s), u = new Uint8Array(t.length); for (let i = 0; i < t.length; i++) u[i] = t.charCodeAt(i); return u; };
 let downloadsP = null, lastPdf = null;
-const getDownloads = () => downloadsP || (downloadsP = (window.claude && typeof window.claude.use === "function") ? window.claude.use("downloads").catch(() => null) : Promise.resolve(undefined));
+const getDownloads = () => downloadsP || (downloadsP = Promise.resolve(undefined));
 /* Photos for one item, in slot order, each with the label printed above it in the PDF. */
 async function pdfPhotos(key, L, c, out) {
   const sl = L ? slotsFor(L) : KINDS.map(K => ({k: K.k}));
@@ -1255,14 +1254,14 @@ async function makePdf() {
       try { lastPdf = new File([blob], filename, {type: "application/pdf"}); $("share").hidden = !(navigator.canShare && navigator.canShare({files: [lastPdf]})); } catch (e) { $("share").hidden = true; }
       setMsg(done + ($("share").hidden ? "" : " Tap Share to send it."), "ok"); return;
     }
-    if (!dl) { setMsg("Saving files isn't available in this view. Open the page in Chrome or the Claude app.", "err"); return; }
+    if (!dl) { setMsg("Saving files isn't available in this view. Open the page in Chrome.", "err"); return; }
     try { await dl.save({filename, data: blob}); setMsg(done, "ok"); }
     catch (e) {
       const c = e && e.code;
       if (c === "declined") setMsg("Save cancelled. Tap Create PDF to try again.");
       else if (c === "rate_limited") setMsg("A save prompt is already open. Finish that one first.", "err");
       else if (c === "too_large") setMsg("The PDF is too big to save here. Remove some photos and try again.", "err");
-      else setMsg("Couldn't save the PDF here. Try again in Chrome or the Claude app.", "err");
+      else setMsg("Couldn't save the PDF here. Try again in Chrome.", "err");
     }
   } catch (e) { console.error(e); setMsg("Something went wrong building the PDF. Remove the last photo added and try again.", "err"); }
   finally { btn.disabled = false; }

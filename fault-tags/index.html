@@ -14,7 +14,6 @@
 <style>/* same header on every module: name, then version and "Developed by" */ header.top .mark .title > span { font: 700 20px/1.05 var(--display) !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--ink) !important; } header.top .mark .title small { font: 500 11.5px/1.2 var(--body) !important; color: var(--muted) !important; text-transform: none !important; letter-spacing: 0 !important; }</style>
 </head><body>
 <title>BCX Fault Tags</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap" media="print" onload="this.media=\'all\'">
@@ -758,7 +757,7 @@ function onInput(e) {
 
 /* ---------- PDF ---------- */
 let downloadsP = null, lastPdf = null;
-const getDownloads = () => downloadsP || (downloadsP = (window.claude && typeof window.claude.use === "function") ? window.claude.use("downloads").catch(() => null) : Promise.resolve(undefined));
+const getDownloads = () => downloadsP || (downloadsP = Promise.resolve(undefined));
 async function makeTags() {
   if (!window.PDFLib) { setMsg("The PDF tool didn't start. Close and reopen the page.", "err"); return; }
   const r = resByNo(); if (!r) { setMsg("Pick the engineer first (step 1).", "err"); $("f-eng").focus(); return; }
@@ -788,9 +787,9 @@ async function makeTags() {
       try { lastPdf = new File([blob], filename, {type: "application/pdf"}); $("share").hidden = !(navigator.canShare && navigator.canShare({files: [lastPdf]})); } catch (e) { $("share").hidden = true; }
       setMsg(done + ($("share").hidden ? "" : " Tap Share to send it."), out.overflow ? "err" : "ok"); return;
     }
-    if (!dl) { setMsg("Saving files isn't available in this view. Open the page in Chrome or the Claude app.", "err"); return; }
+    if (!dl) { setMsg("Saving files isn't available in this view. Open the page in Chrome.", "err"); return; }
     try { await dl.save({filename, data: blob}); setMsg(done, out.overflow ? "err" : "ok"); }
-    catch (e) { const c = e && e.code; setMsg(c === "declined" ? "Save cancelled. Tap Create tags to try again." : "Couldn't save the PDF here. Try again in Chrome or the Claude app.", c === "declined" ? "" : "err"); }
+    catch (e) { const c = e && e.code; setMsg(c === "declined" ? "Save cancelled. Tap Create tags to try again." : "Couldn't save the PDF here. Try again in Chrome.", c === "declined" ? "" : "err"); }
   } catch (e) { console.error(e); setMsg("Something went wrong making the tags. Try again.", "err"); }
   finally { btn.disabled = false; }
 }

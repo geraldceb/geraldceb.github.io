@@ -9,7 +9,6 @@
 <style>/* same header on every module: name, then version and "Developed by" */ header.top .mark .title > span { font: 700 20px/1.05 var(--display) !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--ink) !important; } header.top .mark .title small { font: 500 11.5px/1.2 var(--body) !important; color: var(--muted) !important; text-transform: none !important; letter-spacing: 0 !important; }</style>
 </head><body>
 <title>BCX Store Visit</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap" media="print" onload="this.media=\'all\'">
@@ -714,10 +713,10 @@ function setMsg(t, kind) { const m = $("msg"); m.textContent = t; m.className = 
 function b64ToBytes(b64) { const s = atob(b64); const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; }
 let downloadsP = null, lastPdf = null;
 function getDownloads() {
-  if (!downloadsP) downloadsP = (window.claude && typeof window.claude.use === "function") ? window.claude.use("downloads").catch(() => null) : Promise.resolve(undefined);
+  if (!downloadsP) downloadsP = Promise.resolve(undefined);
   return downloadsP;
 }
-/* Save any file: Claude's download prompt inside Claude, a normal download elsewhere. Returns true when saved. */
+/* Save any file as a normal download. Returns true when saved. */
 async function saveFile(blob, filename) {
   const dl = await getDownloads();
   if (dl === undefined) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename; document.body.append(a); a.click(); a.remove(); return true; }
@@ -787,13 +786,13 @@ async function makePdf() {
     const blob = new Blob([out.bytes], {type: "application/pdf"});
     const note = out.overflow ? ` ${out.overflow} general-comment line${out.overflow > 1 ? "s" : ""} didn't fit - shorten them.` : "";
     const dl = await getDownloads();
-    if (dl === undefined) { // opened outside Claude (e.g. own hosting): plain browser download
+    if (dl === undefined) { // plain browser download
       const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename; document.body.append(a); a.click(); a.remove();
       try { lastPdf = new File([blob], filename, {type: "application/pdf"}); $("share").hidden = !(navigator.canShare && navigator.canShare({files: [lastPdf]})); } catch (e) { $("share").hidden = true; }
       logVisit();
       setMsg(`Saved ${filename}.${note}` + ($("share").hidden ? "" : " Tap Share to send it.") + rolled, out.overflow ? "err" : "ok"); return;
     }
-    if (!dl) { setMsg("Saving files isn't available in this view. Open the page in the Claude app or claude.ai.", "err"); return; }
+    if (!dl) { setMsg("Saving files isn't available in this view. Open the page in Chrome.", "err"); return; }
     try {
       await dl.save({filename, data: blob});
       logVisit();
@@ -802,7 +801,7 @@ async function makePdf() {
       const code = e && e.code;
       if (code === "declined") setMsg("Save cancelled. Tap Create PDF to try again.");
       else if (code === "rate_limited") setMsg("A save prompt is already open. Finish that one first.", "err");
-      else setMsg("Couldn't save the PDF here. Try again in the Claude app.", "err");
+      else setMsg("Couldn't save the PDF here. Try again in Chrome.", "err");
     }
   } catch (e) {
     console.error(e); setMsg("Something went wrong building the PDF. Remove the last photo added and try again.", "err");
