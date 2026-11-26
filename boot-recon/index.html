@@ -185,7 +185,7 @@ footer.bar #share { min-height: 48px; flex: none; }
 
 <!-- v2.17: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
 <header class="top"><div class="wrap">
-  <div class="mark"><div class="title"><span>Boot Recon</span><small>v2.23 · Developed by Gerald Pakree</small></div></div>
+  <div class="mark"><div class="title"><span>Boot Recon</span><small>v2.24 · Developed by Gerald Pakree</small></div></div>
   <div class="status" aria-live="polite">
     <span class="pill" id="pill-checked">0/0 checked</span>
     <span class="pill" id="pill-pages">2 pages</span>
@@ -584,9 +584,21 @@ const isoToday = () => { const d = new Date(); return `${d.getFullYear()}-${Stri
 const dmy = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ""); return m ? `${m[3]}/${m[2]}/${m[1]}` : ""; };
 function returnedText(c) {
   const p = peopleList().find(x => x[0] === c.retWith), who = p ? p[1] + " (" + p[0] + ")" : c.retWith || "?";
-  return `Returned to stores on ${dmy(c.retDate) || "?"}: ${c.retHow === "eng" ? "sent back with engineer " + who : "handed to storeman " + who}, document ${(c.retDoc || "?").trim()}`;
+  return `On ${dmy(c.retDate) || "?"} ${c.retHow === "eng" ? "sent back with engineer " + who : "handed to storeman " + who}, document ${(c.retDoc || "?").trim()}`;
 }
-const REASONS = ["Used on a call", "Returned to stores", "Sent for repair", "Moved to another engineer", "Never received", "Other"];
+// v2.24: Not in boot - the STATUS is just the reason; the COMMENT is built from what they pick, plus anything they type.
+// "Sent for repair" is the same as Returned to stores (old recons with it are read as Returned to stores).
+const USED = "Used on a call", MOVED = "Moved to another engineer", R_OTHER = "Other";
+const REASONS = [USED, RETURNED, MOVED, "Never received", R_OTHER];
+const reasonOf = c => c.reason === "Sent for repair" ? RETURNED : c.reason || "";
+function outDetail(c) {
+  const r = reasonOf(c);
+  if (r === RETURNED) return returnedText(c);
+  if (r === USED) return c.callNo ? "Used on call " + c.callNo.trim() : "";
+  if (r === MOVED) { const p = peopleList().find(x => x[0] === c.movTo), who = p ? p[1] + " (" + p[0] + ")" : c.movTo || "?"; return `Moved to ${who}${c.movDate ? " on " + dmy(c.movDate) : ""}`; }
+  return "";
+}
+const outComment = c => [outDetail(c), (c.note || "").trim()].filter(Boolean).join(" - ");
 const MAX_LINES = BR.COMMENT_ROWS;
 
 const $ = id => document.getElementById(id);
@@ -747,8 +759,11 @@ function missingOf(L) {
     if (L.serial && c.serialActual === " ") m.push("serial on the unit");
     if (L.faulty && !(c.why || "").trim()) m.push("why it hasn't been returned");
   }
-  if (c.status === "out") { if (!c.reason) m.push("reason"); if (!(c.note || "").trim()) m.push("comment");
-    if (c.reason === RETURNED) { if (!c.retDate) m.push("date sent back"); else if (c.retDate > isoToday()) m.push("a date that isn't in the future"); if (!c.retHow) m.push("handed to Stores or sent with an engineer"); else if (!c.retWith) m.push(c.retHow === "eng" ? "the engineer who took it" : "the storeman"); if (!(c.retDoc || "").trim()) m.push("return document no."); } }
+  if (c.status === "out") { const r = reasonOf(c); if (!r) m.push("reason");
+    if (r === R_OTHER && !(c.note || "").trim()) m.push("comment (what happened to it)");
+    if (r === USED && !(c.callNo || "").trim()) m.push("the call no.");
+    if (r === MOVED) { if (!c.movTo) m.push("which engineer it moved to"); if (!c.movDate) m.push("the date it moved"); else if (c.movDate > isoToday()) m.push("a date that isn't in the future"); }
+    if (r === RETURNED) { if (!c.retDate) m.push("date sent back"); else if (c.retDate > isoToday()) m.push("a date that isn't in the future"); if (!c.retHow) m.push("handed to Stores or sent with an engineer"); else if (!c.retWith) m.push(c.retHow === "eng" ? "the engineer who took it" : "the storeman"); if (!(c.retDoc || "").trim()) m.push("return document no."); } }
   return m;
 }
 function stateOf(L) {
@@ -764,7 +779,7 @@ function stateOf(L) {
 }
 function flagOf(L) {
   const c = S.checks[L.key] || {}, v = verifyOf(L);
-  if (c.status === "out") return "NOT IN BOOT - " + (c.reason === RETURNED ? returnedText(c) : c.reason || "No reason given") + (c.note ? ": " + c.note : "");
+  if (c.status === "out") return "NOT IN BOOT - " + (reasonOf(c) || "No reason given") + (outComment(c) ? ": " + outComment(c) : "");
   if (c.status === "in" && L.faulty) return "FAULTY - NOT RETURNED: " + (c.why || "").trim();
   if (c.status === "in" && L.serial && realSerial(c) && realSerial(c) !== L.serial) return "SERIAL DIFFERS FROM NAV";
   if (c.status === "in" && !L.serial && counted(L, c) < L.qty) return `SHORT - COUNTED ${counted(L, c)} OF ${L.qty}`;
@@ -933,13 +948,17 @@ function cardHtml(L) {
     body += `<div class="count">Counted <button type="button" class="icon" data-act="dec" aria-label="One less">−</button><input type="number" inputmode="numeric" min="0" data-act="counted" value="${counted(L, c)}" aria-label="Counted quantity"><button type="button" class="icon" data-act="inc" aria-label="One more">+</button> of ${L.qty} on Nav</div>`;
   }
   if (c.status === "out") {
-    body += `<div class="outrow"><select data-act="reason" aria-label="Reason"><option value="">Reason...</option>${REASONS.map(r => `<option${c.reason === r ? " selected" : ""}>${esc(r)}</option>`).join("")}</select>
-      <input type="text" data-act="note" value="${esc(c.note || "")}" placeholder="Comment (required): call no. / where it went" aria-label="Comment"></div>`;
-    if (c.reason === RETURNED) body += `<div class="outrow"><label class="lbl" style="display:grid;gap:4px">Date sent back (required)<input type="date" data-act="retDate" max="${isoToday()}" value="${esc(c.retDate || "")}" aria-label="Date sent back to stores"></label>
+    const rr = reasonOf(c);
+    body += `<div class="outrow"><select data-act="reason" aria-label="Reason"><option value="">Reason...</option>${REASONS.map(r => `<option${rr === r ? " selected" : ""}>${esc(r)}</option>`).join("")}</select></div>`;
+    if (rr === USED) body += `<div class="outrow"><label class="lbl" style="display:grid;gap:4px">Call no. it was used on (required)<input type="text" data-act="callNo" value="${esc(c.callNo || "")}" placeholder="e.g. SO3824957" autocapitalize="characters" aria-label="Call number"></label></div>`;
+    if (rr === MOVED) body += `<div class="outrow"><label class="lbl" style="display:grid;gap:4px">Engineer it moved to (required)<select data-act="movTo" aria-label="Engineer it moved to"><option value="">Choose the engineer...</option>${peopleList().filter(p => p[2] !== "STORES" && p[0] !== S.resNo).map(p => `<option value="${esc(p[0])}"${c.movTo === p[0] ? " selected" : ""}>${esc(p[1])}</option>`).join("")}</select></label>
+      <label class="lbl" style="display:grid;gap:4px">Date it moved (required)<input type="date" data-act="movDate" max="${isoToday()}" value="${esc(c.movDate || "")}" aria-label="Date it moved"></label></div>`;
+    if (rr === RETURNED) body += `<div class="outrow"><label class="lbl" style="display:grid;gap:4px">Date sent back (required)<input type="date" data-act="retDate" max="${isoToday()}" value="${esc(c.retDate || "")}" aria-label="Date sent back to stores"></label>
       <div class="seg" role="group" aria-label="How it went back"><button type="button" data-act="retHow" data-how="stores" aria-pressed="${c.retHow === "stores"}">Handed to Stores</button><button type="button" data-act="retHow" data-how="eng" aria-pressed="${c.retHow === "eng"}">Sent back with an engineer</button></div>
       ${c.retHow ? `<label class="lbl" style="display:grid;gap:4px">${c.retHow === "eng" ? "Engineer who took it (required)" : "Storeman it was handed to (required)"}<select data-act="retWith" aria-label="${c.retHow === "eng" ? "Engineer who took it" : "Storeman"}"><option value="">${c.retHow === "eng" ? "Choose the engineer..." : "Choose the storeman..."}</option>${peopleList().filter(p => c.retHow === "eng" ? p[2] !== "STORES" && p[0] !== myCode() : p[2] === "STORES").map(p => `<option value="${esc(p[0])}"${c.retWith === p[0] ? " selected" : ""}>${esc(p[1])} (${esc(p[0])})</option>`).join("")}</select></label>` : ""}
       <label class="lbl" style="display:grid;gap:4px">Return document no. (required)<input type="text" data-act="retDoc" value="${esc(c.retDoc || "")}" placeholder="e.g. BR number or delivery note no." autocapitalize="characters" aria-label="Return document number"></label></div>`;
   }
+  if (c.status === "out") body += `<input type="text" data-act="note" value="${esc(c.note || "")}" placeholder="${reasonOf(c) === R_OTHER ? "Comment (required): what happened to it" : "Comment (optional)"}" aria-label="Comment">${outDetail(c) ? `<div class="small" style="color:var(--muted,#666)">On the recon: ${esc(outComment(c))}</div>` : ""}`;
   if (c.status === "in" && L.faulty) {
     body += `<div class="field"><label class="lbl" style="color:var(--poor)" for="why-${esc(L.key)}">Faulty stock should have been returned. Why is this NOT returned?</label>
       <input type="text" id="why-${esc(L.key)}" data-act="why" value="${esc(c.why || "")}" placeholder="Required" aria-label="Why has this faulty item not been returned?"></div>`;
@@ -1078,6 +1097,7 @@ function onInput(e) {
   if (act === "comment") c.comment = el.value;
   if (act === "why") c.why = el.value;
   if (act === "retDoc") c.retDoc = el.value.toUpperCase();
+  if (act === "callNo") c.callNo = el.value.toUpperCase();
   if (act === "counted") c.counted = el.value === "" ? "" : Math.max(0, Number(el.value) || 0);
   save(); renderCounts();
   const chip = card.querySelector(".state"), L = LINES.find(x => x.key === key), st = stateOf(L);
@@ -1091,8 +1111,8 @@ function onChange(e) {
   const c = S.checks[key] || (S.checks[key] = {});
   if (el.dataset.act === "counted") { refreshCard(key); renderCounts(); return; }
   if (el.dataset.act === "sermatch") { c.serialActual = el.checked ? "" : " "; save(); refreshCard(key); renderCounts(); const inp = document.querySelector(`.line[data-key="${CSS.escape(key)}"] input[data-act="serial"]`); if (inp) inp.focus(); }
-  if (el.dataset.act === "retDate" || el.dataset.act === "retWith") { c[el.dataset.act] = el.value; save(); refreshCard(key); renderCounts(); return; }
-  if (el.dataset.act === "reason") { c.reason = el.value; save(); refreshCard(key); renderCounts(); const n = document.querySelector(`.line[data-key="${CSS.escape(key)}"] input[data-act="note"]`); if (n && !n.value) n.focus(); }
+  if (["retDate", "retWith", "movTo", "movDate"].includes(el.dataset.act)) { c[el.dataset.act] = el.value; save(); refreshCard(key); renderCounts(); return; }
+  if (el.dataset.act === "reason") { c.reason = el.value; save(); refreshCard(key); renderCounts(); const n = document.querySelector(`.line[data-key="${CSS.escape(key)}"] ${c.reason === USED ? 'input[data-act="callNo"]' : c.reason === MOVED ? 'select[data-act="movTo"]' : c.reason === R_OTHER ? 'input[data-act="note"]' : "_none_"}`); if (n && !n.value) n.focus(); }
 }
 
 /* ---------- comments ---------- */
@@ -1122,7 +1142,7 @@ function summaryLines() {
     const tg = LINES.filter(L => L.tag && (S.checks[L.key] || {}).status === "in"), tv = tg.filter(L => verifyOf(L).tag).length;
     lines.push(`Serials validated from photos: ${bc + tx} of ${ser.length} (barcode ${bc}, text ${tx}). Tags validated: ${tv} of ${tg.length}.`);
   }
-  if (out.length) lines.push("Not in boot: " + out.map(L => `${L.desc}${L.serial ? " S/N " + L.serial : ""} (${(S.checks[L.key] || {}).reason || "no reason"})`).join("; ") + ".");
+  if (out.length) lines.push("Not in boot: " + out.map(L => `${L.desc}${L.serial ? " S/N " + L.serial : ""} (${reasonOf(S.checks[L.key] || {}) || "no reason"})`).join("; ") + ".");
   if (isPartial()) lines.unshift(`PARTIAL RECON: ${LINES.length} of ${ALL.length} boot lines checked (aged working stock and all faulty stock${ALL.some(L => S.added[L.key] && !needsAttention(L)) ? ", plus items added" : ""}).`);
   return lines;
 }
@@ -1207,12 +1227,12 @@ async function makePdf() {
     for (const L of LINES) {
       const c = S.checks[L.key] || {}, out = c.status === "out", real = realSerial(c), v = verifyOf(L);
       const differs = !out && L.serial && real && real !== L.serial, n = counted(L, c);
-      const status = out ? {kind: "out", label: "Not in boot", detail: c.reason === RETURNED ? returnedText(c) : c.reason || "Not in boot"}
+      const status = out ? {kind: "out", label: "Not in boot", detail: reasonOf(c) || "Not in boot"}
         : L.faulty ? {kind: "warn", label: "Not returned", detail: "Faulty - still in boot"}
         : differs ? {kind: "warn", label: "Check", detail: "Serial differs from Nav"}
         : (!L.serial && n < L.qty) ? {kind: "warn", label: "Short", detail: `Counted ${n} of ${L.qty}`}
         : {kind: "in", label: "In boot", detail: (!L.serial && !L.tag) ? `Counted ${n} of ${L.qty}` : "In boot"};
-      const comment = out ? (c.note || "") : [L.faulty && c.why ? "Not returned: " + c.why : "", c.comment || ""].filter(Boolean).join(" | ");
+      const comment = out ? outComment(c) : [L.faulty && c.why ? "Not returned: " + c.why : "", c.comment || ""].filter(Boolean).join(" | ");
       items.push({desc: L.desc, itemNo: L.item, qty: L.qty, faulty: L.faulty, age: ageOf(L), status, comment,
         serial: L.serial ? {value: differs ? `${real} (Nav ${L.serial})` : L.serial, check: out ? "na" : differs ? "differs" : (v.serial || "none")} : {check: "na"},
         tag: L.tag ? {value: L.tag, check: out ? "na" : (v.tag || "none")} : {check: "na"},
@@ -1454,7 +1474,7 @@ const BCXUsers = (() => {
    One login per phone covers Boot Recon, Fault Tags and Spares Custody: Nav code + PIN checked by the Google script,
    kept for 30 days. Engineers are locked to their own boot; Admin and Stores can pick anyone. */
 (() => {
-  const APP = "BCX Boot Stock Recon", VER = "2.23", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+  const APP = "BCX Boot Stock Recon", VER = "2.24", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
   const g = id => document.getElementById(id);
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
@@ -1635,7 +1655,7 @@ window.BCX_BACK = {can: () => !document.getElementById("confirm").hidden, go: ()
   setInterval(upd, 800); upd();
 })();
 </script>
-<script>/* v2.23: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+<script>/* v2.24: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
 (function () { if (!("serviceWorker" in navigator)) return; let shown = false;
   const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
     d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";

@@ -175,7 +175,7 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
 
 <!-- v4.11: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
 <header class="top"><div class="wrap">
-  <div class="mark" id="home-link"><div class="title"><span>Spares Custody</span><small>v<span class="ver">4.17</span> · Developed by Gerald Pakree</small></div></div>
+  <div class="mark" id="home-link"><div class="title"><span>Spares Custody</span><small>v<span class="ver">4.18</span> · Developed by Gerald Pakree</small></div></div>
 </div></header>
 
 <main class="wrap">
@@ -13585,7 +13585,7 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "4.17";
+const APP_VERSION = "4.18";
 /* v4.12: the ledger keeps only boots and the branch maintenance stock (MAINT_...), so a whole-branch ledger works. */
 /* v4.11: "Posted" on a collection is picked from a calendar (date) and a clock (time) instead of typed - only on
    issues typed in by hand; an issue picked from the ledger keeps Nav's date, locked;
@@ -14095,6 +14095,16 @@ function ledgerIssuesFor(code) {
   const issues = Object.values(by).sort((a, b) => String(b.date).localeCompare(String(a.date)) || b.navDoc.localeCompare(a.navDoc));
   return {L, r, issues};
 }
+// v4.18: guard against picking a boot recon / transfer as if it were spares handed over now
+const BIG_BI = 10;   // nobody gets more than 10 different items on one issue (qty on a line can be high - a pack of 100 screws is 1 line)
+function reconCheck(L, r, iss) {
+  // serials on this document that were already in his working boot on an EARLIER document = a re-post (boot recon), not new stock
+  const ser = iss.rows.map(x => String(x[6] || "").trim().toUpperCase()).filter(Boolean); if (!ser.length) return {seen: 0, ser: 0};
+  const want = new Set(ser), seen = new Set(), doc = iss.navDoc;
+  L.rows.forEach(x => { const s2 = String(x[6] || "").trim().toUpperCase(); if (!want.has(s2) || x[8] !== r[3] || String(x[1]).toUpperCase() === doc || Number(x[9]) <= 0) return; if (String(x[0]) <= String(iss.date)) seen.add(s2); });
+  return {seen: seen.size, ser: ser.length};
+}
+const looksRecon = c => c.ser >= 3 && c.seen >= Math.ceil(c.ser / 2);
 // which of an issue's ledger lines are already on a trail (counted, so 2 of the same item without serials work out)
 function issueTaken(iss) {
   const used = {}, free = [], on = [];
@@ -14114,9 +14124,9 @@ function renderLedgerPick() {
   const recent = issues.filter(i => String(i.date) >= cut), older = issues.length - recent.length;
   const added = new Set(OUT.issues.map(i => i.navDoc).filter(Boolean));
   const when = d => { const t = isoDay(today), y = isoDay(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1)); return d === t ? "today" : d === y ? "yesterday" : ddmmyyyy(d + "T"); };
-  box.innerHTML = recent.map(i => { const tk = issueTaken(i), full = !tk.free.length;
+  box.innerHTML = recent.map(i => { const tk = issueTaken(i), full = !tk.free.length, rc = reconCheck(L, r, i), warn = looksRecon(rc) ? `<span class="chip bad">Looks like a boot recon</span>` : i.rows.length > BIG_BI ? `<span class="chip bad">${i.rows.length} items – check</span>` : "";
       return `<button class="trow ${added.has(i.navDoc) || full ? "done" : ""}" data-lbi="${esc(i.navDoc)}"${full ? ' style="opacity:.6"' : ""}>
-      <span class="r1"><span class="ref">${esc(i.navDoc)}</span><span class="chip ${i.kind === "Boot issue" ? "" : "open"}">${esc(i.kind)}</span>${added.has(i.navDoc) ? '<span class="chip ok">Added</span>' : full ? '<span class="chip bad">Collected</span>' : tk.on.length ? `<span class="chip bad">${tk.on.length} already collected</span>` : ""}</span>
+      <span class="r1"><span class="ref">${esc(i.navDoc)}</span><span class="chip ${i.kind === "Boot issue" ? "" : "open"}">${esc(i.kind)}</span>${warn}${added.has(i.navDoc) ? '<span class="chip ok">Added</span>' : full ? '<span class="chip bad">Collected</span>' : tk.on.length ? `<span class="chip bad">${tk.on.length} already collected</span>` : ""}</span>
       <span class="r2">${i.rows.length} item${i.rows.length === 1 ? "" : "s"} · posted ${esc(when(String(i.date)))} · ${esc(i.rows.slice(0, 2).map(x => x[5]).join(", "))}${i.rows.length > 2 ? "..." : ""}${tk.on.length ? `<br><b>${full ? "Already collected" : "Some already collected"}: on ${esc(tk.refs.join("; "))}</b>` : ""}</span></button>`; }).join("")
     + (recent.length ? "" : `<div class="empty">Nothing booked to ${esc(title(r[1]))}'s working boot ${LEDPICK.days === 2 ? "today or yesterday" : `in the last ${LEDPICK.days} days`} on this ledger.</div>`)
     + (LEDPICK.days !== 2 ? '<button class="btn small" data-lmore>Show only today and yesterday</button>' : older ? `<button class="btn small" data-lmore>Show older issues (${older})</button>` : "")
@@ -14127,6 +14137,17 @@ function pickLedgerIssue(doc) {
   if (k >= 0) { OUT.issues.splice(k, 1); if (!OUT.issues.length) { $("o-review").hidden = $("o-finish").hidden = true; } else renderOut(true); return renderLedgerPick(); }
   const iss = ledgerIssuesFor(code).issues.find(i => i.navDoc === doc); if (!iss) return;
   const tk = issueTaken(iss);
+  // v4.18: a boot recon / transfer is not stock being handed over now
+  const rc = reconCheck(loadLedger(), RES().find(x => x[0] === code), iss), staff = me().role === "STORES" || me().role === "ADMIN";
+  if (looksRecon(rc)) {
+    if (!staff) return msg("o-msg", `<b>${esc(doc)} looks like a boot recon</b> – ${rc.seen} of its ${rc.ser} serials were already in ${esc(userName(code))}'s boot before it. A recon is not spares being handed over, so it isn't a custody. If it really is new stock, ask Stores to start it.`, "err");
+    if (!confirm(`${doc} looks like a BOOT RECON: ${rc.seen} of its ${rc.ser} serials were already in ${userName(code)}'s boot before it.\n\nA recon is not a custody. Only carry on if these spares are really being handed over now.`)) return;
+  }
+  if (iss.rows.length > BIG_BI) {
+    const typed = prompt(`${doc} has ${iss.rows.length} items.\n\nSpares from stores are normally a few items - a big document is usually a boot recon or a transfer, not stock being handed over now.\n\nIf every one of these items is really being handed over now, type the number of items (${iss.rows.length}):`, "");
+    if (typed === null) return;
+    if (Number(String(typed).trim()) !== iss.rows.length) return msg("o-msg", `Not added: that's not the number of items on ${esc(doc)} (${iss.rows.length}). Check it's the right document.`, "warn");
+  }
   if (!tk.free.length) return msg("o-msg", `${esc(doc)} is already collected: on ${esc(tk.refs.join("; "))}. Open that trail from Open trails instead. If it's a mistake, the Admin can cancel it.`, "warn");
   if (OUT.issues.length === 1 && !OUT.issues[0].navDoc && !OUT.issues[0].items.some(x => x.description || x.itemNo || x.serial)) OUT.issues = [];
   OUT.issues.push(Object.assign(blankIssue(), {navDoc: doc, posted: ddmmyyyy(String(iss.date) + "T"), bookedTo: code, printedCount: iss.rows.length, source: "ledger",
@@ -15399,7 +15420,7 @@ window.BCX_BACK = {can: () => !!SESSION && !!current && current !== "v-home" && 
   setInterval(upd, 800); upd();
 })();
 </script>
-<script>/* v4.17: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+<script>/* v4.18: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
 (function () { if (!("serviceWorker" in navigator)) return; let shown = false;
   const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
     d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";

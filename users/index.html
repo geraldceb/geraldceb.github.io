@@ -92,7 +92,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
 </style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Manage users</b><p class="small" id="gate-t" style="margin:0">Only the Admin can manage users. Log in on the BCX Field Apps page with your Admin login.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <!-- v1.7: Pod field (PMB, RB, SC...) for Spares Request. v1.6: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
-<header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a><div class="mark"><b>Manage users</b><small>v1.9 · Developed by Gerald Pakree</small></div></div></header>
+<header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a><div class="mark"><b>Manage users</b><small>v1.11 · Developed by Gerald Pakree</small></div></div></header>
 
 <main class="wrap" id="v-list" hidden>
   <div class="row"><button class="btn primary big" id="add" style="flex:2">+ Add a person</button><button class="btn big" id="items" style="flex:1">Item list</button></div>
@@ -106,8 +106,8 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
   </section>
   <div class="msg" id="lmsg"></div>
   <div class="list" id="list"><div class="empty">Loading...</div></div>
-  <div class="row" style="justify-content:space-between"><button class="btn small" id="reload">Refresh</button><button class="btn small" id="csv">Download the list (CSV)</button></div>
-  <div class="foot">Manage users v1.9 · Developed by Gerald Pakree<br>The same logins work in all the BCX field apps.</div>
+  <div class="row" style="justify-content:space-between"><button class="btn small" id="reload">Refresh</button><span class="row" style="gap:6px"><button class="btn small" id="mailall">Email everyone their login</button><button class="btn small" id="csv">Download the list (CSV)</button></span></div>
+  <div class="foot">Manage users v1.11 · Developed by Gerald Pakree<br>The same logins work in all the BCX field apps.</div>
 </main>
 
 <main class="wrap" id="v-edit" hidden>
@@ -120,7 +120,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
     <div class="field"><span class="lbl">Nav code</span><input id="e-code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. WASKHA"></div>
     <div class="field"><span class="lbl">Role</span><div class="seg3" id="e-role"><button data-r="ENG">Engineer</button><button data-r="STORES">Stores</button><button data-r="ADMIN">Admin</button></div></div>
     <div class="field"><span class="lbl">Pod (optional) – engineers in the same pod see each other's boot stock in Spares Request</span><input id="e-pod" list="e-pods" autocomplete="off" autocapitalize="characters" maxlength="12" placeholder="e.g. PMB, RB, SC"><datalist id="e-pods"><option value="PMB"><option value="RB"><option value="SC"></datalist></div>
-    <div class="field"><span class="lbl">Email (optional, for custody emails)</span><input id="e-email" type="email" autocomplete="off" placeholder="name@bcx.co.za"></div>
+    <div class="field"><span class="lbl">Email (optional) – more than one? separate with a comma</span><input id="e-email" type="text" inputmode="email" autocomplete="off" placeholder="name@bcx.co.za, name@gmail.com"></div>
     <label class="toggle"><span><b>Group Leader</b><br><span class="small">Checks spares requests and sends them to stores (Spares Request)</span></span><input type="checkbox" id="e-gl"></label>
     <label class="toggle"><span><b>Fault tags switched off</b><br><span class="small">No electronic fault tags by or for this person (Fault Tags and Spares Custody). They fill in paper tags themselves.</span></span><input type="checkbox" id="e-notags"></label>
     <label class="toggle"><span><b>Active</b><br><span class="small">Switched off = can't log in, but stays on file</span></span><input type="checkbox" id="e-active" checked></label>
@@ -134,6 +134,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
   <section class="card" id="e-more" hidden>
     <h2>More</h2>
     <button class="btn big" id="e-share">Send login details (WhatsApp / SMS)</button>
+    <button class="btn big" id="e-mail">Email login details</button>
     <button class="btn big" id="e-unlock" hidden>Unlock (too many wrong PINs)</button>
     <button class="btn big" id="e-logout">Log out on all phones</button>
     <button class="btn big danger" id="e-remove">Remove from the users list</button>
@@ -242,7 +243,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-const VER = "1.9", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "1.11", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const APP_URL = "https://geraldceb.github.io/";
 const ROLE = {ENG: "Engineer", STORES: "Stores", ADMIN: "Admin"};
 const $ = id => document.getElementById(id);
@@ -412,6 +413,27 @@ $("e-rand").onclick = () => { const a = new Uint32Array(1); crypto.getRandomValu
 $("e-show").onclick = () => { const s = $("e-pin").textContent !== "••••"; $("e-pin").textContent = s ? "••••" : (CUR.pin || "(no PIN)"); $("e-show").textContent = s ? "Show" : "Hide"; };
 $("e-save").onclick = save;
 $("e-share").onclick = shareLogin;
+// v1.11: login details by email, sent from the script's Gmail account (needs script v2.24)
+$("e-mail").onclick = async () => {
+  const u = CUR; if (!u) return;
+  if (!u.email) return msg("emsg", `${esc(u.name)} has no email address – add one above and Save first.`, "err");
+  if (!confirm(`Email ${u.name} their Nav code and PIN?\n\nTo: ${u.email}`)) return;
+  const b = $("e-mail"); b.disabled = true; msg("emsg", "Sending...");
+  try { const j = await call({action: "emailLogin", code: u.code}); msg("emsg", j.sent.length ? `Login details emailed to ${esc(u.name)} (${esc(u.email)}).` : `Not sent: ${esc(j.skipped.join("; "))}`, j.sent.length ? "ok" : "err"); }
+  catch (e) { msg("emsg", /Unknown action/i.test(e.message) ? "The Google script needs updating to v2.24 first." : esc(e.message), "err"); }
+  finally { b.disabled = false; }
+};
+$("mailall").onclick = async () => {
+  const withMail = USERS.filter(u => u.active && u.email), without = USERS.filter(u => u.active && !u.email);
+  if (!withMail.length) return msg("lmsg", "Nobody has an email address yet.", "err");
+  if (!confirm(`Email ${withMail.length} people their own Nav code and PIN?${without.length ? `\n\n${without.length} active people have no email address and won't get one.` : ""}`)) return;
+  const b = $("mailall"); b.disabled = true; msg("lmsg", "Sending...");
+  try { const j = await call({action: "emailLogin", all: true});
+    const noMail = j.skipped.filter(x => /no email/.test(x)).length, other = j.skipped.filter(x => !/no email/.test(x));
+    msg("lmsg", `Login details emailed to <b>${j.sent.length}</b> ${j.sent.length === 1 ? "person" : "people"}.${noMail ? ` ${noMail} without an email address were skipped.` : ""}${other.length ? `<br>Not sent: ${esc(other.join("; "))}` : ""}`, other.length ? "warn" : "ok"); }
+  catch (e) { msg("lmsg", /Unknown action/i.test(e.message) ? "The Google script needs updating to v2.24 first." : esc(e.message), "err"); }
+  finally { b.disabled = false; }
+};
 $("e-unlock").onclick = async () => { try { await call({action: "unlockUser", code: CUR.code}); CUR.locked = false; CUR.wrongPins = 0; openEdit(CUR.code); msg("emsg", `${esc(CUR.name)} is unlocked and can log in now.`, "ok"); } catch (e) { msg("emsg", esc(e.message), "err"); } };
 $("e-logout").onclick = async () => {
   const me = CUR.code === SESS.user.code;
@@ -460,7 +482,7 @@ if ("serviceWorker" in navigator) window.addEventListener("load", () => navigato
   setInterval(upd, 800); upd();
 })();
 </script>
-<script>/* v1.9: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+<script>/* v1.11: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
 (function () { if (!("serviceWorker" in navigator)) return; let shown = false;
   const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
     d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";
