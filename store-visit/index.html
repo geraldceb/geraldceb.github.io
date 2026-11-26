@@ -11,7 +11,7 @@
 <title>BCX Store Visit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap" media="print" onload="this.media=\'all\'">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap" media="print" onload="this.media='all'">
 <style>
 /* Layout: one phone-width column of numbered steps, sticky status bar on top, sticky "Create PDF" bar at the bottom. */
 :root {
@@ -140,7 +140,7 @@ footer.bar #share { min-height: 48px; flex: none; }
 
 <!-- v1.12: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
 <header class="top"><div class="wrap">
-  <div class="mark"><div class="title"><span>Store Visit</span><small>v1.14 · Developed by Gerald Pakree</small></div></div>
+  <div class="mark"><div class="title"><span>Store Visit</span><small>v1.15 · Developed by Gerald Pakree</small></div></div>
   <div class="status" aria-live="polite">
     <span class="pill" id="pill-checks">Checks 0/6</span>
     <span class="pill" id="pill-photos">0 photos</span>
@@ -919,7 +919,7 @@ window.BCX_BACK = {can: () => !document.getElementById("confirm").hidden, go: ()
   setInterval(upd, 800); upd();
 })();
 </script>
-<script>/* v1.14: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+<script>/* v1.15: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
 (function () { if (!("serviceWorker" in navigator)) return; let shown = false;
   const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
     d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";

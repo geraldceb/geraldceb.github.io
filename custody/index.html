@@ -11,7 +11,7 @@
 <title>BCX Spares Custody</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap" media="print" onload="this.media=\'all\'">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap" media="print" onload="this.media='all'">
 <style>
 :root {
   --bg: #F3F1EF; --surface: #FFFFFF; --sunk: #ECE8E5; --ink: #1D1A1A; --muted: #6E6662; --line: #DED8D3;
@@ -175,7 +175,7 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
 
 <!-- v4.11: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
 <header class="top"><div class="wrap">
-  <div class="mark" id="home-link"><div class="title"><span>Spares Custody</span><small>v<span class="ver">4.18</span> · Developed by Gerald Pakree</small></div></div>
+  <div class="mark" id="home-link"><div class="title"><span>Spares Custody</span><small>v<span class="ver">4.19</span> · Developed by Gerald Pakree</small></div></div>
 </div></header>
 
 <main class="wrap">
@@ -13585,7 +13585,7 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "4.18";
+const APP_VERSION = "4.19";
 /* v4.12: the ledger keeps only boots and the branch maintenance stock (MAINT_...), so a whole-branch ledger works. */
 /* v4.11: "Posted" on a collection is picked from a calendar (date) and a clock (time) instead of typed - only on
    issues typed in by hand; an issue picked from the ledger keeps Nav's date, locked;
@@ -15420,7 +15420,7 @@ window.BCX_BACK = {can: () => !!SESSION && !!current && current !== "v-home" && 
   setInterval(upd, 800); upd();
 })();
 </script>
-<script>/* v4.18: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+<script>/* v4.19: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
 (function () { if (!("serviceWorker" in navigator)) return; let shown = false;
   const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
     d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";
