@@ -175,7 +175,7 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
 
 <!-- v4.11: cleaner header - no BCX logo (it stays on the home page only); module name, version and "Developed by" -->
 <header class="top"><div class="wrap">
-  <div class="mark" id="home-link"><div class="title"><span>Spares Custody</span><small>v<span class="ver">4.19</span> · Developed by Gerald Pakree</small></div></div>
+  <div class="mark" id="home-link"><div class="title"><span>Spares Custody</span><small>v<span class="ver">4.20</span> · Developed by Gerald Pakree</small></div></div>
 </div></header>
 
 <main class="wrap">
@@ -328,6 +328,14 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 14px; }
     <button class="btn block" id="tv-tags" hidden>Print fault tags</button>
     <div id="tv-cancelled" class="warnbox" hidden></div>
     <div class="msg" id="tv-msg"></div>
+    <button class="btn block" id="tv-ret" hidden>Close – returned to stores</button>
+    <div id="tv-retbox" class="warnbox" hidden>
+      <b>Close this trail as returned to stores?</b>
+      <div class="small">Only when the spares really came back to stores and aren't going out (not needed, wrong part). It closes as <b>Returned to stores</b>, not cancelled, and its items can go on a new trail if they're issued again. If a storeman is still taking them out, don't press this.</div>
+      <input id="rt-note" placeholder="Why it came back, e.g. Not needed - call cancelled" autocomplete="off" maxlength="200">
+      <div class="row"><button class="btn primary" id="rt-go">Close as returned</button><button class="btn" id="rt-no">Keep it open</button></div>
+      <div class="msg" id="rt-msg"></div>
+    </div>
     <button class="btn block" id="tv-cancel" hidden style="color:var(--poor);border-color:var(--poor)">Cancel this trail (Admin)</button>
     <div id="tv-cancelbox" class="warnbox" hidden>
       <b>Cancel this trail?</b>
@@ -13585,7 +13593,7 @@ const BCXUsers = (() => {
 })();
 </script>
 <script>
-const APP_VERSION = "4.19";
+const APP_VERSION = "4.20";
 /* v4.12: the ledger keeps only boots and the branch maintenance stock (MAINT_...), so a whole-branch ledger works. */
 /* v4.11: "Posted" on a collection is picked from a calendar (date) and a clock (time) instead of typed - only on
    issues typed in by hand; an issue picked from the ledger keeps Nav's date, locked;
@@ -13758,7 +13766,7 @@ let TRAILS_DONE = false, searchTimer = null;
 const searchQ = () => ($("t-search") ? $("t-search").value : "").trim();
 function matches(t, q) {
   if (!q) return true;
-  const hay = [t.ref, t.type === "OUT" ? "outbound office collect" : "return", t.status === "CANCELLED" ? "cancelled closed" : t.status === "COMPLETE" ? "complete completed closed" : t.hops === 0 ? "prepared open" : "open",
+  const hay = [t.ref, t.type === "OUT" ? "outbound office collect" : "return", t.status === "CANCELLED" ? "cancelled closed" : t.returned ? "returned to stores complete closed" : t.status === "COMPLETE" ? "complete completed closed" : t.hops === 0 ? "prepared open" : "open",
     t.bookedTo, t.bookedToName, t.currentHolder, t.currentHolderName, t.createdBy, t.navDoc, t.created, t.lastHopAt, t.completedAt, t.find,
     t.unconfirmed ? "unconfirmed not signed without custody" : ""].join(" ").toLowerCase();
   return q.toLowerCase().split(/\s+/).every(w => hay.includes(w));
@@ -13797,6 +13805,16 @@ async function submitFound() {
       msg("tv-msg", "No signal. Saved on this phone: it's sent (and the PIN checked) as soon as there is signal.", "warn"); }
     else msg("fd-msg", /Unknown action/i.test(e.message) ? "This needs the Google script updated to v2.11." : esc(e.message), "err");
   } finally { $("fd-go").disabled = false; }
+}
+async function submitReturned() {
+  const t = TRAIL.trail, note = $("rt-note").value.trim();
+  if (!note) return msg("rt-msg", "Say why it came back, for example: Not needed - call cancelled.", "err");
+  $("rt-go").disabled = true; msg("rt-msg", '<span class="spinner"></span> Closing...');
+  try { const res = await api("closeReturned", {ref: t.ref, note}); takenDropRef(t.ref); TRAIL = {trail: res.trail, items: res.items, hops: res.hops}; renderTrail(); msg("tv-msg", "Closed as returned to stores. Its items can go on a new trail if they're issued again.", "ok"); }
+  catch (e) {
+    if (e instanceof Offline) { queueAdd({kind: "returned", payload: {ref: t.ref, note}, label: `Close ${t.ref} (returned to stores)`}); $("tv-retbox").hidden = true; msg("tv-msg", "No signal. Saved on this phone and sent when there is signal.", "warn"); }
+    else msg("rt-msg", /Unknown action/i.test(e.message) ? "This needs the Google script updated to v2.26." : esc(e.message), "err");
+  } finally { $("rt-go").disabled = false; }
 }
 async function submitCancel() {
   const t = TRAIL.trail, reason = $("x-reason").value.trim();
@@ -13851,7 +13869,7 @@ function setPick(on) {
   $("t-multi").textContent = on ? "Cancel" : "Select several"; $("t-multi-hint").hidden = !on;
   msg("t-multi-msg", ""); renderTrailList();
 }
-function statusChip(t) { return t.status === "CANCELLED" ? '<span class="chip bad">Cancelled</span>' : `<span class="chip ${t.status === "COMPLETE" ? "ok" : "open"}">${t.status === "COMPLETE" ? "Complete" : t.hops === 0 ? "Prepared" : "Open"}</span>`; }
+function statusChip(t) { if (t.returned) return '<span class="chip ok">Returned to stores</span>'; return t.status === "CANCELLED" ? '<span class="chip bad">Cancelled</span>' : `<span class="chip ${t.status === "COMPLETE" ? "ok" : "open"}">${t.status === "COMPLETE" ? "Complete" : t.hops === 0 ? "Prepared" : "Open"}</span>`; }
 function renderTrailList() {
   const box = $("t-list");
   const q = searchQ();
@@ -15081,6 +15099,9 @@ async function processQueue() {
         } else if (x.kind === "found") {
           const res = await api("foundItem", x.payload);
           queueDel(x.id); queueAdd({kind: "pdf", ref: res.ref || res.trail.ref, hop: res.trail.hops, replace: true, label: `${res.trail.ref} hop ${res.trail.hops} PDF (found item)`});
+        } else if (x.kind === "returned") {
+          await api("closeReturned", x.payload); takenDropRef(x.payload.ref);
+          queueDel(x.id);
         } else if (x.kind === "cancel") {
           await api("cancelTrail", x.payload); takenDropRef(x.payload.ref);
           queueDel(x.id);
@@ -15133,8 +15154,11 @@ function renderTrail() {
       ${miss && canFind ? `<div class="row" style="margin-top:6px"><button class="btn small primary" data-found="${it.line}">Found it</button></div>` : ""}</div></div>`;
   }).join("");
   $("tv-found").hidden = true; $("tv-cancelbox").hidden = true;
-  $("tv-cancelled").hidden = t.status !== "CANCELLED";
-  $("tv-cancelled").innerHTML = t.status === "CANCELLED" ? `<b>Cancelled.</b> ${esc(t.cancelled || "")}` : "";
+  $("tv-cancelled").hidden = t.status !== "CANCELLED" && !t.returned;
+  $("tv-cancelled").innerHTML = t.status === "CANCELLED" ? `<b>Cancelled.</b> ${esc(t.cancelled || "")}` : t.returned ? `<b>Returned to stores.</b> ${esc(t.returned)}` : "";
+  // v4.20: an outbound trail with a storeman can be closed as returned to stores (Stores / Admin)
+  const holderU = users().find(u => u.code === t.currentHolder);
+  $("tv-ret").hidden = !(t.type === "OUT" && t.status === "OPEN" && holderU && holderU.role === "STORES" && (me().role === "STORES" || me().role === "ADMIN")); $("tv-retbox").hidden = true;
   $("tv-cancel").hidden = !(me().role === "ADMIN" && !closed(t));
   $("tv-hops").innerHTML = (t.hops === 0 ? `<div class="empty">Prepared by ${esc(t.createdBy)} on ${esc(t.created)}. Not handed over yet.</div>` : "") + hops.map(h => `<div class="hop"><span class="no">${h.hop}</span><div><b>${esc(h.giver.name)}</b> to <b>${esc(h.receiver.name)}</b><br><span class="small">${esc(h.at)} · ${h.itemsReceived} item${h.itemsReceived === 1 ? "" : "s"}${h.short ? ` · <b style="color:var(--poor)">not received: ${esc(h.short)}</b>` : ""}${h.note ? "<br>Note: " + esc(h.note) : ""}</span>
     ${h.confirmed === "NO" ? `<br><span class="unconf">Not signed by ${esc(h.giver.name)}: collected without custody.</span>${h.giver.code === me().code ? ` <button class="btn small primary" data-confirm="${h.hop}">Confirm and sign</button>` : me().role === "ADMIN" ? ` <button class="btn small" data-approve="${h.hop}">Approve as Admin</button>` : ' <span class="small">Waiting for them to confirm.</span>'}`
@@ -15212,6 +15236,8 @@ function init() {
   $("fd-from").onchange = foundVis; $("fd-go").onclick = submitFound; $("fd-no").onclick = () => { $("tv-found").hidden = true; FOUND = null; };
   $("tv-cancel").onclick = () => { $("tv-cancelbox").hidden = false; $("x-reason").value = ""; msg("x-msg", ""); $("x-reason").focus(); };
   $("x-no").onclick = () => { $("tv-cancelbox").hidden = true; }; $("x-go").onclick = submitCancel;
+  $("tv-ret").onclick = () => { $("tv-retbox").hidden = false; $("rt-note").value = ""; msg("rt-msg", ""); $("rt-note").focus(); };
+  $("rt-no").onclick = () => { $("tv-retbox").hidden = true; }; $("rt-go").onclick = submitReturned;
   $("c-go").onclick = confirmHop; $("c-cancel").onclick = () => { $("tv-confirm").hidden = true; CONF = null; };
   window.addEventListener("resize", () => { if (current === "v-hand") { /* keep ink; only resize when empty */ if (PADS.g.empty()) PADS.g.resize(); if (PADS.r.empty()) PADS.r.resize(); } });
   $("l-go").onclick = doLogin; $("l-pin").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
@@ -15420,7 +15446,7 @@ window.BCX_BACK = {can: () => !!SESSION && !!current && current !== "v-home" && 
   setInterval(upd, 800); upd();
 })();
 </script>
-<script>/* v4.19: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+<script>/* v4.20: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
 (function () { if (!("serviceWorker" in navigator)) return; let shown = false;
   const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
     d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";
