@@ -46,6 +46,8 @@ h2 { margin: 0; font: 700 19px/1.15 var(--display); }
   border-radius: 10px; background: var(--surface); color: var(--ink); text-decoration: none; }
 .tile:active { background: var(--sunk); }
 .tile .ic { width: 44px; height: 44px; border-radius: 10px; background: var(--sunk); display: grid; place-items: center; font: 700 15px/1 var(--display); color: var(--accent); }
+.tile.off { opacity: .55; } .tile .modc { display: block; width: fit-content; font: 700 10px/1 var(--body); font-style: normal; text-transform: uppercase; letter-spacing: .04em; padding: 3px 6px; border-radius: 5px; background: var(--warn-soft); color: var(--warn); margin: 3px 0; }
+.modr { display: grid; grid-template-columns: 1fr minmax(150px, 46%); gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); font-weight: 600; } .modr:first-child { border-top: 0; } .modr .f { margin: 0; }
 .tile b { font: 700 18px/1.1 var(--display); display: block; } .tile span { font-size: 13px; color: var(--muted); } .tile .go { font-size: 22px; color: var(--muted); }
 .foot { text-align: center; font-size: 12px; color: var(--muted); }
 /* login (same look as Boot Recon) */
@@ -72,11 +74,11 @@ h2 { margin: 0; font: 700 19px/1.15 var(--display); }
     <label>PIN<input id="l-pin" name="bcx-pin-x" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></label>
     <button id="l-go" type="submit">Log in</button>
     <div class="m" id="l-msg"></div>
-    <div class="dev">BCX Field Apps v1.15 · Developed by Gerald Pakree</div>
+    <div class="dev">BCX Field Apps v1.16 · Developed by Gerald Pakree</div>
   </form>
 </div>
 
-<header class="top"><div class="wrap"><img class="logo" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAA8AIMDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDuPiB8WbbwDrFtp1xpU1208AnDxyhAPmIxyPauT/4aV03/AKFy7/8AAlf8K5f9pD/kd9L/AOwcP/Rslc74K+EmseONEfVLC+soIlnMJWYtnIAOeAfWgD0r/hpXTf8AoXLv/wACV/wqez/aQ0OSdVu9EvoIieXSRZMfhxXI/wDDOHib/oK6V+cn/wATWZr/AMC/Fmh6bJfRtaX6RKWkjtmJcDuQCBn8OaAPpTw74n0jxVp4vdHvUuYejAcMh9GB5BrZr4o8DeLr3wZ4lt9TtZG8ncFuYQeJou4Pv6e9fZ0d5bzWKXqyr9meISiQnA2EZz+VAE5YKCSQAOpNefeIvjN4O8PyNB9ve/uE4MdivmAH/eyF/WvHPij8WrvxReTaTo9w9vokZKllOGuvc/7PoPz9uE8O+ENe8V3PkaNp01ztOHkHCJ9WPAoA9vf9pPSwxC+Hrxl7EzqD/Ktbwr8c7LxT4nstEi0S4t5LtiolecELgE9Me1ecQ/s8eL5EDSXWlRE/wmZyR+S103gT4J+I/DHjXTNZvLvTXt7WQtIsMjljlSOMoPWgD0TxH8QB4c1Q2U+kTyKVDRyrIAHHqKj0T4mWOr6rFYPZy2pl4R5HBBbsPxrU8aeGV8SaK0cYAu4MvbsfX+79D/hXgxEkEpBDRyxvyOhUj+tctWpOE/I+my3AYPHYZ2Vqi31f3n1B1pa5LwL4nHiDRwJmX7bb4SYevo34/wA81k/Frx2vgzww6Wrj+1r4GO1GeYx3k/Dt74rpi1JXR87Woyo1HTnujI8VfHTSPDXiG50iLTptQNsdss0UoVQ/dRx2/nVvwT8XV8c66NMsfDtzEqqZJp2nBWJfU8dzxivlmOOe9uliiR5riaQKoHzM7E/qSa+v/hp4Hj8D+Fo7V1U6jcYlvJF7v2UH0Xp+Z70zM7eiiigD5k/aQ/5HfS/+wcP/AEbJXoH7O/8AyTu4/wCv+T/0FK8//aQ/5HfS/wDsHD/0bJXA6F4+8T+GrA2WjatLa2pkMpjWNCNxxk8g+goA+2ailmjt4XlkdUjQFmZjgADqTXx+PjD49H/MxTf9+o//AIms/WfiL4t8QWTWepa5cTWzfeiAVA312gZ/GgDI16e1ufEWqT2QC2kt3K8KjtGXJH6Yr3T4heI7rw/8EPDejhzHeanZQxSYPIiWNSw/HKj8TXlPw28LQeLvG1npt3cRxW4/fSq7YaVF5KL6k/yya7j9o1yPFGj2yjEUVjlAOgy5H9BQB5/4B8Iy+NfFdtpSMY4P9ZcyhfuRDr+J4A9zX2Lo+jWGhaZDp2m26W9tCMKij9T6n3rxH9mu0ix4gvTjzh5MQ9h85P8AT8q9/oAKKKKAEryP4m+F/s0/9u2qfupSFuVA6N2b8ehr1zIqreWkF7azWtwoeKVSrqe4NROmpqx14HGTwlZVI7dfQ+e/DutzeHtahv4slR8s0f8AfQ9R/hXnPj3xLfeKfFt5qN6rR4by4YSf9VGOi/1+pNeg65pyaTrd5YRzCdIHKrIPT0PuOhrEXwtaeI/FGk2k11HaC5uBFK7HBYddo/2uMD6rXLQnyvkZ9LneDhXorF0+i+9HUfAXwB59x/wl2pR/uoiUsFYfeboZPw6D3z6V9D1WsbO202xgsrSJYbeBBHFGnRVHAFWa7T48KKKKAPmT9pD/AJHfS/8AsHD/ANGyVq/B74b+GPFvg2XUNYsZJ7lLt4gwmZflCqRwD7msr9pD/kd9L/7Bw/8ARsldf8CNe0bS/Ac0F/qtlazG9kYRzXCocbU5wTQB03/CjvAP/QJl/wDAqX/GsnX/AIB+FrzTJV0ZJrC+CkxSNO0iE9gwOePpXoP/AAmPhn/oYdK/8C4/8ax9f+J3hTw/psl4+sWl3KFJjtraYPJIewwOn1NAHyHDPfaBriyxs0F9Yz5BHVZEP+Ir2H47wHWNF8K+LIV/c3Ntskx/CWAkX+b/AJV45d3FxrOs3Fz5e65vbhpNqjqztnA/E19e3vgm31j4Y23hS8YB47GKJZeuyVFGG/MflmgDxH4BeJodH8Xz6TcOEi1SNVQk8eauSo/EFh9cV9RV8K6tpOo+Gdbm06+ie3vbWTsccjowPp3Br2zwN8fYY7SKw8WpL5iDaL+Fd2//AH1659x+VAHv1FchD8UPBE0QdfE2ngf7Um0/keauWHjvwtql7FZWOvWNxdSnEcUcoLMcZ4FAHQ4rk/HXiZfD2jEQuv264ykA9PVvw/niujvbyCwspbu4cJDCpd2PYCvnrxFrc3iDWZr6XIU/LCh/gQdB/jWFeryqy3PXybL/AK1W5pfDH8fIzVWSeYIoaSWRsAdSxP8AWvP9d1SefWCV8yH7K+2MdGQg9fY5FfQ3wx8L+fcf29dp+6iJW2Rh1bu34dBXHfHjwB9ivf8AhLNOi/0a4YLeoo+5J2f6Hv7/AFqMPSsuZnbn2Yc8vq1N6Lf17fI9P+FXjuPxt4YRpmX+1LTEV2nqez/Q/wA8131fFHgTxddeCvFFtqsG94c+Xcwhv9bEeo+vce4r7M03ULXVtOt9QspRLa3CCSKQdwa6j5st0UUUAfOP7QOk6nqPjLTpLLT7u6RNPCs0ELOFPmScZAryP/hGdf8A+gHqX/gJJ/hX3VRQB8K/8Izr/wD0A9S/8BJP8Kt2PgrxPfziG28PanI5/wCnVwPxJGBX2/RQB4n8LvgzLoOoQ674kEbXseGt7RDuETf3mPQn0A6V7ZRRQBx3jf4eaL48slS+jMN5GMQ3kQ+dPY+o9j+lfPfiH4I+MNDldrazGqWw6S2hyce6Hn8s19a0UAfDEnhTxFE5R9B1RWHUG0k/wrsPhToOsWvxN0Oa50m+hhWV90klu6qP3bdSRX1vRQB5T8StT1LUJ10exs7t7WMhpnjhYiRuy5x0H8/pXH6D4U1HWNYhtJbW4t4Cd00skRQKo69e9fQLAbugpRjJwBWMqHNLmbPZw+dPD0PYUoW8/PuRWdpDY2sVtAgSKJQqKOwFM1HT7XVtOuNPvYhLa3CGOWM/xA1borY8Zycndnxr4v8Ah3rnhrxJdabBp95eWqtvgnigZg8Z6cgdex9xXqHwN17W9KlbwxrGm6hHZyEyWc0ts4WJupQkjgHqPf6173RQAUUUUAf/2Q==" alt="BCX" width="61" height="28"><div class="mark"><b>Field Apps</b><small>v1.15 · Developed by Gerald Pakree</small></div></div></header>
+<header class="top"><div class="wrap"><img class="logo" src="data:image/jpeg;base64,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" alt="BCX" width="61" height="28"><div class="mark"><b>Field Apps</b><small>v1.16 · Developed by Gerald Pakree</small></div></div></header>
 <main class="wrap" id="app" hidden>
   <div class="card">
     <div class="who" id="who"></div>
@@ -88,17 +90,20 @@ h2 { margin: 0; font: 700 19px/1.15 var(--display); }
     <div class="msg" id="led-msg"></div>
   </div>
   <nav class="tiles">
-    <a class="tile" href="my-calls/?hub=1"><span class="ic">MC</span><div><b>My Calls</b><span>Your calls from the Dispatch Board, with full details</span></div><span class="go">&#8250;</span></a>
-    <a class="tile" href="boot-recon/?hub=1"><span class="ic">BR</span><div><b>Boot Recon</b><span>Check your boot stock against the ledger</span></div><span class="go">&#8250;</span></a>
-    <a class="tile" href="boot-stock/?hub=1"><span class="ic">MB</span><div><b>My Boot Stock</b><span>How long stock has been in your boots, and what's overdue</span></div><span class="go">&#8250;</span></a>
-    <a class="tile" href="fault-tags/?hub=1"><span class="ic">FT</span><div><b>Fault Tags</b><span>Print tags for faulty and working boot items</span></div><span class="go">&#8250;</span></a>
-    <a class="tile" href="spares-request/?hub=1"><span class="ic">SR</span><div><b>Spares Request</b><span>Ask for spares on a call: GL check, then stores</span></div><span class="go">&#8250;</span></a>
-    <a class="tile" href="custody/?hub=1"><span class="ic">SC</span><div><b>Spares Custody</b><span>Signed handovers between engineers and stores</span></div><span class="go">&#8250;</span></a>
-    <a class="tile" href="store-visit/?hub=1"><span class="ic">SV</span><div><b>Store Visit</b><span>Site visit report</span></div><span class="go">&#8250;</span></a>
-    <a class="tile" id="t-ca" href="call-attendance/?hub=1" hidden><span class="ic">CA</span><div><b>Call Attendance</b><span>Backup for when FMX is down (testing - Gerald only)</span></div><span class="go">&#8250;</span></a>
+    <a class="tile" data-mod="my-calls" href="my-calls/?hub=1"><span class="ic">MC</span><div><b>My Calls</b><span>Your calls from the Dispatch Board, with full details</span></div><span class="go">&#8250;</span></a>
+    <a class="tile" data-mod="boot-recon" href="boot-recon/?hub=1"><span class="ic">BR</span><div><b>Boot Recon</b><span>Check your boot stock against the ledger</span></div><span class="go">&#8250;</span></a>
+    <a class="tile" data-mod="boot-stock" href="boot-stock/?hub=1"><span class="ic">MB</span><div><b>My Boot Stock</b><span>How long stock has been in your boots, and what's overdue</span></div><span class="go">&#8250;</span></a>
+    <a class="tile" data-mod="fault-tags" href="fault-tags/?hub=1"><span class="ic">FT</span><div><b>Fault Tags</b><span>Print tags for faulty and working boot items</span></div><span class="go">&#8250;</span></a>
+    <a class="tile" data-mod="spares-request" href="spares-request/?hub=1"><span class="ic">SR</span><div><b>Spares Request</b><span>Ask for spares on a call: GL check, then stores</span></div><span class="go">&#8250;</span></a>
+    <a class="tile" data-mod="custody" href="custody/?hub=1"><span class="ic">SC</span><div><b>Spares Custody</b><span>Signed handovers between engineers and stores</span></div><span class="go">&#8250;</span></a>
+    <a class="tile" data-mod="store-visit" href="store-visit/?hub=1"><span class="ic">SV</span><div><b>Store Visit</b><span>Site visit report</span></div><span class="go">&#8250;</span></a>
+    <a class="tile" id="t-ca" data-mod="call-attendance" href="call-attendance/?hub=1" hidden><span class="ic">CA</span><div><b>Call Attendance</b><span>Backup for when FMX is down (testing - Gerald only)</span></div><span class="go">&#8250;</span></a>
     <a class="tile" id="t-users" href="users/" hidden><span class="ic">MU</span><div><b>Manage users</b><span>Admin: logins, PINs, roles, lock-outs</span></div><span class="go">&#8250;</span></a>
   </nav>
-  <div class="foot">BCX Field Apps v1.15 · Developed by Gerald Pakree</div>
+  <div class="card" id="modcard" hidden><h2>Modules <span class="small">Admin – who sees each app on the home page</span></h2>
+    <div id="mods"></div><div class="row"><button class="btn primary" id="mod-save">Save</button></div><div class="msg" id="mod-msg"></div>
+    <div class="small">Off hides the app from everyone (you still see it, marked Off). Phones pick up a change the next time they open this page with signal.</div></div>
+  <div class="foot">BCX Field Apps v1.16 · Developed by Gerald Pakree</div>
 </main>
 
 <script>
@@ -184,7 +189,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Login: same Google script and same saved login ("ct-session") as every app, so logging in here logs you into all of them.
    - Ledger: imported once here and saved where all the apps read it ("brl-ledger"; Fault Tags and Custody read that too).
      Older per-app copies are cleared so every app uses this one. */
-const VER = "1.15", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "1.16", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = {
@@ -208,8 +213,31 @@ function render() {
   $("out").onclick = () => { if (!confirm("Log out of the BCX apps on this phone?")) return; ls.del("ct-session"); render(); };
   renderLedger();
   $("t-users").hidden = s.user.role !== "ADMIN";   // Admin only
-  $("t-ca").hidden = s.user.code !== "ADMIN";      // v1.14: Call Attendance (backup) - testing, Gerald only
+  applyMods(s.user);
 }
+/* v1.16: modules - the Admin chooses who sees each app (saved in the script, comes with login / the people list) */
+const MOD_NAME = {"my-calls": "My Calls", "boot-recon": "Boot Recon", "boot-stock": "My Boot Stock", "fault-tags": "Fault Tags", "spares-request": "Spares Request", custody: "Spares Custody", "store-visit": "Store Visit", "call-attendance": "Call Attendance"};
+const MOD_MODE = [["all", "Everyone"], ["staff", "GLs, Stores & Admin"], ["gl", "GLs & Admin"], ["admin", "Admin only"], ["off", "Off"]];
+const modOf = k => (ls.get("bcx-mods") || {})[k] || "all";
+function modOk(mode, u) { const adm = u.role === "ADMIN"; return mode === "all" || adm || (mode === "staff" && (u.gl || u.role === "STORES")) || (mode === "gl" && !!u.gl); }
+function applyMods(u) {
+  document.querySelectorAll(".tile[data-mod]").forEach(t => { const k = t.dataset.mod, m = modOf(k);
+    let show = modOk(m, u) && (m !== "off" || u.role === "ADMIN");
+    if (k === "call-attendance") show = show && u.code === "ADMIN";   // v1.14: Call Attendance (backup) - testing, Gerald only
+    t.hidden = !show; t.classList.toggle("off", m === "off");
+    let c = t.querySelector(".modc"); if (u.role === "ADMIN" && m !== "all") { if (!c) { c = document.createElement("em"); c.className = "modc"; t.querySelector("b").after(c); } c.textContent = MOD_MODE.find(x => x[0] === m)[1]; } else if (c) c.remove(); });
+  const card = $("modcard"); card.hidden = u.role !== "ADMIN"; if (card.hidden) return;
+  $("mods").innerHTML = Object.keys(MOD_NAME).map(k => `<label class="modr"><span>${MOD_NAME[k]}${k === "call-attendance" ? ' <span class="small">(testing – only you for now)</span>' : ""}</span><select class="f" data-modk="${k}">${MOD_MODE.map(([v, t]) => `<option value="${v}"${modOf(k) === v ? " selected" : ""}>${t}</option>`).join("")}</select></label>`).join("");
+}
+$("mod-save").addEventListener("click", async () => {
+  const s = ls.get("ct-session"), b = $("mod-save"), m = $("mod-msg"), mods = {};
+  document.querySelectorAll("[data-modk]").forEach(x => { if (x.value !== "all") mods[x.dataset.modk] = x.value; });
+  b.disabled = true; m.className = "msg"; m.textContent = "Saving...";
+  try { const r = await fetch(api(), {method: "POST", body: JSON.stringify({action: "setModules", token: s.token, mods}), redirect: "follow"}); const j = await r.json();
+    if (!j.ok) throw new Error(j.error || "Couldn't save."); ls.set("bcx-mods", j.mods || {}); m.className = "msg ok"; m.textContent = "Saved. Everyone's home page follows this the next time it opens with signal."; applyMods(s.user); }
+  catch (e) { m.className = "msg err"; m.textContent = e instanceof TypeError ? "No signal – try again when you have signal." : e.message; }
+  finally { b.disabled = false; }
+});
 
 // newest ledger copy on the phone (any app may have imported one)
 function currentLedger() {
@@ -274,7 +302,7 @@ $("login").addEventListener("submit", async e => {
     const r = await fetch(api(), {method: "POST", body: JSON.stringify({action: "login", code, pin}), redirect: "follow"});
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || "Login failed.");
-    ls.set("ct-session", {token: j.token, user: j.user, users: j.users, at: Date.now()});
+    ls.set("ct-session", {token: j.token, user: j.user, users: j.users, at: Date.now()}); ls.set("bcx-mods", j.mods || {});
     $("l-code").value = ""; $("l-pin").value = ""; render();
   } catch (err) {
     m.textContent = err instanceof TypeError ? "No signal. You need signal to log in the first time; after that the apps work offline." : err.message;
@@ -300,14 +328,15 @@ window.addEventListener("pageshow", render);   // coming back from an app: refre
 window.addEventListener("storage", render);
 render();
 // v1.6: keep the people list (Manage users) up to date on this phone, for every app's name drop-downs
-(async () => { const s = ls.get("ct-session"); if (!valid(s) || !navigator.onLine || Date.now() - (s.at || 0) < 3600e3) return;   // at most once an hour, in the background
+(async () => { const s = ls.get("ct-session"); if (!valid(s) || !navigator.onLine || Date.now() - (s.at || 0) < 600e3) return;   // at most every 10 min (v1.16, was hourly), in the background
   try { const r = await fetch(api(), {method: "POST", body: JSON.stringify({action: "users", token: s.token}), redirect: "follow"}); const j = await r.json();
-    if (j && j.ok && Array.isArray(j.users)) { const x = ls.get("ct-session"); if (x && x.token === s.token) { x.users = j.users; if (j.pinIter) x.pinIter = j.pinIter; x.at = Date.now(); ls.set("ct-session", x); } } } catch (e) {} })();
+    if (j && j.ok && Array.isArray(j.users)) { const x = ls.get("ct-session"); if (x && x.token === s.token) { x.users = j.users; if (j.pinIter) x.pinIter = j.pinIter; x.at = Date.now(); ls.set("ct-session", x); }
+      if (j.mods) { ls.set("bcx-mods", j.mods); render(); } } } catch (e) {} })();   // v1.16: who sees which module
 
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 </script>
-<script>/* v1.15: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+<script>/* v1.16: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
 (function () { if (!("serviceWorker" in navigator)) return; let shown = false;
   const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
     d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";
