@@ -89,7 +89,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
 .need { font-size: 14px; color: var(--poor); } .need.ok { color: var(--good); }
 </style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Call Attendance</b><p class="small" style="margin:0" id="gate-t">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
-<header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a><div class="mark"><b>Call Attendance</b><small>v0.2 · Backup for when FMX is down · Developed by Gerald Pakree</small></div></div></header>
+<header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a><div class="mark"><b>Call Attendance</b><small>v0.3 · Backup for when FMX is down · Developed by Gerald Pakree</small></div></div></header>
 <main class="wrap" id="app" hidden>
   <div id="v-list" style="display:grid;gap:14px">
     <section class="card"><h2>Calls on this phone</h2><div id="jobs"></div></section>
@@ -105,7 +105,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
     <div><button class="btn small" id="back">‹ All calls</button></div>
     <div id="job" style="display:grid;gap:14px"></div>
   </div>
-  <div class="foot">Call Attendance v0.2 · Developed by Gerald Pakree</div>
+  <div class="foot">Call Attendance v0.3 · Developed by Gerald Pakree</div>
 </main>
 <script type="text/plain" id="lib-pdflib">/* pdf-lib 1.17.1 (MIT), built in so tags can be made without signal */
 !function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"function"==typeof define&&define.amd?define(["exports"],e):e((t=t||self).PDFLib={})}(this,(function(t){"use strict";
@@ -253,9 +253,11 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
    Install loan only, Uplift only.
    Inputs: the Dispatch Board (call details, shared from Spares Request) and the Item Ledger (the engineer's boot stock).
    v0.1: Admin only (testing). Jobs are kept on this phone (IndexedDB) until the PDF is made; nothing goes to the script yet.
-   v0.2: locked to Gerald (user code ADMIN) only; long site names shrink to fit on the PDF. */
+   v0.2: locked to Gerald (user code ADMIN) only; long site names shrink to fit on the PDF.
+   v0.3: the PDF is also saved to Gerald's Google Drive (script 2.27, caSaveIR: Call Attendance IRs / <month>). With no
+         signal it waits on the phone and goes up by itself when there's signal again. */
 "use strict";
-const VER = "0.2";
+const VER = "0.3";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = {get(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }};
@@ -353,7 +355,7 @@ async function start() {
   $("gate").hidden = false; $("gate-t").textContent = "Call Attendance (backup) isn't open yet. It's being tested."; return; }
   $("app").hidden = false;
   JOBS = (await DB.all().catch(() => [])).sort((a, b) => String(b.created).localeCompare(String(a.created)));
-  showList();
+  showList(); setTimeout(sendWaiting, 2500);   // v0.3: anything still waiting for Drive
 }
 function boardLine() {
   const B = board(), L = ledger();
@@ -365,7 +367,7 @@ function showList() {
   J = null; $("v-list").hidden = false; $("v-job").hidden = true; window.scrollTo(0, 0);
   $("src").innerHTML = boardLine();
   const fin = j => j.stage === "done" || j.stage === "updated", open = JOBS.filter(j => !fin(j)), done = JOBS.filter(fin).slice(0, 15);
-  const li = j => `<button class="job" data-job="${esc(j.id)}"><b>${esc(j.so || "No SO")}</b> · ${esc(j.site || "")}<span class="small"><span class="chip st-${esc(j.stage)}">${esc(stageName(j.stage))}</span> ${esc(nameOf(j.eng) || "no engineer")} · IR ${esc(j.ir)} · ${esc(fmxDT(j.created))}${j.pdfAt ? " · PDF made" : ""}</span></button>`;
+  const li = j => `<button class="job" data-job="${esc(j.id)}"><b>${esc(j.so || "No SO")}</b> · ${esc(j.site || "")}<span class="small"><span class="chip st-${esc(j.stage)}">${esc(stageName(j.stage))}</span> ${esc(nameOf(j.eng) || "no engineer")} · IR ${esc(j.ir)} · ${esc(fmxDT(j.created))}${j.pdfAt ? " · PDF made" : ""}${j.drive ? (j.drive.state === "saved" ? " · On Drive" : " · Drive: waiting") : ""}</span></button>`;
   $("jobs").innerHTML = (open.length ? `<h3>Open</h3>${open.map(li).join("")}` : "") + (done.length ? `<h3>Done</h3>${done.map(li).join("")}` : "") || '<div class="empty">No calls recorded on this phone yet.</div>';
   renderCalls();
 }
@@ -377,7 +379,8 @@ function renderCalls() {
   rows.sort((a, b) => ((b.res === eng) - (a.res === eng)) || String(b.date).localeCompare(String(a.date)));
   $("calls").innerHTML = rows.slice(0, 40).map(r => `<button class="call" data-so="${esc(r.so)}"><b class="mono">${esc(r.so)}</b> · ${esc(r.ship)}<span class="small">${esc(r.mach || "")}${r.res ? " · " + esc(nameOf(r.res)) : " · not allocated"}${r.ref ? " · ref " + esc(r.ref) : ""}</span>${r.note ? `<span class="small">${esc(String(r.note).slice(0, 110))}</span>` : ""}</button>`).join("") || '<div class="empty">No calls found.</div>';
 }
-async function openJob(j) { J = j; $("v-list").hidden = true; $("v-job").hidden = false; renderJob(); window.scrollTo(0, 0); }
+async function openJob(j) { J = j; $("v-list").hidden = true; $("v-job").hidden = false; renderJob(); window.scrollTo(0, 0);
+  if (J.drive) msg("jmsg", driveNote(J), J.drive.state === "saved" ? "ok" : "warn"); }
 
 const opt = (list, v) => `<option value="">Choose...</option>` + list.map(x => `<option${x === v ? " selected" : ""}>${esc(x)}</option>`).join("") + (v && !list.includes(v) ? `<option selected>${esc(v)}</option>` : "");
 const fld = (label, key, val, extra) => `<label class="lbl">${label}<input class="f" data-k="${key}" value="${esc(val || "")}" ${extra || ""}></label>`;
@@ -596,17 +599,43 @@ async function makePdf() {
     const first = String(nameOf(J.eng)).split(" ")[0], d = new Date(J.completed);
     const name = `BCX_FS_IR_${J.ir}_${J.so || "NOSO"}_${String(J.site || "").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "")}_Durban_${pad(d.getDate())}${pad(d.getMonth() + 1)}${String(d.getFullYear()).slice(2)}_${first}.pdf`;
     const file = new File([bytes], name, {type: "application/pdf"});
-    if (navigator.canShare && navigator.canShare({files: [file]})) { try { await navigator.share({files: [file], title: name}); msg("jmsg", "PDF made and shared: " + esc(name), "ok"); return; } catch (e) { if (e.name === "AbortError") { msg("jmsg", "PDF made. Sharing was cancelled.", "warn"); return; } } }
+    // v0.3: download it to the phone first, then send a copy to Drive
     const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
-    msg("jmsg", "PDF made: " + esc(name), "ok");
+    J.drive = {state: "waiting", name, pdf: toB64(bytes), at: new Date().toISOString()}; await DB.put(J);
+    msg("jmsg", "PDF downloaded: " + esc(name) + "<br>Saving a copy to your Drive...", "ok");
+    const r = await sendDrive(J);
+    msg("jmsg", "PDF downloaded: " + esc(name) + "<br>" + driveNote(J), r === "saved" ? "ok" : "warn");
   } catch (e) { msg("jmsg", "Couldn't make the PDF: " + esc(e.message || e), "err"); }
 }
+function toB64(u8) { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
+// v0.3: send a job's PDF to Drive. Keeps the PDF on the phone until the script says it's saved.
+async function sendDrive(j) {
+  const d = j.drive; if (!d || d.state !== "waiting" || !d.pdf) return d && d.state;
+  try {
+    const r = await call("caSaveIR", {name: d.name, pdf: d.pdf, ir: j.ir, so: j.so, completed: j.completed}, 90000);
+    j.drive = {state: "saved", name: d.name, url: r.url, path: r.path, at: new Date().toISOString()};
+  } catch (e) { if (!e.net) { d.error = String(e.message || e); if (/^LOGIN:/.test(d.error)) d.error = d.error.replace(/^LOGIN:\s*/, ""); } else d.error = ""; }
+  await DB.put(j); return j.drive.state;
+}
+function driveNote(j) {
+  const d = j.drive; if (!d) return "";
+  if (d.state === "saved") return `Saved to your Drive${d.path ? ": " + esc(d.path) : ""}.` + (d.url ? ` <a href="${esc(d.url)}" target="_blank" rel="noopener">Open</a>` : "");
+  return d.error ? "Not saved to Drive yet: " + esc(d.error) + " It will try again." : "No signal - it will save to your Drive when there's signal.";
+}
+let SENDING = false;
+async function sendWaiting() {   // jobs whose PDF hasn't reached Drive yet
+  if (SENDING || !navigator.onLine) return; SENDING = true;
+  try { let n = 0; for (const j of JOBS.slice()) if (j.drive && j.drive.state === "waiting") { if (await sendDrive(j) === "saved") n++; }   // the same objects the screens use
+    if (n && !J) showList(); }
+  finally { SENDING = false; }
+}
+window.addEventListener("online", () => setTimeout(sendWaiting, 1500));
 function b64bytes(b) { const s = atob(b), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; }
 
 window.addEventListener("DOMContentLoaded", () => { wire(); start(); });
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 </script>
-<script>/* v0.2: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+<script>/* v0.3: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
 (function () { if (!("serviceWorker" in navigator)) return; let shown = false;
   const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
     d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";
