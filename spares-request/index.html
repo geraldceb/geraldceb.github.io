@@ -248,7 +248,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <div class="mark"><b>Spares Request</b><small id="sub">v2.10 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <div class="mark"><b>Spares Request</b><small id="sub">v2.11 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
@@ -275,7 +275,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
   <section id="v-hist" hidden style="display:grid;gap:14px"></section>
   <input type="file" id="fmx-file" accept="image/*" hidden>
-  <div class="foot">Spares Request v2.10 · Developed by Gerald Pakree</div>
+  <div class="foot">Spares Request v2.11 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -356,7 +356,9 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v2.10
+/* BCX Spares Request v2.11
+   v2.11: a dropped Dispatch Board keeps every column (full comment, verified, accepted, area, customer group...) for the
+         new View My Calls app - added after the 11 columns used here, so older apps read it as before.
    v2.10: the spare search no longer suggests items from his faulty boot (F...) - those are item codes of returned
          parts, not stock codes; only his working boot and the item list.
          After choosing the call, the "add a spare" box is highlighted, scrolled into view and ready to type in.
@@ -421,7 +423,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "2.10", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "2.11", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -1347,18 +1349,23 @@ async function handleFile(file) {
   detOut("err", `<b>${esc(file.name)}</b>: not a Dispatch Board, Item Ledger Entries or Item list export.`);
 }
 const xmlDate = v => { const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(v || "")); return m ? {d: `${m[1]}-${m[2]}-${m[3]}`, t: `${m[4]}:${m[5]}`} : null; };
+// v2.11: a Dispatch Board cell as text - dates as yyyy-mm-dd, times as hh:mm
+function fullCell(n, v) { if (v == null || v === "") return ""; if (/date|time/i.test(n)) { const c = cellDate(v); if (c) return /time/i.test(n) && !/date/i.test(n) ? c.t : c.t && c.t !== "00:00" ? c.d + " " + c.t : c.d; }
+  return String(v).replace(/\s+/g, " ").trim(); }
 function cellDate(v) { if (typeof v === "number") { const d = new Date(Math.round((v - 25569) * 864e5)); return {d: d.toISOString().slice(0, 10), t: d.toISOString().slice(11, 16)}; } return xmlDate(v); }
 async function takeBoard(file, sh, hr, h) {
   const ix = n => h.indexOf(n), get = (r, n) => { const i = ix(n); return i < 0 || r[i] == null ? "" : r[i]; };
+  const HDR = h.map((n, i) => [n, i]).filter(([n]) => n);
   const rows = sh.rows.slice(hr + 1).filter(r => String(get(r, "No.")).trim()).map(r => {
     const od = cellDate(get(r, "Order Date")), ot = cellDate(get(r, "Order Time")), sd = cellDate(get(r, "SLA Date")), stt = cellDate(get(r, "SLA Time"));
     return [String(get(r, "No.")).trim(), String(get(r, "Customer Incident Ref. No.")).trim(), od ? od.d + (ot ? " " + ot.t : "") : "", String(get(r, "Ship-to Name")).trim(), String(get(r, "Ship-to Code")).trim(),
       String(get(r, "Resource Allocated")).trim().toUpperCase(), String(get(r, "Machine Type")).trim(), String(get(r, "Repair Status Code")).trim(), String(get(r, "Technician Status")).trim(),
-      String(get(r, "Comment Text")).replace(/\s+/g, " ").trim().slice(0, 140), sd ? sd.d + (stt ? " " + stt.t : "") : ""];
+      String(get(r, "Comment Text")).replace(/\s+/g, " ").trim().slice(0, 140), sd ? sd.d + (stt ? " " + stt.t : "") : "",
+      HDR.map(([n, i]) => fullCell(n, r[i]))];   // v2.11: every column as exported (for View My Calls), after the 11 used here
   });
   const exported = sh.created || new Date(file.lastModified || Date.now()).toISOString();
   const ex = new Date(exported), stamp = `${ex.getFullYear()}-${pad(ex.getMonth() + 1)}-${pad(ex.getDate())} ${pad(ex.getHours())}:${pad(ex.getMinutes())}`;
-  const B = {exported: stamp, area: sh.area || "", file: file.name, cols: BCOL, rows, by: me().name, at: new Date().toISOString()};
+  const B = {exported: stamp, area: sh.area || "", file: file.name, cols: BCOL.concat(["full"], HDR.map(x => x[0])), rows, by: me().name, at: new Date().toISOString()};
   const known = new Set(people().map(u => u.code)), res = new Set(rows.map(r => r[5]).filter(Boolean));
   const cur = board(); const older = cur && cur.exported > stamp;
   let shared = "";
@@ -1637,7 +1644,7 @@ if ("serviceWorker" in navigator) window.addEventListener("load", () => navigato
   setInterval(upd, 800); upd();
 })();
 </script>
-<script>/* v2.10: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+<script>/* v2.11: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
 (function () { if (!("serviceWorker" in navigator)) return; let shown = false;
   const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
     d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";
