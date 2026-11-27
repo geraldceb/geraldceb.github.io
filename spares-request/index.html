@@ -250,7 +250,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <div class="mark"><b>Spares Request</b><small id="sub">v2.12 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <div class="mark"><b>Spares Request</b><small id="sub">v2.13 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
@@ -277,7 +277,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
   <section id="v-hist" hidden style="display:grid;gap:14px"></section>
   <input type="file" id="fmx-file" accept="image/*" hidden>
-  <div class="foot">Spares Request v2.12 · Developed by Gerald Pakree</div>
+  <div class="foot">Spares Request v2.13 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -358,9 +358,11 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v2.12
+/* BCX Spares Request v2.13
+   v2.13: every list shows the newest at the top and the oldest at the bottom (urgent still first in To check and At
+         stores), the stores screen too; sorted by real time, not text. Pick slips still print oldest first.
    v2.12: the boot notes on a request sit under the spare they're about (his boot, other engineers' boots), once per
-         item even when the same spare is on two calls. The Ready and Done tabs list the newest first, oldest at the bottom.
+         item even when the same spare is on two calls. The Ready and Done tabs list the newest first.
    v2.11: a dropped Dispatch Board keeps every column (full comment, verified, accepted, area, customer group...) for the
          new View My Calls app - added after the 11 columns used here, so older apps read it as before.
    v2.10: the spare search no longer suggests items from his faulty boot (F...) - those are item codes of returned
@@ -427,7 +429,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "2.12", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "2.13", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -662,8 +664,9 @@ function renderList() {
   $("tabs").innerHTML = tabs.map(([k, l, f]) => { const n = REQS.filter(f).length; return `<button data-tab="${k}" aria-pressed="${TAB === k}">${l}<span class="n${n && k !== "done" ? "" : " z"}">${n}</span></button>`; }).join("");
   let list = tabs.length ? REQS.filter(tabs.find(t => t[0] === TAB)[2]) : REQS;
   const open = q => ["GL", "NEW", "PICKING", "READY"].includes(q.status);
-  if (!tabs.length) list = list.filter(open).concat(list.filter(q => !open(q)));
-  else list = list.slice().sort((a, b) => (TAB === "done" ? tms(b.collectedAt || b.updated || b.created) - tms(a.collectedAt || a.updated || a.created) : TAB === "ready" ? tms(b.bookedAt || b.updated) - tms(a.bookedAt || a.updated) : (b.urgent - a.urgent) || String(a.created).localeCompare(String(b.created))));   // v2.12: Ready newest first
+  const newest = (a, b) => tms(b.updated || b.created) - tms(a.updated || a.created);
+  if (!tabs.length) list = list.filter(open).sort((a, b) => tms(b.created) - tms(a.created)).concat(list.filter(q => !open(q)).sort(newest));   // v2.12: newest first
+  else list = list.slice().sort((a, b) => (TAB === "done" ? tms(b.collectedAt || b.updated || b.created) - tms(a.collectedAt || a.updated || a.created) : TAB === "ready" ? tms(b.bookedAt || b.updated) - tms(a.bookedAt || a.updated) : (b.urgent - a.urgent) || tms(b.created) - tms(a.created)));   // v2.12: newest at the top everywhere
   const c = ls.get("sr-cache");
   $("list-h").firstChild.nodeValue = (tabs.length ? "Requests" : "My requests") + " ";
   $("list-age").textContent = c && c.at ? (online() ? "" : "saved copy from " + new Date(c.at).toLocaleTimeString("en-ZA", {hour: "2-digit", minute: "2-digit"})) : "";
@@ -1168,7 +1171,7 @@ function printReqs(list, layout) {
 /* ---------- bulk picking list (v1.9) ---------- */
 function bulkOpen(q) { return isStores() ? ["NEW", "PICKING"].includes(q.status) : ["GL", "NEW", "PICKING", "READY"].includes(q.status); }
 function bulkModal(ticked) {
-  const L = REQS.filter(q => bulkOpen(q) || (ticked && ticked.includes(q.id))).sort((a, b) => (b.urgent - a.urgent) || String(a.created).localeCompare(String(b.created)));
+  const L = REQS.filter(q => bulkOpen(q) || (ticked && ticked.includes(q.id))).sort((a, b) => (b.urgent - a.urgent) || tms(a.created) - tms(b.created));   // print: oldest first, as picked
   if (!L.length) return note(isStores() ? "Nothing at stores to print." : "No open requests to print.", "err");
   const off = !online(), stTxt = {GL: "waiting for GL", NEW: "at stores", PICKING: "picking", READY: "ready"};
   const on = q => ticked ? ticked.includes(q.id) : true, lay = isStores() ? P().layout : "a4";
@@ -1280,8 +1283,8 @@ function tkHtml(q) {
 }
 function renderKds() {
   if (!$("kds") || VIEW !== "kds") return;
-  const by = s => REQS.filter(q => q.status === s).sort((a, b) => (b.urgent - a.urgent) || String(a.created).localeCompare(String(b.created)));
-  const n = by("NEW"), p = by("PICKING"), r = by("READY").sort((a, b) => String(b.bookedAt).localeCompare(String(a.bookedAt))), urg = n.concat(p).filter(q => q.urgent).length, gl = REQS.filter(q => q.status === "GL").length;
+  const by = s => REQS.filter(q => q.status === s).sort((a, b) => (b.urgent - a.urgent) || tms(b.created) - tms(a.created));   // v2.12: newest at the top
+  const n = by("NEW"), p = by("PICKING"), r = by("READY").sort((a, b) => tms(b.bookedAt || b.updated) - tms(a.bookedAt || a.updated)), urg = n.concat(p).filter(q => q.urgent).length, gl = REQS.filter(q => q.status === "GL").length;
   const now = new Date();
   $("kds").innerHTML = `<div class="hd"><span class="ttl">SPARES – DBN STORES</span>${urg ? `<span class="pill r">${urg} urgent</span>` : ""}<span class="pill" id="k-live"></span>${gl ? `<span class="pill">${gl} waiting for a GL</span>` : ""}
     <button class="pill" id="k-bulk">🖨 Print picks</button><button class="pill${P().onArrive ? " on" : ""}" id="k-auto" title="Print each new request as it arrives">${P().onArrive ? "🖨 Auto print ON" : "🖨 Auto print off"}</button><button class="pill" id="k-set">⚙ Printer: ${P().layout === "a4" ? "A4 form" : P().layout + " mm"}</button><button class="pill" id="k-snd">${ls.get("sr-sound") === false ? "🔇 Sound off" : "🔔 Sound on"}</button><button class="pill" id="k-exit">✕ Exit</button><span class="clk">${pad(now.getHours())}:${pad(now.getMinutes())}</span></div>
@@ -1656,7 +1659,7 @@ if ("serviceWorker" in navigator) window.addEventListener("load", () => navigato
   setInterval(upd, 800); upd();
 })();
 </script>
-<script>/* v2.12: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+<script>/* v2.13: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
 (function () { if (!("serviceWorker" in navigator)) return; let shown = false;
   const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
     d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";
