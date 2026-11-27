@@ -65,28 +65,37 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
 .homeled .hm { color: #2E7D4F; font-weight: 700; }
 .ledage { display: inline-block; font-weight: 600; font-size: 12px; padding: 1px 7px; border-radius: 6px; background: #E3F1E8; color: #1F6B43; white-space: nowrap; } .ledage.old { background: #FFF0D2; color: #8A5A00; } .ledage.vold { background: #FBE1DE; color: #B3261E; }
 
+/* v1.2: theme colours only (light and dark) */
 .src { font-size: 14px; line-height: 1.5; }
-.ledage { display: inline-block; font-weight: 600; font-size: 12px; padding: 1px 7px; border-radius: 6px; background: #E3F1E8; color: #1F6B43; white-space: nowrap; } .ledage.old { background: #FFF0D2; color: #8A5A00; } .ledage.vold { background: #FBE1DE; color: #B3261E; }
+.ledage { display: inline-block; font-weight: 600; font-size: 12px; padding: 1px 7px; border-radius: 6px; background: var(--good-soft); color: var(--good); white-space: nowrap; } .ledage.old { background: var(--warn-soft); color: var(--warn); } .ledage.vold { background: var(--poor-soft); color: var(--poor); }
 #who { width: auto; flex: 1; min-width: 160px; }
 .sum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.sum div { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px; text-align: center; } .sum b { display: block; font: 700 24px/1.1 var(--display); } .sum span { font-size: 12px; color: var(--muted); }
-.sum .late b { color: #B3261E; } .sum .na b { color: #8A5A00; }
-.chips { gap: 6px; flex-wrap: wrap; } .chips button { all: unset; cursor: pointer; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-size: 13px; font-weight: 600; } .chips button.on { background: var(--ink, #222); color: #fff; border-color: transparent; }
-.call { all: unset; cursor: pointer; display: grid; gap: 4px; background: #fff; border: 1px solid var(--line); border-left: 5px solid #2E7D4F; border-radius: 12px; padding: 12px; }
-.call.soon { border-left-color: #D9A23A; } .call.late { border-left-color: #B3261E; } .call.done { border-left-color: #9AA3AD; opacity: .85; }
+.sum div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px; text-align: center; color: var(--ink); } .sum b { display: block; font: 700 24px/1.1 var(--display); } .sum span { font-size: 12px; color: var(--muted); }
+.sum .late b { color: var(--poor); } .sum .na b { color: var(--warn); }
+.chips { gap: 6px; flex-wrap: wrap; } .chips button { all: unset; cursor: pointer; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 13px; font-weight: 600; } .chips button.on { background: var(--ink); color: var(--bg); border-color: transparent; }
+.call { all: unset; cursor: pointer; display: grid; gap: 4px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-left: 5px solid var(--good); border-radius: 12px; padding: 12px; }
+.call.soon { border-left-color: var(--warn); } .call.late { border-left-color: var(--poor); }
 .call .top { display: flex; gap: 8px; align-items: baseline; } .call .so { font: 600 15px/1.2 var(--mono); } .call .site { font-weight: 600; font-size: 15px; }
-.call .meta { font-size: 13px; color: var(--muted); } .call .cm { font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.tags { display: flex; gap: 6px; flex-wrap: wrap; } .tg { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: #EEF1F4; color: #3C4650; text-transform: uppercase; letter-spacing: .02em; }
-.tg.late { background: #FBE1DE; color: #B3261E; } .tg.soon { background: #FFF0D2; color: #8A5A00; } .tg.ok { background: #E3F1E8; color: #1F6B43; } .tg.na { background: #FFF0D2; color: #8A5A00; }
-.det { display: grid; grid-template-columns: minmax(110px, 38%) 1fr; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; }
-.det span, .det b { padding: 8px 10px; border-top: 1px solid var(--line); font-size: 14px; } .det span { color: var(--muted); background: #F7F9FB; } .det b { font-weight: 500; word-break: break-word; }
+.call .meta { font-size: 13px; color: var(--muted); } .call .cm { font-size: 13px; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; } .tg { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: var(--sunk); color: var(--muted); text-transform: uppercase; letter-spacing: .02em; }
+.tg.late { background: var(--poor-soft); color: var(--poor); } .tg.soon, .tg.na { background: var(--warn-soft); color: var(--warn); } .tg.ok { background: var(--good-soft); color: var(--good); }
+.det { display: grid; grid-template-columns: minmax(110px, 38%) 1fr; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.det span, .det b { padding: 8px 10px; border-top: 1px solid var(--line); font-size: 14px; } .det span { color: var(--muted); background: var(--sunk); } .det b { font-weight: 500; color: var(--ink); word-break: break-word; }
 .det span:nth-child(1), .det b:nth-child(2) { border-top: 0; }
 .big { font: 700 22px/1.15 var(--display); } .mono { font-family: var(--mono); }
-.note { background: #F7F9FB; border: 1px solid var(--line); border-radius: 10px; padding: 10px; font-size: 15px; white-space: pre-wrap; }
-.empty { padding: 20px; text-align: center; color: var(--muted); background: #fff; border-radius: 12px; border: 1px dashed var(--line); }
+.note { background: var(--sunk); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 10px; font-size: 15px; white-space: pre-wrap; }
+.empty { padding: 20px; text-align: center; color: var(--muted); background: var(--surface); border-radius: 12px; border: 1px dashed var(--line); }
+/* v1.2: engineers summary (GLs, Stores, Admin) */
+.et { width: 100%; border-collapse: collapse; background: var(--surface); color: var(--ink); font-size: 13px; }
+.etw { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.et th, .et td { padding: 8px 5px; border-top: 1px solid var(--line); text-align: right; white-space: nowrap; } .et th:first-child, .et td:first-child { text-align: left; white-space: normal; min-width: 96px; padding-left: 10px; }
+.et th { border-top: 0; font: 700 10px/1.2 var(--body); text-transform: uppercase; letter-spacing: .02em; white-space: normal; color: var(--muted); background: var(--sunk); cursor: pointer; user-select: none; } .et th.on { color: var(--ink); }
+.et tr.eng { cursor: pointer; } .et tr.tot td { font-weight: 700; background: var(--sunk); }
+.et .bar { display: block; height: 4px; border-radius: 2px; background: var(--info); margin-top: 4px; opacity: .7; }
+.et .late { color: var(--poor); font-weight: 700; } .et .na { color: var(--warn); font-weight: 700; } .et .z { color: var(--muted); opacity: .6; }
 </style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">My Calls</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
-<header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a><div class="mark"><b>My Calls</b><small>v1.1 · From the Dispatch Board · Developed by Gerald Pakree</small></div></div></header>
+<header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a><div class="mark"><b>My Calls</b><small>v1.2 · From the Dispatch Board · Developed by Gerald Pakree</small></div></div></header>
 <main class="wrap" id="app" hidden>
   <div id="v-list" style="display:grid;gap:14px">
     <section class="card">
@@ -103,7 +112,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
     <div><button class="btn small" id="back">‹ My calls</button></div>
     <div id="call" style="display:grid;gap:14px"></div>
   </div>
-  <div class="foot">My Calls v1.1 · Developed by Gerald Pakree</div>
+  <div class="foot">My Calls v1.2 · Developed by Gerald Pakree</div>
 </main>
 <script>/* BCX My Calls v1.0
    An engineer's calls from the Dispatch Board, with every detail the export has. Read-only and works offline: it uses
@@ -112,9 +121,11 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
    Full details (every column) come with boards dropped from Spares Request v2.11 on; older boards show the main ones.
    v1.1: every call on the Dispatch Board is open - "Completed Call" (technician status) isn't done, so the Completed
          filter and count are gone; Open, Past SLA and All. GLs, Stores and Admin also get Unallocated (calls with no
-         engineer on the board), which replaces "Not allocated" in the engineer list. */
+         engineer on the board), which replaces "Not allocated" in the engineer list.
+   v1.2: looks right in dark mode (theme colours only). GLs, Stores and Admin get an Engineers tab: per engineer the
+         calls, past SLA, not accepted, arrived / on route, FMX completed and the oldest call - tap one for his calls. */
 "use strict";
-const VER = "1.1";
+const VER = "1.2";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = {get(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }};
@@ -133,7 +144,7 @@ const toD = s => { const m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/.
 const nice = s => { const d = toD(s); if (!d) return String(s || ""); const t = /\d{2}:\d{2}/.test(s) ? ` ${pad(d.getHours())}:${pad(d.getMinutes())}` : ""; return `${pad(d.getDate())} ${MON[d.getMonth()]} ${d.getFullYear()}${t}`; };
 const span = ms => { const m = Math.round(Math.abs(ms) / 6e4); return m < 60 ? m + " min" : m < 48 * 60 ? Math.round(m / 60) + " h" : Math.round(m / 1440) + " days"; };
 
-let SESS = null, VIEW = "list", CUR = null, FILT = ["open", "late", "all", "unalloc"].includes(ls.get("mc-filt")) ? ls.get("mc-filt") : "open";
+let SESS = null, VIEW = "list", CUR = null, FILT = ["open", "late", "all", "unalloc", "eng"].includes(ls.get("mc-filt")) ? ls.get("mc-filt") : "open";
 const me = () => (SESS && SESS.user) || {};
 const users = () => (SESS && SESS.users) || [];
 const nameOf = c => { const u = users().find(x => x.code === c); return u ? u.name : c; };
@@ -156,6 +167,7 @@ const notAccepted = c => c.full && fullCols(board()).includes("Accepted by Resou
 function myCalls() {
   const B = board(); if (!B || !B.rows) return [];
   const w = who();
+  if (FILT === "eng" && lead()) return B.rows.map(brow).filter(c => c.res);
   if (FILT === "unalloc" && lead()) return B.rows.map(brow).filter(c => !c.res);
   return B.rows.map(brow).filter(c => w === "*" || w === "-" ? c.res : c.res === w);
 }
@@ -173,14 +185,15 @@ function renderList() {
   $("src").innerHTML = B ? `Dispatch Board <b>${esc(nice(B.exported))}</b>${boardAge(B)} · ${B.rows.length} calls${B.by ? " · shared by " + esc(B.by) : ""}` : "<b>No Dispatch Board on this phone yet.</b> Tap Refresh.";
   if (lead()) { const w = who(), engs = [...new Set((B ? B.rows : []).map(r => r[5]).filter(Boolean))].sort((a, b) => String(nameOf(a)).localeCompare(nameOf(b)));
     if (!engs.includes(w) && w !== "*" && w !== "-") engs.unshift(w);
-    $("who").disabled = FILT === "unalloc";
+    $("who").disabled = FILT === "unalloc" || FILT === "eng";
     $("who").hidden = false; $("who").innerHTML = `<option value="*"${w === "*" ? " selected" : ""}>All engineers</option>` + engs.map(c => `<option value="${esc(c)}"${c === w ? " selected" : ""}>${esc(nameOf(c))}${c === me().code ? " (me)" : ""}</option>`).join(""); }
   const all = sorted(myCalls()), n = k => all.filter(x => x[1] === k).length;
   const na = all.filter(x => notAccepted(x[0])).length;
   $("sum").innerHTML = `<div><b>${all.length}</b><span>open</span></div><div class="late"><b>${n("late")}</b><span>past SLA</span></div><div class="${na ? "na" : ""}"><b>${na}</b><span>not accepted</span></div>`;
-  const F = [["open", "Open"], ["late", "Past SLA"], ["all", "All"]].concat(lead() ? [["unalloc", "Unallocated (" + (B ? B.rows.filter(r => !r[5]).length : 0) + ")"]] : []);
-  if (FILT === "unalloc" && !lead()) FILT = "open";
+  const F = [["open", "Open"], ["late", "Past SLA"], ["all", "All"]].concat(lead() ? [["unalloc", "Unallocated (" + (B ? B.rows.filter(r => !r[5]).length : 0) + ")"], ["eng", "Engineers"]] : []);
+  if ((FILT === "unalloc" || FILT === "eng") && !lead()) FILT = "open";
   $("filt").innerHTML = F.map(([k, t]) => `<button type="button" data-f="${k}" class="${FILT === k ? "on" : ""}">${t}</button>`).join("");
+  $("q").hidden = FILT === "eng"; if (FILT === "eng") { $("filt").innerHTML = F.map(([k, t]) => `<button type="button" data-f="${k}" class="${FILT === k ? "on" : ""}">${t}</button>`).join(""); return renderEngs(all); }
   const q = ($("q").value || "").trim().toUpperCase(), t = q.split(/\s+/).filter(Boolean);
   const list = all.filter(([c, s]) => (FILT !== "late" || s === "late")
     && (!t.length || t.every(w => [c.so, c.ref, c.ship, c.code, c.mach, c.rep, c.tech, c.note, nameOf(c.res)].concat(c.full || []).join(" ").toUpperCase().includes(w))));
@@ -192,6 +205,25 @@ function renderList() {
     <div class="meta">${esc(c.mach || "")}${c.ref ? " · Ref " + esc(c.ref) : ""}${showWho ? " · " + esc(nameOf(c.res)) : ""}</div>
     ${c.note ? `<div class="cm">${esc(fullNote(c))}</div>` : ""}</button>`).join("")
     || `<div class="empty">${!B ? "Tap Refresh to get the Dispatch Board." : all.length ? "No calls match." : (who() === me().code ? "No calls on the Dispatch Board for you." : "No calls for " + esc(nameOf(who())) + ".")}</div>`;
+}
+// v1.2: per engineer counts (GLs, Stores, Admin)
+let ESORT = ls.get("mc-esort") || "calls";
+const ECOLS = [["name", "Engineer"], ["calls", "Calls"], ["late", "Past SLA"], ["na", "Not acc."], ["site", "Arr."], ["route", "Route"], ["fmx", "FMX done"], ["old", "Oldest"]];
+const short = n => { const w = String(n || "").split(/\s+/).filter(Boolean); return w.length > 2 ? w[0] + " " + w[w.length - 1] : n; };
+function renderEngs(all) {
+  const m = new Map();
+  all.forEach(([c, s]) => { const e = m.get(c.res) || {code: c.res, name: nameOf(c.res), calls: 0, late: 0, na: 0, site: 0, route: 0, fmx: 0, old: 0};
+    e.calls++; if (s === "late") e.late++; if (notAccepted(c)) e.na++; if (/arrived/i.test(c.tech)) e.site++; if (/route/i.test(c.tech)) e.route++; if (/complete/i.test(c.tech)) e.fmx++;
+    const d = toD(c.date); if (d) e.old = Math.max(e.old, Date.now() - d); m.set(c.res, e); });
+  const L = [...m.values()].sort((a, b) => ESORT === "name" ? a.name.localeCompare(b.name) : (b[ESORT] - a[ESORT]) || a.name.localeCompare(b.name));
+  const tot = L.reduce((t, e) => { ["calls", "late", "na", "site", "route", "fmx"].forEach(k => t[k] += e[k]); t.old = Math.max(t.old, e.old); return t; }, {calls: 0, late: 0, na: 0, site: 0, route: 0, fmx: 0, old: 0});
+  const max = Math.max(1, ...L.map(e => e.calls)), num = (v, cls) => v ? `<span class="${cls || ""}">${v}</span>` : '<span class="z">0</span>';
+  const age = ms => ms ? span(ms).replace(" days", "d").replace(" h", "h").replace(" min", "m") : "";
+  $("sum").innerHTML = `<div><b>${L.length}</b><span>engineers</span></div><div><b>${tot.calls}</b><span>calls</span></div><div class="late"><b>${tot.late}</b><span>past SLA</span></div>`;
+  $("calls").innerHTML = L.length ? `<div class="etw"><table class="et"><thead><tr>${ECOLS.map(([k, t]) => `<th data-es="${k}" class="${ESORT === k ? "on" : ""}">${t}${ESORT === k && k !== "name" ? " ▾" : ""}</th>`).join("")}</tr></thead><tbody>
+    ${L.map(e => `<tr class="eng" data-eng="${esc(e.code)}"><td>${esc(short(e.name))}<span class="bar" style="width:${Math.round(e.calls / max * 100)}%"></span></td><td><b>${e.calls}</b></td><td>${num(e.late, "late")}</td><td>${num(e.na, "na")}</td><td>${num(e.site)}</td><td>${num(e.route)}</td><td>${num(e.fmx)}</td><td>${age(e.old)}</td></tr>`).join("")}
+    <tr class="tot"><td>All engineers</td><td>${tot.calls}</td><td>${tot.late}</td><td>${tot.na}</td><td>${tot.site}</td><td>${tot.route}</td><td>${tot.fmx}</td><td>${age(tot.old)}</td></tr></tbody></table></div>
+    <div class="small">Allocated calls on the Dispatch Board. Arr. = arrived on site, Route = on route, FMX done = completed in FMX (still open on the board). Tap a heading to sort, or an engineer to see his calls. ${(board() ? board().rows.filter(r => !r[5]).length : 0)} calls are unallocated.</div>` : '<div class="empty">No allocated calls on the Dispatch Board.</div>';
 }
 const fullNote = c => { const cols = fullCols(board()), i = cols.indexOf("Comment Text"); return c.full && i >= 0 && c.full[i] ? c.full[i] : c.note; };
 const LABEL = {"No.": "Service order", "Ship-to Name": "Site", "Ship-to Code": "Site code", "Resource Allocated": "Engineer", "Customer Incident Ref. No.": "Customer ref.", "Comment Text": "Comment"};
@@ -243,7 +275,9 @@ window.addEventListener("DOMContentLoaded", () => {
   $("who").onchange = e => { ls.set("mc-who", e.target.value); renderList(); };
   $("filt").onclick = e => { const b = e.target.closest("[data-f]"); if (!b) return; FILT = b.dataset.f; ls.set("mc-filt", FILT); renderList(); };
   $("q").oninput = () => renderList();
-  $("calls").onclick = e => { const b = e.target.closest("[data-so]"); if (!b) return; CUR = b.dataset.so; history.pushState({c: 1}, ""); renderCall(); };
+  $("calls").onclick = e => { const h = e.target.closest("[data-es]"); if (h) { ESORT = h.dataset.es; ls.set("mc-esort", ESORT); return renderList(); }
+    const r = e.target.closest("[data-eng]"); if (r) { ls.set("mc-who", r.dataset.eng); FILT = "open"; ls.set("mc-filt", FILT); window.scrollTo(0, 0); return renderList(); }
+    const b = e.target.closest("[data-so]"); if (!b) return; CUR = b.dataset.so; history.pushState({c: 1}, ""); renderCall(); };
   $("back").onclick = () => history.state && history.state.c ? history.back() : renderList();
   window.addEventListener("popstate", () => { if (VIEW === "call") renderList(); });
   $("call").onclick = async e => { if (e.target.id === "copy") { try { await navigator.clipboard.writeText(CUR); $("cmsg").textContent = "Copied " + CUR + "."; $("cmsg").className = "msg ok"; } catch (er) { $("cmsg").textContent = CUR; } } };
@@ -253,7 +287,7 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 </script>
-<script>/* v1.1: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+<script>/* v1.2: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
 (function () { if (!("serviceWorker" in navigator)) return; let shown = false;
   const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
     d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";
