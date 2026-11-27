@@ -1,5 +1,5 @@
 // Offline support for Call Attendance. The version changes whenever the app changes.
-const CACHE = "call-attendance-v0-3-20261127";
+const CACHE = "call-attendance-v0-4-20261127";
 const EXCLUDE = []; // other apps in sub-folders of this site keep their own offline copy
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 const BASE = new URL("./", self.registration.scope).pathname;

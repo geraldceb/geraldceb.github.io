@@ -87,15 +87,20 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
 .ph { border: 1px dashed var(--line); border-radius: 9px; padding: 10px; display: grid; gap: 6px; justify-items: start; } .ph img { max-width: 100%; max-height: 200px; border-radius: 6px; }
 .sig { display: grid; gap: 6px; } .sig canvas { width: 100%; max-width: 520px; aspect-ratio: 3 / 1; border: 1px solid var(--line); border-radius: 8px; background: #fff; touch-action: none; } .sig img { max-width: 260px; background: #fff; border: 1px solid var(--line); border-radius: 6px; }
 .need { font-size: 14px; color: var(--poor); } .need.ok { color: var(--good); }
+/* v0.4 */
+.ledage { display: inline-block; font-weight: 600; font-size: 12px; padding: 1px 7px; border-radius: 6px; background: #E3F1E8; color: #1F6B43; white-space: nowrap; } .ledage.old { background: #FFF0D2; color: #8A5A00; } .ledage.vold { background: #FBE1DE; color: #B3261E; }
+.sugg .sh, .nav .sh { font: 700 11px/1.2 var(--sans, inherit); text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding: 8px 10px 4px; }
+.nav { border: 1px solid var(--line); border-radius: 10px; padding: 4px 0 6px; margin: 8px 0; background: #F7F9FB; } .nav .nl { padding: 6px 10px; border-top: 1px solid var(--line); font-size: 14px; }
+.bad { color: #B3261E; } .warnline { color: #8A5A00; background: #FFF0D2; border-radius: 6px; padding: 4px 8px; } .chip.warnc { background: #FFF0D2; color: #8A5A00; }
 </style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Call Attendance</b><p class="small" style="margin:0" id="gate-t">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
-<header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a><div class="mark"><b>Call Attendance</b><small>v0.3 · Backup for when FMX is down · Developed by Gerald Pakree</small></div></div></header>
+<header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a><div class="mark"><b>Call Attendance</b><small>v0.4 · Backup for when FMX is down · Developed by Gerald Pakree</small></div></div></header>
 <main class="wrap" id="app" hidden>
   <div id="v-list" style="display:grid;gap:14px">
     <section class="card"><h2>Calls on this phone</h2><div id="jobs"></div></section>
     <section class="card"><h2>Start a call</h2>
       <div class="small" id="src"></div>
-      <div class="row"><button class="btn small" id="refresh">Refresh the Dispatch Board</button></div><div class="msg" id="lmsg"></div>
+      <div class="row"><button class="btn small" id="refresh">Refresh – Dispatch Board, ledger, item list</button></div><div class="msg" id="lmsg"></div>
       <input class="f" id="q" type="search" placeholder="Search SO, site, ref, engineer, machine" autocomplete="off">
       <div class="list" id="calls"></div>
       <button class="btn" id="manual">Call not on the board – type it in</button>
@@ -105,7 +110,7 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
     <div><button class="btn small" id="back">‹ All calls</button></div>
     <div id="job" style="display:grid;gap:14px"></div>
   </div>
-  <div class="foot">Call Attendance v0.3 · Developed by Gerald Pakree</div>
+  <div class="foot">Call Attendance v0.4 · Developed by Gerald Pakree</div>
 </main>
 <script type="text/plain" id="lib-pdflib">/* pdf-lib 1.17.1 (MIT), built in so tags can be made without signal */
 !function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"function"==typeof define&&define.amd?define(["exports"],e):e((t=t||self).PDFLib={})}(this,(function(t){"use strict";
@@ -255,9 +260,14 @@ tr.click { cursor: pointer; } td .red { color: var(--poor); font-weight: 600; }
    v0.1: Admin only (testing). Jobs are kept on this phone (IndexedDB) until the PDF is made; nothing goes to the script yet.
    v0.2: locked to Gerald (user code ADMIN) only; long site names shrink to fit on the PDF.
    v0.3: the PDF is also saved to Gerald's Google Drive (script 2.27, caSaveIR: Call Attendance IRs / <month>). With no
-         signal it waits on the phone and goes up by itself when there's signal again. */
+         signal it waits on the phone and goes up by itself when there's signal again.
+   v0.4: uses the item list (the same copy Spares Request keeps) and the Item Ledger for boot movements:
+         install from his working boot (units already used on this phone are left out), or pick from the item list
+         when it isn't in his boot; uplifted units are looked up by serial in the ledger and by code in the item list;
+         a "for Nav" summary shows each movement (boot -> site, site -> faulty boot). Refresh gets the Dispatch Board,
+         the latest office Item Ledger and the item list; the ledger's age shows. */
 "use strict";
-const VER = "0.3";
+const VER = "0.4";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = {get(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }};
@@ -319,6 +329,81 @@ function bootStock(code) {
     const o = m.get(k) || {item: String(x[4] || ""), desc: String(x[5] || ""), serial: ser, tag: String(x[7] || ""), qty: 0, doc: x[1], date: x[0]}; o.qty += Number(x[9]) || 0; if (x[7]) o.tag = String(x[7]); m.set(k, o); });
   return [...m.values()].filter(o => o.qty > 0).sort((a, b) => a.desc.localeCompare(b.desc));
 }
+// v0.4: his boot less what's already been installed on calls on this phone (the ledger only catches up when Nav is posted)
+function bootFree(code) {
+  const usedS = new Set(), usedC = {};
+  JOBS.forEach(j => (j.parts || []).forEach(p => { if (!/^Install/.test(p.action) || p.notBoot) return; const s = String(p.serial || "").trim().toUpperCase();
+    if (s) usedS.add(s); else if (p.code) usedC[p.code] = (usedC[p.code] || 0) + (Number(p.qty) || 1); }));
+  return bootStock(code).map(o => Object.assign({}, o)).filter(o => { if (o.serial) return !usedS.has(o.serial.toUpperCase());
+    const u = usedC[o.item] || 0; if (u) { const t = Math.min(u, o.qty); o.qty -= t; usedC[o.item] = u - t; } return o.qty > 0; });
+}
+// v0.4: where a serial is in the ledger (boots and MAINT_/MT_ locations): the balance per location, newest movement first
+function serialLedger(ser) {
+  const L = ledger(); ser = String(ser || "").trim().toUpperCase(); if (!L || ser.length < 3) return null;
+  const rows = L.rows.filter(x => String(x[6] || "").trim().toUpperCase() === ser); if (!rows.length) return null;
+  const bal = {}; rows.forEach(x => { const l = String(x[8] || "").toUpperCase(); bal[l] = (bal[l] || 0) + (Number(x[9]) || 0); });
+  const last = rows.slice().sort((a, b) => String(b[0]).localeCompare(String(a[0])))[0];
+  return {code: String(last[4] || ""), desc: String(last[5] || ""), tag: String(last[7] || ""), at: Object.keys(bal).filter(l => bal[l] > 0), last};
+}
+const bootName = l => { l = String(l || "").toUpperCase(); const k = l.slice(1), n = nameOf(k); return /^[TF]/.test(l) && n !== k ? `${n}'s ${l[0] === "T" ? "working" : "faulty"} boot (${l})` : l; };
+function ledgerNote(who, ser) {
+  const r = serialLedger(ser); if (!r) return String(ser || "").trim().length >= 3 && ledger() ? "Not in the Item Ledger." : "";
+  const where = r.at.length ? "In the ledger at " + r.at.map(bootName).join(", ") : "In the ledger, last moved " + ddmm(r.last[0]) + " (" + esc(r.last[1]) + "), not in any boot now";
+  const warn = who === "inst" && r.at.length && !r.at.includes("T" + J.eng) ? ' <b class="bad">- not his boot</b>' : "";
+  const o = MV && MV[who], other = o && o.code && r.code && o.code.toUpperCase() !== r.code.toUpperCase() ? ` <b class="bad">The ledger has this serial as ${esc(r.code)} ${esc(r.desc)}.</b>` : "";
+  return esc(where) + warn + "." + other;
+}
+
+/* ---------- v0.4: the item list - the same copy Spares Request keeps (IndexedDB sr-db / kv "items") ---------- */
+let ITEMS_C = null;
+const kvOpen = () => new Promise((ok, no) => { const r = indexedDB.open("sr-db", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); });
+const kvGet = async k => { const d = await kvOpen(); return new Promise((ok, no) => { const r = d.transaction("kv").objectStore("kv").get(k); r.onsuccess = () => { d.close(); ok(r.result); }; r.onerror = () => { d.close(); no(r.error); }; }); };
+const kvPut = async (k, v) => { const d = await kvOpen(); return new Promise((ok, no) => { const t = d.transaction("kv", "readwrite"); t.objectStore("kv").put(v, k); t.oncomplete = () => { d.close(); ok(); }; t.onerror = () => { d.close(); no(t.error); }; }); };
+const ITEMS_READY = (async () => { try { ITEMS_C = (await kvGet("items")) || null; } catch (e) { ITEMS_C = null; } })();
+const items = () => ITEMS_C;
+async function getItems() { await ITEMS_READY; const j = await call("itemsGet", {have: (ITEMS_C || {}).ver || ""}, 90000);
+  if (j.items) { ITEMS_C = {ver: j.ver, items: j.items, hide: j.hide}; await kvPut("items", ITEMS_C).catch(() => {}); return "Item list updated (" + j.items.length + " items)."; }
+  return j.same ? "Item list is the latest." : "No item list on the system yet."; }
+function itemSearch(q, skip, max) {
+  const I = items(); q = String(q || "").trim().toUpperCase(); if (!I || q.length < 2) return []; const t = q.split(/\s+/), out = [];
+  for (const i of I.items) { if (out.length >= (max || 12)) break; if (skip && skip.has(String(i[0]).toUpperCase())) continue; const s = (i[0] + " " + i[1]).toUpperCase(); if (t.every(w => s.includes(w))) out.push({code: String(i[0]), desc: String(i[1] || ""), cls: String(i[2] || "")}); }
+  return out;
+}
+const itemDesc = code => { const I = items(), c = String(code || "").trim().toUpperCase(); if (!I || !c) return ""; const i = I.items.find(x => String(x[0]).toUpperCase() === c); return i ? String(i[1] || "") : ""; };
+
+/* ---------- v0.4: the latest office Item Ledger (same as "Get the latest ledger" in the other apps) ---------- */
+const ddmm = iso => { const m = /^(\d{4})[-/](\d{2})[-/](\d{2})/.exec(iso || ""); return m ? `${m[3]}/${m[2]}/${m[1]}` : String(iso || ""); };
+const keepLoc = c => { c = String(c == null ? "" : c).trim().toUpperCase(); return /^[TF][A-Z0-9]{3,9}$/.test(c) || ((c.startsWith("MAINT_") || c.startsWith("MT_")) && !c.includes("OBS")); };
+async function importLedger(file) {
+  let rows; try { rows = await XLSX_MINI.read(file); } catch (e) { return {error: "That file couldn't be read."}; }
+  const h = (rows[0] || []).map(v => String(v || "").trim()), col = n => h.indexOf(n);
+  const ix = ["Posting Date", "Document No.", "Service Order No.", "Job No.", "Item No.", "Description", "Serial No.", "Tag No.", "Location Code", "Remaining Quantity", "Ship-To Name"].map(col);
+  if (ix[4] < 0 || ix[5] < 0 || ix[8] < 0) return {error: "This doesn't look like an Item Ledger Entries export."};
+  let maxD = 0;
+  const data = rows.slice(1).filter(r => keepLoc(r[ix[8]])).map(r => { const v = ix.map(i => i < 0 || r[i] == null ? "" : r[i]); let d = v[0];
+    if (typeof d === "number") { maxD = Math.max(maxD, d); d = XLSX_MINI.serialToDate(d).toISOString().slice(0, 10); }
+    v[0] = String(d); for (let i = 1; i < v.length; i++) if (i !== 9) v[i] = String(v[i]).trim(); v[9] = Number(v[9]) || 0; return v; });
+  const m = /(\d{4})-(\d{2})-(\d{2})T/.exec(file.name);
+  const date = m ? `${m[3]}/${m[2]}/${m[1]}` : (maxD ? ddmm(XLSX_MINI.serialToDate(maxD).toISOString()) : "");
+  ["ft-ledger", "ct-ledger", "ft-skip"].forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+  if (!ls.set("brl-ledger", {date, file: file.name, rows: data, importedAt: Date.now(), src: "home", kv: 2})) return {error: "This phone is out of storage space, so the ledger couldn't be saved."};
+  return {ok: true};
+}
+async function pullLedger() {
+  const L = ledger(), j = await call("latestLedger", {have: L && L.kv === 2 && L.file || ""}, 90000);
+  if (!j.name) return "No office ledger yet."; if (j.same) return "Item Ledger is the latest (" + (L.date || j.name) + ").";
+  const bin = atob(j.b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  const r = await importLedger(new File([u8], j.name)); return r.ok ? "Item Ledger updated to " + (ledger().date || j.name) + "." : "Item Ledger: " + r.error;
+}
+// ledger age: from the export time Nav puts in the file name, else the ledger date, else when it was loaded
+const ledWhen = L => { if (!L) return null; const m = String(L.file || "").match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})[_:.](\d{2})/); if (m) return {t: new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5]).getTime()};
+  const d = String(L.date || "").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if (d) return {t: new Date(+d[3], d[2] - 1, +d[1]).getTime(), day: true};
+  return L.importedAt ? {t: L.importedAt} : null; };
+const ledHours = L => { const w = ledWhen(L); return w ? (Date.now() - w.t) / 36e5 : null; };
+const ledAgeHtml = L => { const w = ledWhen(L); if (!w) return ""; const h = ledHours(L); let a;
+  if (w.day) { const n = Math.round((new Date().setHours(0, 0, 0, 0) - w.t) / 864e5); a = n <= 0 ? "from today" : n === 1 ? "1 day old" : n + " days old"; }
+  else { const mins = Math.max(0, Math.round((Date.now() - w.t) / 6e4)); a = mins < 60 ? mins + " min old" : mins < 2880 ? Math.round(mins / 60) + " h old" : Math.round(mins / 1440) + " days old"; }
+  return ` <span class="ledage${h >= 72 ? " vold" : h >= 24 ? " old" : ""}" title="How old this Item Ledger is">${a}</span>`; };
 
 /* ---------- jobs on this phone (IndexedDB: photos and signatures are big) ---------- */
 const DB = {db: null,
@@ -353,15 +438,16 @@ async function start() {
   if (!valid(SESS)) { $("gate").hidden = false; return; }
   if (me().role !== "ADMIN" || me().code !== "ADMIN") {   // v0.2: locked to Gerald only
   $("gate").hidden = false; $("gate-t").textContent = "Call Attendance (backup) isn't open yet. It's being tested."; return; }
-  $("app").hidden = false;
+  $("app").hidden = false; await ITEMS_READY;
   JOBS = (await DB.all().catch(() => [])).sort((a, b) => String(b.created).localeCompare(String(a.created)));
   showList(); setTimeout(sendWaiting, 2500);   // v0.3: anything still waiting for Drive
 }
 function boardLine() {
   const B = board(), L = ledger();
   const b = B ? `Dispatch Board <b>${esc(String(B.exported || "").slice(0, 16).replace("T", " "))}</b> · ${B.rows.length} calls` : "<b>No Dispatch Board on this phone.</b> Open Spares Request and tap Refresh, or type the call in.";
-  const l = L ? `Item Ledger <b>${esc(L.date || "")}</b> · ${L.rows.length} lines` : "<b>No Item Ledger on this phone</b> – parts can still be typed in.";
-  return b + "<br>" + l;
+  const l = L ? `Item Ledger <b>${esc(L.date || "")}</b>${ledAgeHtml(L)} · ${L.rows.length} lines` : "<b>No Item Ledger on this phone</b> – tap Refresh, or parts can be typed in.";
+  const I = items(), it = I ? `Item list · ${I.items.length} items` : "<b>No item list on this phone</b> – tap Refresh.";
+  return b + "<br>" + l + "<br>" + it;
 }
 function showList() {
   J = null; $("v-list").hidden = false; $("v-job").hidden = true; window.scrollTo(0, 0);
@@ -425,8 +511,9 @@ function renderJob() {
   <section class="card"><h2>Boot movements <span class="aside">${j.parts.length} line${j.parts.length === 1 ? "" : "s"}</span></h2>
     <div class="moves">${MOVES.map(m => `<button type="button" class="mv" data-move="${m.k}"><b>${m.t}</b><span>${m.d}</span></button>`).join("")}</div>
     <div id="mvbox"></div>
+    ${navLines(j).length ? `<div class="nav"><div class="sh">For Nav – boot movements on this call</div>${navLines(j).map(n => `<div class="nl"><span class="chip">${esc(n.t)}</span> ${esc(n.txt)}<div class="small">${esc(n.from)} → ${esc(n.to)}${n.warn ? ' <b class="bad">· not in his boot per the ledger</b>' : ""}</div></div>`).join("")}</div>` : ""}
     ${j.parts.map((p, i) => `<div class="part ${/Uplift/.test(p.action) ? "up" : "in"}" data-i="${i}">
-      <div class="row"><span class="chip">${esc(p.action)}</span><b style="flex:1">${esc(p.desc || p.code || "Part " + (i + 1))}</b><button type="button" class="btn small" data-delpart="${i}">Remove</button></div>
+      <div class="row"><span class="chip">${esc(p.action)}</span><b style="flex:1">${esc(p.desc || p.code || "Part " + (i + 1))}</b>${p.notBoot ? '<span class="chip warnc">not in boot</span>' : ""}<button type="button" class="btn small" data-delpart="${i}">Remove</button></div>
       <div class="g2"><label class="lbl">Action<select class="f" data-p="action">${opt(L_PARTACT, p.action)}</select></label><label class="lbl">Service item group<select class="f" data-p="group">${opt(L_GROUP, p.group)}</select></label></div>
       <div class="g2"><label class="lbl">Item code<input class="f" data-p="code" value="${esc(p.code)}"></label><label class="lbl">Machine type<input class="f" data-p="mach" value="${esc(p.mach)}"></label></div>
       <label class="lbl">Description<input class="f" data-p="desc" value="${esc(p.desc)}"></label>
@@ -515,13 +602,20 @@ function wire() {
   $("calls").addEventListener("click", async e => { const b = e.target.closest("[data-so]"); if (!b) return; const r = board().rows.map(brow).find(x => x.so === b.dataset.so); const j = newJob(r); if (r && r.res && !j.eng) j.eng = r.res; JOBS.unshift(j); await DB.put(j); openJob(j); });
   $("manual").onclick = async () => { const j = newJob(null); JOBS.unshift(j); await DB.put(j); openJob(j); };
   $("jobs").addEventListener("click", e => { const b = e.target.closest("[data-job]"); if (b) openJob(JOBS.find(j => j.id === b.dataset.job)); });
-  $("refresh").onclick = async () => { msg("lmsg", "Checking for a newer Dispatch Board..."); try { const B = board(), j = await call("srBoardGet", {have: B ? B.stamp : ""}); if (j.board) ls.set("sr-board", Object.assign({stamp: j.stamp}, j.board)); msg("lmsg", j.none ? "Nobody has shared a Dispatch Board yet." : j.same ? "You have the latest Dispatch Board." : "Dispatch Board updated.", "ok"); showList(); } catch (er) { msg("lmsg", er.net ? "No signal." : esc(er.message), "err"); } };
+  $("refresh").onclick = async () => { msg("lmsg", "Checking for a newer Dispatch Board, Item Ledger and item list..."); const out = [];   // v0.4: all three
+    try { const B = board(), j = await call("srBoardGet", {have: B ? B.stamp : ""}); if (j.board) ls.set("sr-board", Object.assign({stamp: j.stamp}, j.board)); out.push(j.none ? "Nobody has shared a Dispatch Board yet." : j.same ? "Dispatch Board is the latest." : "Dispatch Board updated."); }
+    catch (er) { msg("lmsg", er.net ? "No signal." : esc(er.message), "err"); return; }
+    try { out.push(await pullLedger()); } catch (er) { out.push("Item Ledger: " + (er.net ? "no signal." : er.message)); }
+    try { out.push(await getItems()); } catch (er) { out.push("Item list: " + (er.net ? "no signal." : er.message)); }
+    msg("lmsg", esc(out.join(" ")), "ok"); showList(); };
   const job = $("job");
   job.addEventListener("input", e => { const t = e.target;
     if (t.dataset.k && !t.dataset.dt) { setK(t.dataset.k, t.value); if (t.dataset.k === "custName") learnCust(J.site, t.value); touch(); paintNeed(); }
     if (t.dataset.p) { const i = Number(t.closest(".part").dataset.i); J.parts[i][t.dataset.p] = t.value; touch(); }
     if (t.id === "mvq") paintMvBoot();
-    if (t.dataset.mv) { const [a, b] = t.dataset.mv.split("."); MV[a][b] = t.value; } });
+    if (t.dataset.mvq) paintMvFind(t.dataset.mvq, t.value);
+    if (t.dataset.mv) { const [a, b] = t.dataset.mv.split("."); MV[a][b] = t.value; if (b === "serial") mvSerial(a);
+      if (b === "code" && !MV[a].desc) { const d = itemDesc(t.value); if (d) { MV[a].desc = d; const e = $("mvbox").querySelector(`[data-mv="${a}.desc"]`); if (e) e.value = d; } } } });
   job.addEventListener("change", e => { const t = e.target;
     if (t.dataset.dt) { setK(t.dataset.k, t.value ? new Date(t.value).toISOString() : ""); touch(); renderJob(); }
     else if (t.dataset.k === "eng") { J.eng = t.value; ls.set("ca-eng", t.value); touch(); renderJob(); }
@@ -538,8 +632,11 @@ function wire() {
     else if (t.id === "skip-before") { if (!confirm("Carry on without a before picture? The report will show it empty.")) return; J.skipBefore = true; touch(); renderJob(); }
     else if (t.closest("[data-move]")) { MV = {k: t.closest("[data-move]").dataset.move, inst: null, upl: {desc: J.item.mach || "", code: "", mach: J.item.mach || "", serial: J.item.serial || "", tag: J.item.tag || "", group: "SPARES"}}; paintMove(); }
     else if (t.id === "mv-cancel") { MV = null; $("mvbox").innerHTML = ""; }
-    else if (t.closest("[data-mvboot]")) { const it = bootStock(J.eng)[Number(t.closest("[data-mvboot]").dataset.mvboot)]; MV.inst = {code: it.item, desc: it.desc, serial: it.serial, tag: it.tag, mach: "", group: "SPARES"}; paintMove(); }
-    else if (t.id === "mv-typed") { MV.inst = {code: "", desc: "", serial: "", tag: "", mach: "", group: "SPARES", typed: true}; paintMove(); }
+    else if (t.closest("[data-mvboot]")) { const it = MVB[Number(t.closest("[data-mvboot]").dataset.mvboot)]; MV.inst = {code: it.item, desc: it.desc, serial: it.serial, tag: it.tag, mach: "", group: "SPARES", fromBoot: true}; paintMove(); }
+    else if (t.closest("[data-mvitem]")) { const it = MVI[Number(t.closest("[data-mvitem]").dataset.mvitem)]; MV.inst = {code: it.code, desc: it.desc, serial: "", tag: "", mach: "", group: "SPARES", notBoot: true}; paintMove(); }
+    else if (t.closest("[data-mvpick]")) { const [who, i] = t.closest("[data-mvpick]").dataset.mvpick.split("|"), it = MVQ[Number(i)]; Object.assign(MV[who], {code: it.code, desc: it.desc}); paintMove(); }
+    else if (t.id === "mv-repick") { MV.inst = null; paintMove(); }
+    else if (t.id === "mv-typed") { MV.inst = {code: "", desc: "", serial: "", tag: "", mach: "", group: "SPARES", typed: true, notBoot: true}; paintMove(); }
     else if (t.id === "mv-add") addMove();
     else if (t.id === "finish") finish();
     else if (t.dataset.delpart) { J.parts.splice(Number(t.dataset.delpart), 1); touch(); renderJob(); }
@@ -560,27 +657,56 @@ let MV = null;
 const flash = t => { const e = $("jmsg") || $("jmsg2"); msg(e.id, esc(t), "err"); e.scrollIntoView({block: "center"}); };
 function paintMove() {
   const m = MOVES.find(x => x.k === MV.k), box = $("mvbox"); if (!m) return;
-  const unit = (who, o) => `<div class="g2"><label class="lbl">Description<input class="f" data-mv="${who}.desc" value="${esc(o.desc)}"></label><label class="lbl">Item code<input class="f" data-mv="${who}.code" value="${esc(o.code)}"></label></div>
-    <div class="g3"><label class="lbl">Serial<input class="f" data-mv="${who}.serial" value="${esc(o.serial)}" autocapitalize="characters"></label><label class="lbl">Tag<input class="f" data-mv="${who}.tag" value="${esc(o.tag)}" autocapitalize="characters"></label><label class="lbl">Machine type<input class="f" data-mv="${who}.mach" value="${esc(o.mach)}" autocapitalize="characters"></label></div>`;
+  const unit = (who, o) => `${o.notBoot ? '<div class="small warnline">Not in his working boot per the ledger - picked from the item list.</div>' : ""}
+    <div class="g2"><label class="lbl">Description<input class="f" data-mv="${who}.desc" value="${esc(o.desc)}"></label><label class="lbl">Item code<input class="f" data-mv="${who}.code" value="${esc(o.code)}" autocapitalize="characters"></label></div>
+    ${o.fromBoot ? "" : `<input class="f" data-mvq="${who}" type="search" placeholder="Find the item code in the item list" autocomplete="off"><div class="sugg" id="mvs-${who}"></div>`}
+    <div class="g3"><label class="lbl">Serial<input class="f" data-mv="${who}.serial" value="${esc(o.serial)}" autocapitalize="characters"></label><label class="lbl">Tag<input class="f" data-mv="${who}.tag" value="${esc(o.tag)}" autocapitalize="characters"></label><label class="lbl">Machine type<input class="f" data-mv="${who}.mach" value="${esc(o.mach)}" autocapitalize="characters"></label></div>
+    <div class="small" id="mvn-${who}">${ledgerNote(who, o.serial)}</div>`;
+  const L = ledger();
   box.innerHTML = `<div class="mvf"><b>${m.t}</b>
-    ${m.inst ? `<div class="sub">${m.inst === "Install Loan Unit" ? "Loan unit installed" : "Unit installed"} – from ${esc(nameOf(J.eng) || "the engineer")}'s boot</div>
-      ${MV.inst ? unit("inst", MV.inst) : `<input class="f" id="mvq" type="search" placeholder="Search his working boot: item code, description, serial" autocomplete="off"><div class="sugg" id="mvl"></div><button type="button" class="btn small" id="mv-typed">Not in the ledger – type it</button>`}` : ""}
-    ${m.upl ? `<div class="sub">Unit uplifted – goes into his faulty boot</div>${unit("upl", MV.upl)}` : ""}
+    ${m.inst ? `<div class="sub">${m.inst === "Install Loan Unit" ? "Loan unit installed" : "Unit installed"} – from ${esc(nameOf(J.eng) || "the engineer")}'s working boot (T${esc(J.eng || "?")})</div>
+      ${MV.inst ? unit("inst", MV.inst) + `<button type="button" class="btn small ghost" id="mv-repick">Choose a different unit</button>` : `<div class="small">${L ? `Item Ledger ${esc(L.date || "")}${ledAgeHtml(L)} · ${bootFree(J.eng).length} lines in his boot` : "No Item Ledger on this phone – tap Refresh on the list, or type it in."}</div>
+        <input class="f" id="mvq" type="search" placeholder="Search his working boot or the item list: code, description, serial" autocomplete="off"><div class="sugg" id="mvl"></div><button type="button" class="btn small" id="mv-typed">Type it in</button>`}` : ""}
+    ${m.upl ? `<div class="sub">Unit uplifted – goes into his faulty boot (F${esc(J.eng || "?")})</div>${unit("upl", MV.upl)}` : ""}
     <div class="row"><button type="button" class="btn primary" id="mv-add">Add ${m.t.toLowerCase()}</button><button type="button" class="btn" id="mv-cancel">Cancel</button></div></div>`;
   box.scrollIntoView({block: "nearest"});
 }
+let MVB = [], MVI = [];
 function paintMvBoot() {
-  const q = ($("mvq").value || "").trim().toUpperCase(), all = bootStock(J.eng), t = q.split(/\s+/).filter(Boolean);
-  const hits = q.length < 2 ? [] : all.map((x, i) => [x, i]).filter(([x]) => { const s = `${x.item} ${x.desc} ${x.serial} ${x.tag}`.toUpperCase(); return t.every(w => s.includes(w)); }).slice(0, 15);
-  $("mvl").innerHTML = hits.map(([x, i]) => `<button type="button" data-mvboot="${i}">${esc(x.desc)}<span class="c">${esc(x.item)}${x.serial ? " · S/N " + esc(x.serial) : ""}${x.tag ? " · " + esc(x.tag) : ""} · qty ${x.qty}</span></button>`).join("") || (q.length >= 2 ? '<div class="small" style="padding:8px">Not in his working boot.</div>' : "");
+  const q = ($("mvq").value || "").trim().toUpperCase(), t = q.split(/\s+/).filter(Boolean);
+  MVB = q.length < 2 ? [] : bootFree(J.eng).filter(x => { const s = `${x.item} ${x.desc} ${x.serial} ${x.tag}`.toUpperCase(); return t.every(w => s.includes(w)); }).slice(0, 15);
+  MVI = q.length < 2 ? [] : itemSearch(q, new Set(MVB.map(x => x.item.toUpperCase())), 10);
+  $("mvl").innerHTML = q.length < 2 ? "" :
+    (MVB.length ? `<div class="sh">In his working boot</div>` + MVB.map((x, i) => `<button type="button" data-mvboot="${i}">${esc(x.desc)}<span class="c">${esc(x.item)}${x.serial ? " · S/N " + esc(x.serial) : ""}${x.tag ? " · " + esc(x.tag) : ""} · qty ${x.qty}</span></button>`).join("") : '<div class="small" style="padding:8px">Not in his working boot.</div>') +
+    (MVI.length ? `<div class="sh">Not in his boot – from the item list</div>` + MVI.map((x, i) => `<button type="button" data-mvitem="${i}">${esc(x.desc)}<span class="c">${esc(x.code)}${x.cls ? " · " + esc(x.cls) : ""}</span></button>`).join("") : "");
+}
+let MVQ = [];
+function paintMvFind(who, q) {
+  MVQ = itemSearch(q, null, 10); const el = $("mvs-" + who); if (!el) return;
+  el.innerHTML = MVQ.map((x, i) => `<button type="button" data-mvpick="${who}|${i}">${esc(x.desc)}<span class="c">${esc(x.code)}${x.cls ? " · " + esc(x.cls) : ""}</span></button>`).join("") || (String(q || "").trim().length >= 2 ? `<div class="small" style="padding:8px">${items() ? "Not on the item list." : "No item list on this phone – tap Refresh on the list."}</div>` : "");
+}
+let MVT = 0;
+function mvSerial(who) {   // v0.4: look the serial up in the ledger; fill the code and description if they're empty
+  clearTimeout(MVT); MVT = setTimeout(() => { if (!MV || !MV[who]) return; const o = MV[who], r = serialLedger(o.serial);
+    if (r) { const box = $("mvbox"); if (!o.code && r.code) { o.code = r.code; const e = box.querySelector(`[data-mv="${who}.code"]`); if (e) e.value = r.code; }
+      if ((!o.desc || o.desc === o.mach) && r.desc) { o.desc = r.desc; const e = box.querySelector(`[data-mv="${who}.desc"]`); if (e) e.value = r.desc; }
+      if (!o.tag && r.tag) { o.tag = r.tag; const e = box.querySelector(`[data-mv="${who}.tag"]`); if (e) e.value = r.tag; } }
+    const n = $("mvn-" + who); if (n) n.innerHTML = ledgerNote(who, o.serial); }, 300);
 }
 function addMove() {
   const m = MOVES.find(x => x.k === MV.k), rows = [];
   if (m.inst) { const u = MV.inst; if (!u || !(u.desc || u.code)) return flash("Choose the unit you installed."); if (!(u.serial || u.tag)) return flash("Give the serial or tag of the unit you installed.");
-    rows.push({action: m.inst, group: u.group || "SPARES", code: u.code, mach: u.mach, desc: u.desc, serial: u.serial, tag: u.tag, qty: "1", move: m.k}); }
+    rows.push({action: m.inst, group: u.group || "SPARES", code: u.code, mach: u.mach, desc: u.desc || itemDesc(u.code), serial: u.serial, tag: u.tag, qty: "1", move: m.k, from: "T" + J.eng, notBoot: !!u.notBoot}); }
   if (m.upl) { const u = MV.upl; if (!(u.desc || u.code || u.mach)) return flash("Say what was uplifted."); if (!(u.serial || u.tag)) return flash("Give the serial or tag of the unit you uplifted.");
-    rows.push({action: m.upl, group: u.group || "SPARES", code: u.code, mach: u.mach, desc: u.desc || u.mach, serial: u.serial, tag: u.tag, qty: "1", move: m.k}); }
+    rows.push({action: m.upl, group: u.group || "SPARES", code: u.code, mach: u.mach, desc: u.desc || itemDesc(u.code) || u.mach, serial: u.serial, tag: u.tag, qty: "1", move: m.k, to: "F" + J.eng}); }
   J.parts.push(...rows); J.moves.push({k: m.k, at: new Date().toISOString()}); MV = null; touch(); renderJob();
+}
+// v0.4: what Nav needs posting for this call - each unit's from and to
+function navLines(j) {
+  const site = (j.site || "the site") + (j.so ? " (" + j.so + ")" : "");
+  return (j.parts || []).filter(p => p.code || p.desc).map(p => /^Uplift/.test(p.action)
+    ? {t: "Uplift", txt: `${p.desc || p.code}${p.serial ? " S/N " + p.serial : ""}`, from: site, to: bootName("F" + j.eng)}
+    : {t: p.action === "Install Loan Unit" ? "Loan in" : "Install", txt: `${p.desc || p.code}${p.serial ? " S/N " + p.serial : ""}${Number(p.qty) > 1 ? " x" + p.qty : ""}`, from: bootName("T" + j.eng), to: site, warn: p.notBoot});
 }
 async function finish() {
   if (!J.outcome) return flash("Choose Complete or Update.");
@@ -635,7 +761,7 @@ function b64bytes(b) { const s = atob(b), u = new Uint8Array(s.length); for (let
 window.addEventListener("DOMContentLoaded", () => { wire(); start(); });
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 </script>
-<script>/* v0.3: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+<script>/* v0.4: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
 (function () { if (!("serviceWorker" in navigator)) return; let shown = false;
   const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
     d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";
