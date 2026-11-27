@@ -245,10 +245,12 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
 .f.hl { border: 2px solid var(--red, #D7262C) !important; box-shadow: 0 0 0 4px rgba(215, 38, 44, .18); animation: hlp 1.1s ease-in-out 3; }
 @keyframes hlp { 50% { box-shadow: 0 0 0 9px rgba(215, 38, 44, .06); } }
 .itemhint { font-weight: 700; color: var(--red, #D7262C); margin: 8px 0 4px; font-size: 14px; }
+/* v2.12: boot notes under each spare */
+.boot.lb { margin: 0 0 4px 22px; padding: 4px 8px; font-size: 12px; }
 </style><style id="pagestyle"></style></head><body>
 <div id="gate" hidden><div class="box"><b style="font:700 20px/1.2 var(--display)">Spares Request</b><p class="small" style="margin:0">Log in on the BCX Field Apps page first. The same login works here.</p><a class="btn primary" href="../">Go to BCX Field Apps</a></div></div>
 <header class="top"><div class="wrap"><a class="bcx-home" href="../" aria-label="Back to BCX Field Apps" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></a>
-  <div class="mark"><b>Spares Request</b><small id="sub">v2.11 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
+  <div class="mark"><b>Spares Request</b><small id="sub">v2.12 · Developed by Gerald Pakree</small></div><span class="sig" id="sig">● Online</span></div></header>
 <main class="wrap" id="app" hidden>
   <section id="v-list" style="display:grid;gap:14px">
     <div class="card">
@@ -275,7 +277,7 @@ table.ht td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-a
   <section id="v-view" hidden style="display:grid;gap:14px"></section>
   <section id="v-hist" hidden style="display:grid;gap:14px"></section>
   <input type="file" id="fmx-file" accept="image/*" hidden>
-  <div class="foot">Spares Request v2.11 · Developed by Gerald Pakree</div>
+  <div class="foot">Spares Request v2.12 · Developed by Gerald Pakree</div>
 </main>
 <div id="kds" hidden></div>
 <div id="kset" hidden></div>
@@ -356,7 +358,9 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
 
 </script>
 <script>
-/* BCX Spares Request v2.11
+/* BCX Spares Request v2.12
+   v2.12: the boot notes on a request sit under the spare they're about (his boot, other engineers' boots), once per
+         item even when the same spare is on two calls. The Ready and Done tabs list the newest first, oldest at the bottom.
    v2.11: a dropped Dispatch Board keeps every column (full comment, verified, accepted, area, customer group...) for the
          new View My Calls app - added after the 11 columns used here, so older apps read it as before.
    v2.10: the spare search no longer suggests items from his faulty boot (F...) - those are item codes of returned
@@ -423,7 +427,7 @@ if (typeof module !== "undefined") module.exports = XLSX_MINI;
    - Dispatch Board (calls) and the Item list are downloaded and kept on the phone; the Item Ledger is the one all apps share.
    - Stores: a kitchen-style big screen (New / Picking / Ready), printing on a slip printer (80 / 58 mm) or the A4 form.
    - GL prints are always the A4 "SPARES REQUEST" form, 4 slips per page. */
-const VER = "2.11", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
+const VER = "2.12", DEFAULT_API = "https://script.google.com/macros/s/AKfycbwK3-Ej0kNh2fcjlgO6FhNUYcybby3LQ3CpRshHvkiQV1Vx1vB6iPePfHTfnXkop3mz/exec";
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -634,6 +638,7 @@ function render() {
 /* ---------- list ---------- */
 const STEP = {GL: 1, NEW: 2, PICKING: 3, READY: 4, COLLECTED: 5};
 const SNAME = {GL: "Waiting for a GL check", NEW: "At stores", PICKING: "Being picked", READY: "Booked out – ready to collect", COLLECTED: "Collected", REJECTED: "Rejected", CANCELLED: "Cancelled"};
+const tms = v => { const t = Date.parse(v); return isNaN(t) ? 0 : t; };   // v2.12: sort by time, whatever format the sheet sent
 function tabsFor() {
   if (!isLead()) return [];
   const t = [];
@@ -658,7 +663,7 @@ function renderList() {
   let list = tabs.length ? REQS.filter(tabs.find(t => t[0] === TAB)[2]) : REQS;
   const open = q => ["GL", "NEW", "PICKING", "READY"].includes(q.status);
   if (!tabs.length) list = list.filter(open).concat(list.filter(q => !open(q)));
-  else list = list.slice().sort((a, b) => (TAB === "done" ? String(b.updated).localeCompare(String(a.updated)) : (b.urgent - a.urgent) || String(a.created).localeCompare(String(b.created))));
+  else list = list.slice().sort((a, b) => (TAB === "done" ? tms(b.collectedAt || b.updated || b.created) - tms(a.collectedAt || a.updated || a.created) : TAB === "ready" ? tms(b.bookedAt || b.updated) - tms(a.bookedAt || a.updated) : (b.urgent - a.urgent) || String(a.created).localeCompare(String(b.created))));   // v2.12: Ready newest first
   const c = ls.get("sr-cache");
   $("list-h").firstChild.nodeValue = (tabs.length ? "Requests" : "My requests") + " ";
   $("list-age").textContent = c && c.at ? (online() ? "" : "saved copy from " + new Date(c.at).toLocaleTimeString("en-ZA", {hour: "2-digit", minute: "2-digit"})) : "";
@@ -691,9 +696,17 @@ const amChip = q => edN(q) ? ` <span class="chip warn">Amended${edN(q) > 1 ? " �
 const wasTxt = l => l.was ? `instead of ${l.was.qty} x ${l.was.desc}${l.was.item ? " (" + l.was.item + ")" : ""}` : "";
 const wasHtml = l => l.was ? `<div class="swp">↺ ${esc(wasTxt(l))}${l.why ? " – " + esc(l.why) : ""}${l.by ? ` <span class="small">(${esc(l.by.split(" ")[0])}${l.at ? " " + esc(hm(l.at)) : ""})</span>` : ""}</div>` : "";
 const canSwap = q => isStores() && ["NEW", "PICKING"].includes(q.status);
+// v2.12: what's in the boots for one spare, shown under that spare: his own boot, then other engineers' working boots
+function lineBootHtml(q, item) {
+  const whose = q.engineer === me().code ? "your" : "his", b = bootHas(q.engineer, item); let h = "";
+  if (b && b.wq) h += `<div class="boot lb">⚠ ${b.wq} already in ${whose} boot: ${b.w.map(i => `${i.qty > 1 ? i.qty + " on " : ""}${esc(i.doc)} ${daysTxt(i.days)}`).join(", ")}</div>`;
+  if (b && b.fq) h += `<div class="boot f lb">ℹ ${b.fq} in ${whose} faulty boot (${b.f.map(i => esc(i.doc)).join(", ")})</div>`;
+  return h + othersHtml(q.engineer, item).replace(/class="boot (p|o)"/g, 'class="boot $1 lb"').replace("👥 Also in working boots:", "👥 Also in:");
+}
 function linesHtml(q, noStock) {
-  const live = !noStock && ["GL", "NEW", "PICKING"].includes(q.status), G = groupLines(q);
-  return G.map(g => `<div class="cgh">📞 <b class="mono">${soLbl(g.so)}</b> · ${esc(g.ship)}${live && !noCall(g.so) ? underHtml(q, g.so) : ""}</div>` + g.items.map(({l, i}) => `<div class="sp${l.out ? " out" : ""}"><b>${l.qty}</b> ${esc(l.desc)} ${l.item ? `<span class="small mono">${esc(l.item)}</span>` : ""}${G.length > 1 ? ` <span class="chip">${g.so === "NO CALL" ? "no call" : esc(g.so)}</span>` : ""}${l.out ? ' <span class="chip bad">out of stock</span>' : live ? brChip(l.item) : ""}${canSwap(q) ? ` <button class="btn small ghost" data-act="swap" data-line="${i}">Swap</button>` : ""}</div>${wasHtml(l)}`).join("")).join("");
+  const live = !noStock && ["GL", "NEW", "PICKING"].includes(q.status), G = groupLines(q), seen = new Set(), led = live && !!ledgerIdx();
+  const notes = l => { if (!led || !l.item || l.out) return ""; const k = String(l.item).trim().toUpperCase(); if (seen.has(k)) return ""; seen.add(k); return lineBootHtml(q, l.item); };
+  return G.map(g => `<div class="cgh">📞 <b class="mono">${soLbl(g.so)}</b> · ${esc(g.ship)}${live && !noCall(g.so) ? underHtml(q, g.so) : ""}</div>` + g.items.map(({l, i}) => `<div class="sp${l.out ? " out" : ""}"><b>${l.qty}</b> ${esc(l.desc)} ${l.item ? `<span class="small mono">${esc(l.item)}</span>` : ""}${G.length > 1 ? ` <span class="chip">${g.so === "NO CALL" ? "no call" : esc(g.so)}</span>` : ""}${l.out ? ' <span class="chip bad">out of stock</span>' : live ? brChip(l.item) : ""}${canSwap(q) ? ` <button class="btn small ghost" data-act="swap" data-line="${i}">Swap</button>` : ""}</div>${wasHtml(l)}${notes(l)}`).join("")).join("");
 }
 function cardHtml(q) {
   const mine = q.engineer === me().code || q.createdBy === me().code, dead = q.status === "REJECTED" || q.status === "CANCELLED";
@@ -715,8 +728,7 @@ function cardHtml(q) {
     <div class="t">${isLead() ? `<label class="pick"><input type="checkbox" data-act="sel"${SEL.has(q.id) ? " checked" : ""} aria-label="Tick to print"></label>` : ""}<b>${esc(q.engineerName)}</b>${amChip(q)}${q.urgent ? '<span class="chip bad">Urgent</span>' : ""}${q.route === "EMERGENCY" ? '<span class="chip bad">Emergency</span>' : ""}${q.source === "FMX screenshot" && !q.onBoard ? '<span class="chip info">From FMX screenshot</span>' : q.onBoard ? "" : '<span class="chip warn">Not on the Dispatch Board</span>'}<span class="ago">${esc(ago(q.created))}</span></div>
     <div class="s">${groupLines(q).length > 1 ? `<b>${groupLines(q).length} calls</b>` : `<span class="mono">${esc(q.callRef)}</span> · ${esc(q.customer)}${q.custRef ? " · ref " + esc(q.custRef) : ""}`}${who}</div>
     ${linesHtml(q)}
-    ${q.inBoot && !dead && q.status !== "COLLECTED" ? `<div class="boot" style="font-size:12.5px">⚠ Already in ${q.engineer === me().code ? "your" : "his"} boot: ${esc(q.inBoot)}</div>` : ""}
-    ${!dead && ["GL", "NEW", "PICKING"].includes(q.status) ? q.lines.map(l => podHtml(q.engineer, l.item)).join("") : ""}
+    ${q.inBoot && !dead && q.status !== "COLLECTED" && !(["GL", "NEW", "PICKING"].includes(q.status) && ledgerIdx()) ? `<div class="boot" style="font-size:12.5px">⚠ Already in ${q.engineer === me().code ? "your" : "his"} boot: ${esc(q.inBoot)}</div>` : ""}
     ${q.note ? `<div class="small">Note: ${esc(q.note)}</div>` : ""}
     ${trk(q)}<div class="trkl">${st}</div>
     ${dead ? `<div class="why">${q.status === "REJECTED" ? "Rejected" : "Cancelled"}${q.reason ? ": " + esc(q.reason) : ""}${q.status === "REJECTED" && q.glName ? " – " + esc(q.glName) : ""}</div>` : ""}
@@ -1644,7 +1656,7 @@ if ("serviceWorker" in navigator) window.addEventListener("load", () => navigato
   setInterval(upd, 800); upd();
 })();
 </script>
-<script>/* v2.11: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
+<script>/* v2.12: the app opens straight from the phone's saved copy. When a newer version has been downloaded in the background, offer it. */
 (function () { if (!("serviceWorker" in navigator)) return; let shown = false;
   const bar = () => { if (shown || !document.body) return; shown = true; const d = document.createElement("div"); d.id = "bcx-upd"; d.setAttribute("role", "status");
     d.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto;background:#1D1A1A;color:#fff;border-radius:12px;padding:10px 10px 10px 16px;font:500 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)";
